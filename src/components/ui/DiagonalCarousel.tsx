@@ -26,7 +26,7 @@ export const uiStyles: StyleCard[] = [
         title: "Glassmorphism",
         description: "Frosted glass effect with blur and transparency",
         gradient: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-        accentColor: "#60a5fa",
+        accentColor: "#FFD700", // Gold/Yellow
         image: "/Glassmophism.jpg",
     },
     {
@@ -34,7 +34,7 @@ export const uiStyles: StyleCard[] = [
         title: "Neo-Brutalism",
         description: "Bold colors, harsh shadows, raw aesthetics",
         gradient: "linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)",
-        accentColor: "#ff6b6b",
+        accentColor: "#f472b6", // Pink (Tailwind pink-400 equivalent for a nice pink)
         image: "/neo brutalism.jpg",
     },
     {
@@ -334,7 +334,7 @@ const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>
                                 const isRightSide = relativePos > 0 && relativePos <= totalSlides / 2;
 
                                 return (
-                                    <SwiperSlide key={style.id} className="!h-[390px] md:!h-[440px]">
+                                    <SwiperSlide key={style.id} className="!h-[390px] md:!h-[540px]">
                                         <motion.div
                                             className="w-full h-full"
                                             style={{

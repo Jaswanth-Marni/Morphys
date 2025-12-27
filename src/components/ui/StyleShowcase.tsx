@@ -118,7 +118,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
 
             {/* ========== STYLES HEADING - TOP CENTER ========== */}
             <motion.div
-                className="absolute top-[120px] left-1/2 -translate-x-1/2 z-40 pointer-events-none"
+                className="absolute top-[120px] md:top-[100px] left-1/2 -translate-x-1/2 z-40 pointer-events-none"
                 variants={headingContainerVariants}
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
@@ -188,12 +188,28 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
             />
 
             {/* Progressive Blur with backdrop blur - Bottom */}
+            {/* Progressive Blur - Bottom (Mobile) */}
             <motion.div
-                className="absolute bottom-0 left-0 right-0 z-21 pointer-events-none"
+                className="absolute bottom-0 left-0 right-0 z-21 pointer-events-none block md:hidden"
                 style={{
                     height: "30%",
                     backdropFilter: "blur(8px)",
                     WebkitBackdropFilter: "blur(8px)",
+                    maskImage: "linear-gradient(to top, black 0%, transparent 100%)",
+                    WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
+                }}
+                variants={blurVariants}
+                initial="hidden"
+                animate={isInView ? "visible" : "hidden"}
+            />
+
+            {/* Progressive Blur - Bottom (Desktop Increased) */}
+            <motion.div
+                className="absolute bottom-0 left-0 right-0 z-21 pointer-events-none hidden md:block"
+                style={{
+                    height: "30%",
+                    backdropFilter: "blur(14px)",
+                    WebkitBackdropFilter: "blur(14px)",
                     maskImage: "linear-gradient(to top, black 0%, transparent 100%)",
                     WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
                 }}
@@ -319,7 +335,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
             />
 
             {/* ========== CAROUSEL CONTAINER ========== */}
-            <div className="relative h-screen w-full pt-20 -translate-y-[30px] md:translate-y-0">
+            <div className="relative h-screen w-full pt-20 -translate-y-[30px] md:translate-y-[10px]">
                 <DiagonalCarousel
                     ref={carouselRef}
                     autoPlayInterval={3000}
@@ -353,7 +369,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
 
                 {/* Style Name - TextFlow (Centered) */}
                 <div
-                    className="flex justify-center pointer-events-none -translate-y-[70px] md:translate-y-0"
+                    className="flex justify-center pointer-events-none -translate-y-[70px] md:translate-y-[20px]"
                     style={{ fontFamily: "'Clash Display Variable', sans-serif", fontVariationSettings: "'wght' 600" }}
                 >
                     <TextFlow
