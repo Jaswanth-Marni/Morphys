@@ -124,7 +124,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                 animate={isInView ? "visible" : "hidden"}
             >
                 <h2
-                    className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-wider text-foreground leading-[0.85] text-center flex"
+                    className="text-5xl sm:text-6xl md:text-7xl lg:text-[5rem] tracking-wider text-foreground leading-[0.85] text-center flex"
                     style={{
                         fontFamily: "'Clash Display Variable', sans-serif",
                         fontVariationSettings: "'wght' 700",
@@ -335,7 +335,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
             />
 
             {/* ========== CAROUSEL CONTAINER ========== */}
-            <div className="relative h-screen w-full pt-20 -translate-y-[30px] md:translate-y-[10px]">
+            <div className="relative h-screen w-full pt-20 -translate-y-[30px] md:-translate-y-[5px]">
                 <DiagonalCarousel
                     ref={carouselRef}
                     autoPlayInterval={3000}
