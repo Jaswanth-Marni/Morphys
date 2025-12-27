@@ -9,6 +9,11 @@ import { useEffect } from "react";
  */
 const ScrollToTop = () => {
     useEffect(() => {
+        // Disable browser's default scroll restoration to ensure we always start at top
+        if ("scrollRestoration" in history) {
+            history.scrollRestoration = "manual";
+        }
+
         // Scroll to top immediately on mount
         window.scrollTo(0, 0);
 
@@ -16,7 +21,7 @@ const ScrollToTop = () => {
         // by using a small timeout to override it
         const timeoutId = setTimeout(() => {
             window.scrollTo(0, 0);
-        }, 0);
+        }, 10);
 
         return () => clearTimeout(timeoutId);
     }, []);
