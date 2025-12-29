@@ -77,9 +77,7 @@ Morphys serves as both a portfolio and a technical demonstration of advanced fro
     ```
 4.  Open [http://localhost:3000](http://localhost:3000)
 
-## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
 
 ---
 *Created by [Jaswanth Marni](https://github.com/Jaswanth-Marni)*
