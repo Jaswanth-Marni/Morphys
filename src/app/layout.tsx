@@ -4,7 +4,10 @@ import localFont from "next/font/local";
 import Navbar from "@/components/ui/Navbar";
 import { GlassPill, Menu, ScrollToTop } from "@/components/ui";
 import { MenuProvider } from "@/context/MenuContext";
+import { ShowcaseProvider } from "@/context/ShowcaseContext";
 import SmoothScrollProvider from "@/components/ui/SmoothScrollProvider";
+import TransitionProvider from "@/components/ui/TransitionProvider";
+import CanvasOverlay from "@/components/ui/CanvasOverlay";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -45,13 +48,19 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <MenuProvider>
-          <SmoothScrollProvider>
-            <ScrollToTop />
-            <Navbar />
-            <GlassPill />
-            <Menu />
-            {children}
-          </SmoothScrollProvider>
+          <ShowcaseProvider>
+            <SmoothScrollProvider>
+              <TransitionProvider>
+                <ScrollToTop />
+                <Navbar />
+                <GlassPill />
+                <Menu />
+                {children}
+                {/* Infinite Canvas Overlay - rendered as fixed overlay */}
+                <CanvasOverlay />
+              </TransitionProvider>
+            </SmoothScrollProvider>
+          </ShowcaseProvider>
         </MenuProvider>
       </body>
     </html>

@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Morphys - The Future of UI Design
 
-## Getting Started
+Morphys is a cutting-edge web application designed to showcase and explore modern UI design trends through an immersive, interactive experience. Built with **Next.js**, **Framer Motion**, and **Tailwind CSS**, it features a fluid "Infinite Canvas" interface that allows users to navigate spatially between different design paradigms.
 
-First, run the development server:
+![Morphys Hero](public/hero-screenshot.png) *[Note: Add a hero screenshot here if available]*
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🌟 Project Overview
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Morphys serves as both a portfolio and a technical demonstration of advanced frontend engineering. It moves away from traditional page-based routing to a spatial, canvas-based navigation system where users can "fly" between different details of design styles like **Glassmorphism**, **Neo-Brutalism**, and **Minimalism**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Key Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Core Experience
+*   **Infinite Canvas Navigation:** A unified 2D plane where all style details live. Users can drag to pan or "fly" to specific sections.
+*   **Diagonal 3D Carousel:** A unique, physics-based entry point that lets users swipe through design styles with a distinct diagonal parallax effect.
+*   **Seamless Transitions:** zero-latency transitions between the carousel and the deep-dive canvas view.
 
-## Learn More
+### Advanced Interactivity
+*   **Smart MiniMap:** A context-aware navigation aid that appears only when necessary (e.g., when exploring far from the center on mobile).
+*   **Physics-Based Animations:** Heavy use of `react-spring` and Framer Motion springs to give UI elements weight and momentum.
+*   **Responsive Design:** A completely bespoke mobile experience that feels native, with specific gestures and "sheet-like" behavior for details.
 
-To learn more about Next.js, take a look at the following resources:
+### Visual Polish
+*   **Glassmorphism System:** A consistent, high-performance frosted glass effect system used throughout the UI.
+*   **Progressive Blurs:** sophisticated CSS masking to create seamless edges and "fading" effects without hard lines.
+*   **Dynamic Lighting:** UI elements that react to "active" states with glowing borders and ambient lighting.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📅 Changelog & Development History
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### ✅ Recent Updates (The Journey So Far)
 
-## Deploy on Vercel
+*   **Mobile Experience Overhaul:**
+    *   Fixed "jumping" artifacts during image enlargement transitions.
+    *   Implemented a unified "Arrival" animation for mobile cards to match the carousel entry.
+    *   Optimized MiniMap visibility logic to reduce noise (distance threshold increased to 80 units).
+    *   Removed dark "tints" from glass containers to ensure a pure, crystalline look on mobile.
+*   **Desktop Refinements:**
+    *   Replaced complex shared-element transitions on desktop with a smoother "Fade out -> Zoom in" flow for closing details.
+    *   Connected the "Back" button on desktop to a seamless "re-arrival" animation in the carousel.
+*   **Infinite Canvas:**
+    *   Implemented the core 2D spatial layout engine.
+    *   Added keyboard navigation (Arrow keys).
+    *   Added "Snap to Center" functionality for nearby sections.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 🚧 Present Focus
+*   Tweaking physics constants for the perfect "weight" in drag interactions.
+*   Ensuring 60fps performance on mobile devices during heavy blur rendering.
+*   Fine-tuning the "Arrival" and "Departure" sequences to distinguish between "Exploration" and "Detail View".
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 🔮 Future Roadmap
+*   **New Design Styles:** Introducing Claymorphism and Holographic UI examples.
+*   **3D Elements:** Integrating Three.js/React Three Fiber for floating background elements.
+*   **Theme Editor:** Allowing users to tweak the "Glass" properties (blur amount, opacity) in real-time.
+*   **Accessibility Audit:** Full ARIA support and screen reader optimizations for the canvas view.
+
+## 🛠️ Stack
+
+*   **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+*   **Animation:** [Framer Motion](https://www.framer.com/motion/)
+*   **Gestures:** React UseGesture (if applicable) / Native Pointer Events
+*   **Language:** TypeScript
+
+## 🏃‍♂️ Running Locally
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/Jaswanth-Marni/Morphys.git
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Run the development server:
+    ```bash
+    npm run dev
+    ```
+4.  Open [http://localhost:3000](http://localhost:3000)
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+*Created by [Jaswanth Marni](https://github.com/Jaswanth-Marni)*

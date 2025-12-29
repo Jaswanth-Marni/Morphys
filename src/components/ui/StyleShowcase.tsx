@@ -2,8 +2,10 @@
 
 import React, { useRef, useState, useCallback } from "react";
 import { motion, useInView, useSpring, type Variants } from "framer-motion";
-import { DiagonalCarousel, uiStyles, type CarouselHandle } from "./DiagonalCarousel";
+import { DiagonalCarousel, type CarouselHandle } from "./DiagonalCarousel";
+import { uiStyles } from "@/data/styles";
 import { TextFlow } from "./TextFlow";
+import { useShowcase } from "@/context/ShowcaseContext";
 
 type StyleShowcaseProps = {
     className?: string;
@@ -13,7 +15,10 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
     const sectionRef = useRef<HTMLElement>(null);
     const carouselRef = useRef<CarouselHandle>(null);
     const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
-    const [currentStyle, setCurrentStyle] = useState(uiStyles[0]);
+    const { hasShowcaseAnimated, markShowcaseAsAnimated } = useShowcase();
+
+    // Current style state
+    const [currentStyle, setCurrentStyle] = useState(() => uiStyles[0]);
 
     // Arrow button impact springs - loose, bouncy swing
     const leftArrowX = useSpring(0, { stiffness: 200, damping: 8, mass: 0.8 });
@@ -32,14 +37,31 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
         }, 80);
     }, [leftArrowX, rightArrowX]);
 
+    // Mark as animated once it comes into view
+    React.useEffect(() => {
+        if (isInView && !hasShowcaseAnimated) {
+            markShowcaseAsAnimated();
+        }
+    }, [isInView, hasShowcaseAnimated, markShowcaseAsAnimated]);
+
     // ========== ORCHESTRATED ANIMATION TIMING ==========
-    // Heading: 0ms → Blurs: 200ms → Carousel: 800ms (after heading) → Controls: 2800ms (after spin)
-    const TIMING = {
+    // If already animated, everything is instant (0 delay)
+    // Otherwise: Heading: 0ms → Blurs: 200ms → Carousel: 800ms (after heading) → Controls: 2800ms (after spin)
+    const TIMING = hasShowcaseAnimated ? {
+        heading: 0,
+        blurs: 0,
+        carousel: 0,
+        controls: 0,
+    } : {
         heading: 0,
         blurs: 0.2,
-        carousel: 0.8, // After heading animation (0.6s) completes
-        controls: 2.4, // After carousel spin completes
+        carousel: 0.8,
+        controls: 2.4,
     };
+
+    const shouldAnimate = !hasShowcaseAnimated && isInView;
+    const initialVariant = hasShowcaseAnimated ? "visible" : "hidden";
+    const animateVariant = "visible"; // Always animate to visible, but if initial was visible it's instant
 
     // Heading container - stagger children for letter-by-letter animation
     const headingContainerVariants: Variants = {
@@ -47,7 +69,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.06,
+                staggerChildren: hasShowcaseAnimated ? 0 : 0.06,
                 delayChildren: TIMING.heading,
             },
         },
@@ -105,6 +127,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
 
     return (
         <motion.section
+            id="styles-section"
             ref={sectionRef}
             className={`relative min-h-screen w-full overflow-hidden ${className}`}
             style={{
@@ -120,8 +143,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
             <motion.div
                 className="absolute top-[120px] md:top-[100px] left-1/2 -translate-x-1/2 z-40 pointer-events-none"
                 variants={headingContainerVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             >
                 <h2
                     className="text-5xl sm:text-6xl md:text-7xl lg:text-[5rem] tracking-wider text-foreground leading-[0.85] text-center flex"
@@ -154,8 +177,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Progressive Blur with backdrop blur - Top */}
@@ -169,8 +192,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "linear-gradient(to bottom, black 0%, transparent 100%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Progressive Blur - Bottom Edge (Extended) */}
@@ -183,8 +206,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "linear-gradient(to top, black 0%, black 40%, transparent 100%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Progressive Blur with backdrop blur - Bottom */}
@@ -199,8 +222,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Progressive Blur - Bottom (Desktop Increased) */}
@@ -214,8 +237,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Progressive Blur - Left Edge (Extended for diagonal) */}
@@ -228,8 +251,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "linear-gradient(to right, black 0%, black 30%, transparent 100%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Progressive Blur with backdrop blur - Left */}
@@ -243,8 +266,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "linear-gradient(to right, black 0%, transparent 100%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Progressive Blur - Right Edge (Extended for diagonal) */}
@@ -257,8 +280,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "linear-gradient(to left, black 0%, black 30%, transparent 100%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Progressive Blur with backdrop blur - Right */}
@@ -272,8 +295,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "linear-gradient(to left, black 0%, transparent 100%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Diagonal Corner Blurs - Top Left (where cards exit) */}
@@ -285,8 +308,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     background: "radial-gradient(ellipse at top left, var(--background) 0%, var(--background) 20%, transparent 70%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Diagonal Corner Blur with backdrop - Top Left */}
@@ -301,8 +324,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "radial-gradient(ellipse at top left, black 0%, transparent 60%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Diagonal Corner Blurs - Bottom Right (where cards enter) */}
@@ -314,8 +337,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     background: "radial-gradient(ellipse at bottom right, var(--background) 0%, var(--background) 20%, transparent 70%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* Diagonal Corner Blur with backdrop - Bottom Right */}
@@ -330,8 +353,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     WebkitMaskImage: "radial-gradient(ellipse at bottom right, black 0%, transparent 60%)",
                 }}
                 variants={blurVariants}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                initial={initialVariant}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             />
 
             {/* ========== CAROUSEL CONTAINER ========== */}
@@ -343,6 +366,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                     onImpact={handleImpact}
                     isInView={isInView}
                     entranceDelay={TIMING.carousel}
+                    skipEntrance={hasShowcaseAnimated}
                 />
             </div>
 
@@ -351,14 +375,21 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                 className="absolute bottom-10 left-0 right-0 z-50"
                 variants={controlsVariants}
                 initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
+                animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
             >
                 {/* Left Arrow - Fixed position on left with impact animation */}
                 <motion.button
                     onClick={() => carouselRef.current?.prev()}
-                    className="absolute left-8 md:left-16 top-1/2 -translate-y-1/2 pointer-events-auto px-5 py-3 rounded-full bg-foreground text-background border border-border hover:opacity-80 transition-all"
+                    className="absolute left-8 md:left-16 top-1/2 -translate-y-1/2 pointer-events-auto px-5 py-3 rounded-full transition-all"
+                    style={{
+                        background: "rgba(128, 128, 128, 0.1)",
+                        backdropFilter: "blur(16px)",
+                        WebkitBackdropFilter: "blur(16px)",
+                        border: "1px solid color-mix(in srgb, var(--foreground) 20%, transparent)",
+                        boxShadow: "0 4px 24px rgba(0, 0, 0, 0.15)",
+                        x: leftArrowX,
+                    }}
                     aria-label="Previous style"
-                    style={{ x: leftArrowX }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
@@ -381,9 +412,16 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                 {/* Right Arrow - Fixed position on right with impact animation */}
                 <motion.button
                     onClick={() => carouselRef.current?.next()}
-                    className="absolute right-8 md:right-16 top-1/2 -translate-y-1/2 pointer-events-auto px-5 py-3 rounded-full bg-foreground text-background border border-border hover:opacity-80 transition-all"
+                    className="absolute right-8 md:right-16 top-1/2 -translate-y-1/2 pointer-events-auto px-5 py-3 rounded-full transition-all"
+                    style={{
+                        background: "rgba(128, 128, 128, 0.1)",
+                        backdropFilter: "blur(16px)",
+                        WebkitBackdropFilter: "blur(16px)",
+                        border: "1px solid color-mix(in srgb, var(--foreground) 20%, transparent)",
+                        boxShadow: "0 4px 24px rgba(0, 0, 0, 0.15)",
+                        x: rightArrowX,
+                    }}
                     aria-label="Next style"
-                    style={{ x: rightArrowX }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >

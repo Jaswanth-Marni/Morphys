@@ -1,91 +1,19 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useSpring, useMotionValue, animate } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { EffectCoverflow } from "swiper/modules";
+import { EffectCoverflow, Autoplay } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 
 // Swiper CSS imports
 import "swiper/css";
 import "swiper/css/effect-coverflow";
+import { uiStyles, type StyleCard } from "@/data/styles";
+import { useShowcase } from "@/context/ShowcaseContext";
 
-type StyleCard = {
-    id: number;
-    title: string;
-    description: string;
-    gradient: string;
-    accentColor: string;
-    image: string;
-};
 
-// Sample UI styles to showcase
-export const uiStyles: StyleCard[] = [
-    {
-        id: 1,
-        title: "Glassmorphism",
-        description: "Frosted glass effect with blur and transparency",
-        gradient: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-        accentColor: "#FFD700", // Gold/Yellow
-        image: "/Glassmophism.jpg",
-    },
-    {
-        id: 2,
-        title: "Neo-Brutalism",
-        description: "Bold colors, harsh shadows, raw aesthetics",
-        gradient: "linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)",
-        accentColor: "#f472b6", // Pink (Tailwind pink-400 equivalent for a nice pink)
-        image: "/neo brutalism.jpg",
-    },
-    {
-        id: 3,
-        title: "Material 3",
-        description: "Dynamic color, expressive motion, adaptive design",
-        gradient: "linear-gradient(135deg, #6750A4 0%, #B69DF8 100%)",
-        accentColor: "#D0BCFF",
-        image: "/Material 3.png",
-    },
-    {
-        id: 4,
-        title: "Skeuomorphism",
-        description: "Real-world textures, depth, and tangible interfaces",
-        gradient: "linear-gradient(135deg, #d4a373 0%, #faedcd 100%)",
-        accentColor: "#8c6b45",
-        image: "/SKEUOMORPHISM.png",
-    },
-    {
-        id: 5,
-        title: "Neumorphism",
-        description: "Soft UI with subtle shadows and highlights",
-        gradient: "linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%)",
-        accentColor: "#a0a0a0",
-        image: "/neumorphism.jpg",
-    },
-    {
-        id: 6,
-        title: "Minimalism",
-        description: "Clean lines, whitespace, typography focus",
-        gradient: "linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%)",
-        accentColor: "#333333",
-        image: "/minimalism.jpg",
-    },
-    {
-        id: 7,
-        title: "Retro",
-        description: "Vintage aesthetics, noisy textures, nostalgic vibes",
-        gradient: "linear-gradient(135deg, #ff9966 0%, #ff5e62 100%)",
-        accentColor: "#ff9966",
-        image: "/Retro.jpg",
-    },
-    {
-        id: 8,
-        title: "Pop Art",
-        description: "Bold outlines, comic style, vibrant patterns",
-        gradient: "linear-gradient(135deg, #fff200 0%, #ed1c24 100%)",
-        accentColor: "#00aeef",
-        image: "/pop art.png",
-    },
-];
+
 
 type DiagonalCarouselProps = {
     autoPlayInterval?: number;
@@ -93,20 +21,37 @@ type DiagonalCarouselProps = {
     onImpact?: () => void;
     isInView?: boolean;
     entranceDelay?: number;
+    skipEntrance?: boolean;
 };
 
 export type CarouselHandle = {
     next: () => void;
     prev: () => void;
+    goToStyle: (styleId: string) => void;
 };
 
 const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>(
-    ({ autoPlayInterval = 4000, onUiStyleChange, onImpact, isInView = true, entranceDelay = 0.5 }, ref) => {
+    ({ autoPlayInterval = 4000, onUiStyleChange, onImpact, isInView = true, entranceDelay = 0.5, skipEntrance = false }, ref) => {
         const swiperRef = useRef<SwiperType | null>(null);
-        const [activeIndex, setActiveIndex] = useState(0);
-        const [hasEntered, setHasEntered] = useState(false);
+
+        const {
+            activeStyleId,
+            setActiveStyleId,
+            openCanvas,
+            isCanvasOpen,
+            transitionDirection,
+            registerCarouselSync,
+            isTransitioning,
+        } = useShowcase();
+
+        const [activeIndex, setActiveIndex] = useState(() => {
+            // Initialize to the last active style if returning from canvas
+            const savedIndex = uiStyles.findIndex(s => s.id === activeStyleId);
+            return savedIndex >= 0 ? savedIndex : 0;
+        });
+        const [hasEntered, setHasEntered] = useState(skipEntrance);
         const [isSpinning, setIsSpinning] = useState(false);
-        const [spinComplete, setSpinComplete] = useState(false);
+        const [spinComplete, setSpinComplete] = useState(skipEntrance);
 
         // Physics-based impact springs for side cards
         const leftCardOffset = useSpring(0, { stiffness: 200, damping: 15, mass: 0.8 });
@@ -114,9 +59,42 @@ const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>
         const centerCardScale = useSpring(1, { stiffness: 300, damping: 12, mass: 0.5 });
 
         // Carousel depth emergence - starts from behind
-        const carouselScale = useMotionValue(0.3);
-        const carouselOpacity = useMotionValue(0);
-        const carouselBlur = useMotionValue(15);
+        // If skipEntrance is true, start at final values
+        const carouselScale = useMotionValue(skipEntrance ? 1 : 0.3);
+        const carouselOpacity = useMotionValue(skipEntrance ? 1 : 0);
+        const carouselBlur = useMotionValue(skipEntrance ? 0 : 15);
+
+        // Navigate to style on canvas (using overlay, not route)
+        const navigateToCanvas = useCallback((styleId: string) => {
+            // Stop autoplay
+            swiperRef.current?.autoplay?.stop();
+
+            // Open canvas overlay with the selected style
+            openCanvas(styleId);
+        }, [openCanvas]);
+
+        // Go to specific style - INSTANT version for sync callback
+        const goToStyleInstant = useCallback((styleId: string) => {
+            const index = uiStyles.findIndex(s => s.id === styleId);
+            if (index >= 0 && swiperRef.current) {
+                // Use speed 0 for instant jump
+                swiperRef.current.slideToLoop(index, 0);
+                setActiveIndex(index);
+            }
+        }, []);
+
+        // Go to specific style (for syncing when returning from canvas)
+        const goToStyle = useCallback((styleId: string) => {
+            const index = uiStyles.findIndex(s => s.id === styleId);
+            if (index >= 0 && swiperRef.current) {
+                swiperRef.current.slideToLoop(index, 600);
+            }
+        }, []);
+
+        // Register carousel sync callback on mount
+        useEffect(() => {
+            registerCarouselSync(goToStyleInstant);
+        }, [registerCarouselSync, goToStyleInstant]);
 
         // Expose navigation methods to parent
         React.useImperativeHandle(ref, () => ({
@@ -126,17 +104,40 @@ const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>
             prev: () => {
                 swiperRef.current?.slidePrev();
             },
+            goToStyle,
         }));
+
+        // Restart autoplay when returning from canvas
+        useEffect(() => {
+            if (transitionDirection === "to-carousel" && !isCanvasOpen) {
+                // Restart autoplay after returning
+                if (autoPlayInterval > 0) {
+                    setTimeout(() => {
+                        swiperRef.current?.autoplay?.start();
+                    }, 500);
+                }
+            }
+        }, [transitionDirection, isCanvasOpen, autoPlayInterval]);
 
         // Notify parent of active style change
         useEffect(() => {
             if (onUiStyleChange) {
                 onUiStyleChange(uiStyles[activeIndex]);
             }
-        }, [activeIndex, onUiStyleChange]);
+            // Also sync to context
+            setActiveStyleId(uiStyles[activeIndex].id);
+        }, [activeIndex, onUiStyleChange, setActiveStyleId]);
 
         // Main entrance animation sequence
         useEffect(() => {
+            if (skipEntrance) {
+                // If skipping entrance, ensure autoplay starts if needed
+                if (autoPlayInterval > 0 && swiperRef.current) {
+                    swiperRef.current.autoplay?.start();
+                }
+                return;
+            }
+
             if (isInView && !hasEntered) {
                 setHasEntered(true);
 
@@ -169,6 +170,42 @@ const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>
                 }, startDelay);
             }
         }, [isInView, hasEntered, entranceDelay]);
+
+        // Re-arrival animation (returning from details)
+        useEffect(() => {
+            // Animation runs for both mobile and desktop
+            if (transitionDirection === "to-carousel") {
+                // Reset to initial emergence state immediately
+                carouselOpacity.set(0);
+                carouselBlur.set(15);
+                carouselScale.set(0.3);
+
+                // Animate to visible with slight delay to match image flight
+                const delay = 0.1;
+
+                animate(carouselOpacity, 1, {
+                    duration: 0.5,
+                    delay,
+                    ease: "easeOut"
+                });
+
+                animate(carouselBlur, 0, {
+                    duration: 0.6,
+                    delay,
+                    ease: "easeOut"
+                });
+
+                animate(carouselScale, 1, {
+                    type: "spring",
+                    stiffness: 120,
+                    damping: 14,
+                    mass: 0.8,
+                    delay
+                });
+
+                // Note: We deliberately do NOT trigger spinThroughCards here
+            }
+        }, [transitionDirection]);
 
         // Spin through all cards (full rotation) - keeps swiping left until Glassmorphism returns
         const spinThroughCards = () => {
@@ -266,6 +303,21 @@ const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>
             onImpact?.();
         };
 
+        // Handle card click
+        const handleCardClick = (style: StyleCard, index: number) => {
+            if (isSpinning) return;
+
+            const isActive = index === activeIndex;
+
+            if (isActive) {
+                // Navigate to detail canvas overlay
+                navigateToCanvas(style.id);
+            } else {
+                // Slide to this card first
+                swiperRef.current?.slideToLoop(index, 400);
+            }
+        };
+
         return (
             <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                 {/* Carousel Container - Emerges from depth */}
@@ -287,10 +339,19 @@ const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>
                                 swiperRef.current = swiper;
                                 // Disable autoplay initially - will be enabled after spin
                                 swiper.autoplay?.stop();
+
+                                // If returning from canvas, go to the saved style
+                                if (skipEntrance && activeStyleId) {
+                                    const targetIndex = uiStyles.findIndex(s => s.id === activeStyleId);
+                                    if (targetIndex >= 0) {
+                                        swiper.slideToLoop(targetIndex, 0);
+                                    }
+                                }
                             }}
                             onSlideChange={handleSlideChange}
                             effect="coverflow"
                             grabCursor={!isSpinning}
+                            initialSlide={0}
                             centeredSlides={true}
                             loop={true}
 
@@ -323,7 +384,7 @@ const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>
                                 modifier: 2.5,
                                 slideShadows: false,
                             }}
-                            modules={[EffectCoverflow]}
+                            modules={[EffectCoverflow, Autoplay]}
                             className="perspective-carousel"
                         >
                             {uiStyles.map((style, index) => {
@@ -336,7 +397,7 @@ const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>
                                 return (
                                     <SwiperSlide key={style.id} className="!h-[390px] md:!h-[540px]">
                                         <motion.div
-                                            className="w-full h-full"
+                                            className="w-full h-full cursor-pointer"
                                             style={{
                                                 x: isActive ? 0 : (isLeftSide ? leftCardOffset : (isRightSide ? rightCardOffset : 0)),
                                                 scale: isActive ? centerCardScale : 1,
@@ -346,18 +407,60 @@ const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>
                                             }}
                                             whileHover={!isSpinning ? { scale: 1.02 } : undefined}
                                             transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                            onClick={() => handleCardClick(style, index)}
                                         >
-                                            <img
+                                            <motion.img
+                                                layoutId={
+                                                    // Only assign layoutId to the active card during transitions
+                                                    // This prevents all carousel images from animating simultaneously
+                                                    isActive && isTransitioning && style.id === activeStyleId
+                                                        ? `style-image-${style.id}`
+                                                        : undefined
+                                                }
                                                 src={style.image}
                                                 alt={style.title}
                                                 className="w-full h-full object-cover shadow-2xl"
                                                 style={{
                                                     filter: isActive ? "none" : "brightness(0.7)",
-                                                    transition: "filter 0.3s ease",
                                                     backfaceVisibility: "hidden",
                                                     WebkitBackfaceVisibility: "hidden",
+                                                    borderRadius: "0.5rem",
+                                                }}
+                                                transition={{
+                                                    layout: {
+                                                        type: "spring",
+                                                        stiffness: 150,
+                                                        damping: 25,
+                                                        mass: 0.8,
+                                                    },
                                                 }}
                                             />
+                                            {/* Click indicator for active card */}
+                                            {isActive && spinComplete && (
+                                                <motion.div
+                                                    className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300"
+                                                >
+                                                    <motion.div
+                                                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm"
+                                                        style={{
+                                                            background: "var(--glass-background)",
+                                                            backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+                                                            WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+                                                            border: "1px solid var(--glass-border)",
+                                                            fontFamily: "'Clash Display Variable', sans-serif",
+                                                            boxShadow: "var(--glass-shadow)",
+                                                        }}
+                                                        initial={{ y: 10, opacity: 0 }}
+                                                        animate={{ y: 0, opacity: 1 }}
+                                                        transition={{ delay: 0.1 }}
+                                                    >
+                                                        <span>Details</span>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M5 12h14M12 5l7 7-7 7" />
+                                                        </svg>
+                                                    </motion.div>
+                                                </motion.div>
+                                            )}
                                             {/* Settlement glow pulse */}
                                             {isActive && spinComplete && (
                                                 <motion.div

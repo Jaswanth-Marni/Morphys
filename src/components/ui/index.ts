@@ -11,3 +11,11 @@ export { DiagonalCarousel } from "./DiagonalCarousel";
 export { StyleShowcase } from "./StyleShowcase";
 export { ScrollToTop } from "./ScrollToTop";
 export { TextFlow } from "./TextFlow";
+
+// Infinite Canvas components
+export { InfiniteCanvas } from "./InfiniteCanvas";
+export { MiniMap } from "./MiniMap";
+export { PositionIndicator } from "./PositionIndicator";
+export { StyleDetailSection } from "./StyleDetailSection";
+export { TransitionProvider } from "./TransitionProvider";
+export { CanvasOverlay } from "./CanvasOverlay";
