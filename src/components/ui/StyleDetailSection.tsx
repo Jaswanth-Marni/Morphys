@@ -212,9 +212,9 @@ export const StyleDetailSection = ({
 
         // DEPARTING PHASE - Reverse animation when closing on mobile
         if (arrivalPhase === "departing") {
-            const DEPART_INFO_DURATION = 400;
-            const DEPART_IMAGE_DURATION = 600;
-            const DEPART_FADE_DURATION = 400; // Smooth fade before closing
+            const DEPART_INFO_DURATION = 250;
+            const DEPART_IMAGE_DURATION = 350;
+            const DEPART_FADE_DURATION = 300; // Smooth fade before closing
 
             // Ensure container is visible at start
             containerOpacity.set(1);
@@ -363,8 +363,9 @@ export const StyleDetailSection = ({
                         {/* Main image */}
                         <motion.img
                             layoutId={
-                                // Only use shared element on mobile
-                                isTransitioning && isActive && isMobile
+                                // Only use shared element on desktop
+                                // On mobile, we use manual spring animations (hero phase) which conflict with layoutId
+                                isTransitioning && isActive && !isMobile
                                     ? `style-image-${style.id}`
                                     : undefined
                             }
