@@ -2,7 +2,7 @@
 
 Morphys is a cutting-edge web application designed to showcase and explore modern UI design trends through an immersive, interactive experience. Built with **Next.js**, **Framer Motion**, and **Tailwind CSS**, it features a fluid "Infinite Canvas" interface that allows users to navigate spatially between different design paradigms.
 
-![Morphys Hero](public/hero-screenshot.png) *[Note: Add a hero screenshot here if available]*
+![Morphys Hero](public/hero-screenshot.png)
 
 ## 🌟 Project Overview
 
