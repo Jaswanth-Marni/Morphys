@@ -36,6 +36,15 @@ export const StyleDetailSection = ({
         y: parallaxOffset.y * 0.3,
     };
 
+    // Track viewport height for stable mobile animations (avoids address bar juminess)
+    const [viewportHeight, setViewportHeight] = useState(0);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setViewportHeight(window.innerHeight);
+        }
+    }, []);
+
     // Mobile arrival animation springs - slower and smoother
     const imageScale = useSpring(1, { stiffness: 120, damping: 20, mass: 0.8 });
     const imageY = useSpring(0, { stiffness: 100, damping: 22, mass: 0.8 });
@@ -45,17 +54,19 @@ export const StyleDetailSection = ({
     const imagePush = useSpring(0, { stiffness: 180, damping: 16, mass: 0.6 });
     // Offset for centering during hero phase (positive moves down to center)
     const centerOffset = useSpring(0, { stiffness: 50, damping: 18, mass: 1.2 });
-    // Image height for smooth hero->normal transition (in vh units * window height for px)
-    const imageHeightPercent = useSpring(35, { stiffness: 50, damping: 18, mass: 1.2 });
+
+    // Image height in PX (stable) instead of VH (unstable)
+    // Default to ~35vh equivalent if viewport not loaded yet
+    const imageHeightPx = useSpring(0, { stiffness: 50, damping: 18, mass: 1.2 });
+
     // Container opacity for smooth fade-out during departing phase (mobile only)
     const containerOpacity = useSpring(1, { stiffness: 80, damping: 20, mass: 0.8 });
+
     // Combined Y position for image (imageY + imagePush + centerOffset)
     const combinedImageY = useTransform(
         [imageY, imagePush, centerOffset],
         ([y, push, offset]) => (y as number) + (push as number) + (offset as number)
     );
-    // Convert height percent to vh string for CSS
-    const imageHeightStyle = useTransform(imageHeightPercent, (v) => `${v}vh`);
 
     // Track if info should be visible during animation
     const [showInfoDuringAnimation, setShowInfoDuringAnimation] = useState(true);
@@ -65,7 +76,17 @@ export const StyleDetailSection = ({
 
     // Mobile arrival animation orchestration
     useEffect(() => {
-        if (!isMobile || !isActive) return;
+        if (!isMobile || !isActive || viewportHeight === 0) return;
+
+        // Calculate heights in pixels once based on captured viewport height
+        const HERO_HEIGHT = viewportHeight * 0.65;
+        const NORMAL_HEIGHT = viewportHeight * 0.35;
+        const CENTER_OFFSET = viewportHeight * 0.18;
+
+        // Initialize height if just starting
+        if (imageHeightPx.get() === 0) {
+            imageHeightPx.set(NORMAL_HEIGHT);
+        }
 
         // Phase timing constants
         const HERO_DISPLAY_TIME = 700;
@@ -74,15 +95,14 @@ export const StyleDetailSection = ({
 
         if (arrivalPhase === "hero") {
             // Hide info, image is at hero position
-            // Center offset pushes the image down to visually center it during hero phase
-            // Calculate offset: from 80px padding position to visual center
             setShowInfoDuringAnimation(false);
             infoOpacity.set(0);
             infoY.set(100);
-            // Set the center offset to push image to center (approx 18vh down from top)
-            centerOffset.set(window.innerHeight * 0.18);
+
+            // Set the center offset to push image to center
+            centerOffset.set(CENTER_OFFSET);
             // Set larger height for hero phase
-            imageHeightPercent.set(65);
+            imageHeightPx.set(HERO_HEIGHT);
 
             // Wait then transition to settling
             const timer = setTimeout(() => {
@@ -92,7 +112,7 @@ export const StyleDetailSection = ({
         }
 
         if (arrivalPhase === "settling") {
-            // Animate center offset back to 0 (image moves from center to top)
+            // Animate center offset back to 0
             animate(centerOffset, 0, {
                 type: "spring",
                 stiffness: 50,
@@ -100,8 +120,8 @@ export const StyleDetailSection = ({
                 mass: 1.2,
             });
 
-            // Animate height from 65vh to 35vh smoothly
-            animate(imageHeightPercent, 35, {
+            // Animate height from Hero to Normal smoothly
+            animate(imageHeightPx, NORMAL_HEIGHT, {
                 type: "spring",
                 stiffness: 50,
                 damping: 18,
@@ -109,7 +129,6 @@ export const StyleDetailSection = ({
             });
 
             // Animate image settling with impact - smoother and slower
-            // The position change is handled by CSS, we just add impact effect
             animate(imageScale, 0.95, {
                 type: "spring",
                 stiffness: 100,
@@ -204,7 +223,8 @@ export const StyleDetailSection = ({
             imageY.set(0);
             imagePush.set(0);
             centerOffset.set(0);
-            imageHeightPercent.set(35);
+            // Ensure height is exact normal height
+            imageHeightPx.set(NORMAL_HEIGHT);
             infoY.set(0);
             infoOpacity.set(1);
             containerOpacity.set(1);
@@ -214,7 +234,7 @@ export const StyleDetailSection = ({
         if (arrivalPhase === "departing") {
             const DEPART_INFO_DURATION = 250;
             const DEPART_IMAGE_DURATION = 350;
-            const DEPART_FADE_DURATION = 300; // Smooth fade before closing
+            const DEPART_FADE_DURATION = 300;
 
             // Ensure container is visible at start
             containerOpacity.set(1);
@@ -232,8 +252,8 @@ export const StyleDetailSection = ({
             const imageTimer = setTimeout(() => {
                 setShowInfoDuringAnimation(false);
 
-                // Animate height from 35vh to 65vh
-                animate(imageHeightPercent, 65, {
+                // Animate height from Normal to Hero
+                animate(imageHeightPx, HERO_HEIGHT, {
                     type: "spring",
                     stiffness: 50,
                     damping: 18,
@@ -241,7 +261,7 @@ export const StyleDetailSection = ({
                 });
 
                 // Animate center offset to push image to center
-                animate(centerOffset, window.innerHeight * 0.18, {
+                animate(centerOffset, CENTER_OFFSET, {
                     type: "spring",
                     stiffness: 50,
                     damping: 18,
@@ -265,7 +285,7 @@ export const StyleDetailSection = ({
 
             return () => clearTimeout(imageTimer);
         }
-    }, [arrivalPhase, isMobile, isActive, setArrivalPhase, closeCanvas, imageScale, imageY, imagePush, centerOffset, imageHeightPercent, infoY, infoOpacity, containerOpacity]);
+    }, [arrivalPhase, isMobile, isActive, setArrivalPhase, closeCanvas, imageScale, imageY, imagePush, centerOffset, imageHeightPx, infoY, infoOpacity, containerOpacity, viewportHeight]);
 
     // Calculate if we're in hero phase (image centered) - also true during late departing stage
     const isHeroPhase = isMobile && isActive && (arrivalPhase === "hero");
@@ -335,10 +355,11 @@ export const StyleDetailSection = ({
                 <motion.div
                     className="relative flex-shrink-0 w-full lg:w-2/5"
                     style={{
-                        height: isMobile ? imageHeightStyle : "auto",
+                        height: isMobile ? imageHeightPx : "auto",
                         scale: isAnimating ? imageScale : 1,
                         y: isMobile ? combinedImageY : 0,
                         aspectRatio: !isMobile ? "3/4" : undefined,
+                        willChange: isMobile && isAnimating ? "height, transform" : "auto"
                     }}
                     exit={(!isActive || !isMobile) ? { opacity: 0, transition: { duration: 0.3 } } : undefined}
                 >
