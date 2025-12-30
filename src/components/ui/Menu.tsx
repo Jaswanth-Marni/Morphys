@@ -10,7 +10,7 @@ import Link from 'next/link';
  * Full-screen menu that slides down from the top when GlassPill is clicked.
  */
 const Menu = () => {
-    const { isMenuOpen, setIsMenuOpen } = useMenu();
+    const { isMenuOpen, closeMenu } = useMenu();
     const [mounted, setMounted] = useState(false);
     const [theme, setTheme] = useState<"light" | "dark">("dark");
 
@@ -51,7 +51,7 @@ const Menu = () => {
     const isLight = theme === "light";
 
     const handleLinkClick = () => {
-        setIsMenuOpen(false);
+        closeMenu();
     };
 
     return (
