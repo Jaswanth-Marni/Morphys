@@ -7,9 +7,6 @@ export type CanvasPosition = {
     y: number;
 };
 
-// Mobile arrival animation phases
-export type ArrivalPhase = "idle" | "hero" | "settling" | "revealing" | "complete" | "departing";
-
 type ShowcaseContextType = {
     // Animation tracking
     hasShowcaseAnimated: boolean;
@@ -23,8 +20,6 @@ type ShowcaseContextType = {
     isCanvasOpen: boolean;
     openCanvas: (styleId: string) => void;
     closeCanvas: () => void;
-    // Start departing animation (mobile reverse animation)
-    startDeparture: () => void;
 
     // Callback for carousel to sync before canvas closes
     registerCarouselSync: (callback: (styleId: string) => void) => void;
@@ -42,10 +37,6 @@ type ShowcaseContextType = {
     // Source element rect for morph transition
     sourceImageRect: DOMRect | null;
     setSourceImageRect: (rect: DOMRect | null) => void;
-
-    // Mobile arrival animation phase
-    arrivalPhase: ArrivalPhase;
-    setArrivalPhase: (phase: ArrivalPhase) => void;
 };
 
 const ShowcaseContext = createContext<ShowcaseContextType | undefined>(undefined);
@@ -58,7 +49,6 @@ export function ShowcaseProvider({ children }: { children: React.ReactNode }) {
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [transitionDirection, setTransitionDirection] = useState<"to-canvas" | "to-carousel" | null>(null);
     const [sourceImageRect, setSourceImageRect] = useState<DOMRect | null>(null);
-    const [arrivalPhase, setArrivalPhase] = useState<ArrivalPhase>("idle");
 
     // Ref to hold carousel sync callback
     const carouselSyncCallback = useRef<((styleId: string) => void) | null>(null);
@@ -83,8 +73,6 @@ export function ShowcaseProvider({ children }: { children: React.ReactNode }) {
         setActiveStyleIdState(styleId);
         setIsTransitioning(true);
         setTransitionDirection("to-canvas");
-        // Start with hero phase for mobile arrival animation
-        setArrivalPhase("hero");
         // Open canvas immediately
         setIsCanvasOpen(true);
         // Extended transition time for smooth shared element animation (especially on mobile)
@@ -96,16 +84,6 @@ export function ShowcaseProvider({ children }: { children: React.ReactNode }) {
     const closeCanvas = useCallback(() => {
         setIsTransitioning(true);
         setTransitionDirection("to-carousel");
-
-        // Only reset arrival phase if NOT in departing mode
-        // When departing, the animation needs to maintain its state until canvas is fully closed
-        // The phase will be reset to "hero" when canvas opens again via openCanvas
-        setArrivalPhase((currentPhase) => {
-            if (currentPhase === "departing") {
-                return currentPhase; // Keep departing phase to maintain animation state
-            }
-            return "idle";
-        });
 
         // First, tell carousel to scroll to the active style INSTANTLY
         if (carouselSyncCallback.current) {
@@ -120,15 +98,8 @@ export function ShowcaseProvider({ children }: { children: React.ReactNode }) {
         setTimeout(() => {
             setIsTransitioning(false);
             setTransitionDirection(null);
-            // Reset phase to idle after everything is closed (safe cleanup)
-            setArrivalPhase("idle");
         }, 700);
     }, [activeStyleId]);
-
-    // Start departing animation (reverse of arrival) - used on mobile
-    const startDeparture = useCallback(() => {
-        setArrivalPhase("departing");
-    }, []);
 
     return (
         <ShowcaseContext.Provider value={{
@@ -139,7 +110,6 @@ export function ShowcaseProvider({ children }: { children: React.ReactNode }) {
             isCanvasOpen,
             openCanvas,
             closeCanvas,
-            startDeparture,
             registerCarouselSync,
             canvasPosition,
             setCanvasPosition,
@@ -149,8 +119,6 @@ export function ShowcaseProvider({ children }: { children: React.ReactNode }) {
             setTransitionDirection,
             sourceImageRect,
             setSourceImageRect,
-            arrivalPhase,
-            setArrivalPhase,
         }}>
             {children}
         </ShowcaseContext.Provider>

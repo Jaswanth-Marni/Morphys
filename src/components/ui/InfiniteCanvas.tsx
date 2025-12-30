@@ -18,9 +18,7 @@ export const InfiniteCanvas = () => {
         setCanvasPosition,
         isCanvasOpen,
         closeCanvas,
-        startDeparture,
         isTransitioning,
-        arrivalPhase,
     } = useShowcase();
 
     // Canvas offset - how far the canvas has moved from origin
@@ -41,18 +39,6 @@ export const InfiniteCanvas = () => {
 
     // Track if canvas is ready (position initialized)
     const [isReady, setIsReady] = useState(false);
-
-    // Mobile detection for arrival animation
-    const [isMobile, setIsMobile] = useState(false);
-    useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth < 768);
-        checkMobile();
-        window.addEventListener("resize", checkMobile);
-        return () => window.removeEventListener("resize", checkMobile);
-    }, []);
-
-    // Hide UI controls during mobile arrival/departure animation
-    const isMobileAnimating = isMobile && arrivalPhase !== "idle" && arrivalPhase !== "complete";
 
     // For manual drag tracking
     const dragStart = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
@@ -417,14 +403,8 @@ export const InfiniteCanvas = () => {
         // Reset zoom scale to 1 immediately to prevent transform interference
         zoomScale.set(1);
 
-        // On mobile, start the departing animation (reverse of arrival)
-        // The actual closeCanvas will be called after the animation completes
-        if (isMobile) {
-            startDeparture();
-        } else {
-            closeCanvas();
-        }
-    }, [closeCanvas, startDeparture, zoomScale, isMobile]);
+        closeCanvas();
+    }, [closeCanvas, zoomScale]);
 
     // Get style info for snap button
     const nearbySectionStyle = nearbySection
@@ -446,32 +426,25 @@ export const InfiniteCanvas = () => {
         Math.pow(offset.y + activePosition.y, 2)
     ) : 0;
 
-    // Show map on mobile if content is moved away (> 80 units) and not currently auto-navigating
-    const showMobileMap = distanceFromCenter > 80 && !isZooming;
+    // Show map on mobile if content is moved away (> 50 units)
+    const showMobileMap = distanceFromCenter > 50;
 
     return (
         <AnimatePresence mode="sync">
             {isCanvasOpen && (
                 <motion.div
                     ref={containerRef}
-                    className="fixed inset-0 z-[200] overflow-hidden touch-none"
+                    className="fixed inset-0 z-[200] overflow-hidden bg-background touch-none"
                     style={{ cursor: isZooming ? "default" : (isDragging ? "grabbing" : "grab") }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: isReady ? 1 : 0 }}
-                    exit={{ transition: { duration: 0.5 } }} // Keep container mounted for shared element transition
+                    exit={{ opacity: 0 }}
                     transition={{ duration: 0.35, ease: "easeOut" }}
                     onPointerDown={handlePointerDown}
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}
                     onPointerCancel={handlePointerUp}
                 >
-                    {/* Background layer - handles fade out */}
-                    <motion.div
-                        className="absolute inset-0 bg-background"
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.35 }}
-                    />
-
                     {/* CSS-based dot pattern - tiles infinitely */}
                     <div
                         className="absolute inset-0 pointer-events-none opacity-20 dark:opacity-30"
@@ -482,6 +455,7 @@ export const InfiniteCanvas = () => {
                             transform: `translate(${(offset.x % 3.2)}vw, ${(offset.y % 3.2)}vh)`,
                         }}
                     />
+
 
                     {/* Canvas Content - with zoom perspective wrapper */}
                     <motion.div
@@ -510,8 +484,6 @@ export const InfiniteCanvas = () => {
                                         isActive={style.id === activeStyleId}
                                         parallaxOffset={parallaxOffset}
                                         isTransitioning={isTransitioning}
-                                        arrivalPhase={style.id === activeStyleId ? arrivalPhase : "complete"}
-                                        isMobile={isMobile}
                                     />
                                 );
                             })}
@@ -550,7 +522,7 @@ export const InfiniteCanvas = () => {
                         )}
                     </AnimatePresence>
 
-                    {/* Back button - Hidden during mobile arrival animation */}
+                    {/* Back button */}
                     <motion.button
                         className="fixed top-6 right-6 z-[210] flex items-center gap-2 px-4 py-2.5 rounded-full"
                         style={{
@@ -560,14 +532,13 @@ export const InfiniteCanvas = () => {
                             border: "1px solid color-mix(in srgb, var(--foreground) 10%, transparent)",
                             boxShadow: "0 4px 24px rgba(0, 0, 0, 0.1)",
                             fontFamily: "'Clash Display Variable', sans-serif",
-                            pointerEvents: isMobileAnimating ? "none" : "auto",
                         }}
                         onClick={handleBackToCarousel}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: isMobileAnimating ? 0 : 1, x: 0 }}
-                        transition={{ delay: isMobileAnimating ? 0 : 0.4, duration: 0.4 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4, duration: 0.4 }}
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -575,21 +546,17 @@ export const InfiniteCanvas = () => {
                         <span className="text-sm">Back</span>
                     </motion.button>
 
-                    {/* Position Indicator (top-left) - Hidden during mobile arrival animation */}
-                    {!isMobileAnimating && (
-                        <PositionIndicator activeStyleId={activeStyleId} />
-                    )}
+                    {/* Position Indicator (top-left) */}
+                    <PositionIndicator activeStyleId={activeStyleId} />
 
-                    {/* MiniMap (bottom-right) - Smart visibility on mobile, hidden during arrival animation */}
-                    {!isMobileAnimating && (
-                        <div className={`transition-opacity duration-300 ${showMobileMap ? 'block opacity-100' : 'hidden md:block opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto'}`}>
-                            <MiniMap
-                                activeStyleId={activeStyleId}
-                                viewportPosition={viewportPositionPx}
-                                onNavigate={navigateToStyle}
-                            />
-                        </div>
-                    )}
+                    {/* MiniMap (bottom-right) - Smart visibility on mobile */}
+                    <div className={`transition-opacity duration-300 ${showMobileMap ? 'block opacity-100' : 'hidden md:block opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto'}`}>
+                        <MiniMap
+                            activeStyleId={activeStyleId}
+                            viewportPosition={viewportPositionPx}
+                            onNavigate={navigateToStyle}
+                        />
+                    </div>
 
                     {/* Keyboard hint - Hidden on mobile */}
                     <motion.div

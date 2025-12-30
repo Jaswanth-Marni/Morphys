@@ -171,42 +171,6 @@ const DiagonalCarousel = React.forwardRef<CarouselHandle, DiagonalCarouselProps>
             }
         }, [isInView, hasEntered, entranceDelay]);
 
-        // Re-arrival animation (returning from details)
-        useEffect(() => {
-            // Animation runs for both mobile and desktop
-            if (transitionDirection === "to-carousel") {
-                // Reset to initial emergence state immediately
-                carouselOpacity.set(0);
-                carouselBlur.set(15);
-                carouselScale.set(0.3);
-
-                // Animate to visible with slight delay to match image flight
-                const delay = 0.1;
-
-                animate(carouselOpacity, 1, {
-                    duration: 0.5,
-                    delay,
-                    ease: "easeOut"
-                });
-
-                animate(carouselBlur, 0, {
-                    duration: 0.6,
-                    delay,
-                    ease: "easeOut"
-                });
-
-                animate(carouselScale, 1, {
-                    type: "spring",
-                    stiffness: 120,
-                    damping: 14,
-                    mass: 0.8,
-                    delay
-                });
-
-                // Note: We deliberately do NOT trigger spinThroughCards here
-            }
-        }, [transitionDirection]);
-
         // Spin through all cards (full rotation) - keeps swiping left until Glassmorphism returns
         const spinThroughCards = () => {
             const swiper = swiperRef.current;
