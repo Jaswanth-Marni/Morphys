@@ -1,4 +1,4 @@
-import { ProgressiveBlur, DotPattern, Hero, StyleShowcase } from "@/components/ui";
+import { ProgressiveBlur, DotPattern, Hero, StyleShowcase, Footer } from "@/components/ui";
 
 export default function Home() {
   return (
@@ -21,7 +21,9 @@ export default function Home() {
 
       {/* ===== SECTION 2: STYLE SHOWCASE ===== */}
       <StyleShowcase />
+
+      {/* ===== FOOTER ===== */}
+      <Footer />
     </main>
   );
 }
-

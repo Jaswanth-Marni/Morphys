@@ -18,9 +18,23 @@
   font-display: swap;
 }
 
+/* Thunder Font */
+@font-face {
+  font-family: 'Thunder';
+  src: url('/Thunder-BlackLC.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Logo font class */
 .font-logo {
   font-family: 'Yorkmade', sans-serif;
+}
+
+/* Thunder font class */
+.font-thunder {
+  font-family: 'Thunder', sans-serif;
 }
 
 /* Heading font class - using Clash Display variable font */

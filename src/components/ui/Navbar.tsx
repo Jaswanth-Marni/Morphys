@@ -64,7 +64,7 @@ const Navbar = () => {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -100, opacity: 0 }}
                     transition={{ delay: isInitialLoad ? 0.5 : 0, type: "spring", stiffness: 100, damping: 20 }}
-                    className="fixed top-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-5xl px-4 mt-[14px]"
+                    className="fixed top-0 left-1/2 -translate-x-1/2 z-[110] w-full max-w-5xl px-4 mt-[14px]"
                 >
                     <div
                         className={`flex items-center justify-between h-[61px] px-4 md:px-6 rounded-2xl border transition-all duration-500 ${isScrolled

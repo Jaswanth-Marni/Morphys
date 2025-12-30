@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import Navbar from "@/components/ui/Navbar";
-import { GlassPill, Menu, ScrollToTop } from "@/components/ui";
+import { GlassPill, Menu, ScrollToTop, GlobalEdgeBlur } from "@/components/ui";
 import { MenuProvider } from "@/context/MenuContext";
 import { ShowcaseProvider } from "@/context/ShowcaseContext";
 import SmoothScrollProvider from "@/components/ui/SmoothScrollProvider";
@@ -58,6 +58,8 @@ export default function RootLayout({
                 {children}
                 {/* Infinite Canvas Overlay - rendered as fixed overlay */}
                 <CanvasOverlay />
+                {/* Global Edge Blur - permanent blur on all viewport edges */}
+                <GlobalEdgeBlur />
               </TransitionProvider>
             </SmoothScrollProvider>
           </ShowcaseProvider>
