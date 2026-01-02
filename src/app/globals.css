@@ -40,7 +40,6 @@
 /* Heading font class - using Clash Display variable font */
 .font-heading {
   font-family: 'Clash Display Variable', 'Clash Display', sans-serif;
-  font-weight: 400;
 }
 
 /* Body font class - Satoshi pairs beautifully with Clash Display */
@@ -171,4 +170,86 @@ body::-webkit-scrollbar {
   border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 1.5px 4px rgba(0, 0, 0, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   border-radius: 1.25rem;
+}
+
+/* ===========================================
+   COMPONENT CARD BORDER
+   =========================================== */
+
+/* Default (dark mode) - semi-transparent white border */
+.component-card-border {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Light mode - semi-transparent black border for visibility */
+[data-theme="light"] .component-card-border {
+  border: 2px solid rgba(0, 0, 0, 0.15);
+}
+
+/* ===========================================
+   COMPONENT SANDBOX BORDER (Inner Preview)
+   =========================================== */
+
+/* Default (dark mode) - semi-transparent white border */
+.component-sandbox-border {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Light mode - semi-transparent black border for visibility */
+[data-theme="light"] .component-sandbox-border {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* ===========================================
+   HIDDEN SCROLLBAR (Scrollable but hidden)
+   =========================================== */
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+
+/* ===========================================
+   CUSTOM SCROLLBAR (Thin & Styled)
+   =========================================== */
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.3) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.3);
+  border-radius: 20px;
+}
+
+/* ===========================================
+   INPUT NUMBER (Remove Spinners)
+   =========================================== */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
 }

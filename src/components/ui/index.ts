@@ -16,6 +16,10 @@ export { TextFlow } from "./TextFlow";
 export { ComponentsSwitcher } from "./ComponentsSwitcher";
 export { StyleSpecificComponents } from "./StyleSpecificComponents";
 export { NormalComponents } from "./NormalComponents";
+export * from './FlipGrid';
+export * from './AsciiSimulation';
+export * from './LiquidMorph';
+
 
 // Infinite Canvas components
 export { InfiniteCanvas } from "./InfiniteCanvas";

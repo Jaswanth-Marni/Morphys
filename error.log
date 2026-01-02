@@ -1,0 +1,17 @@
+src/app/components/[componentId]/page.tsx(116,5): error TS2717: Subsequent property declarations must have the same type.  Property 'config' must be of type 'FlipGridConfig', but here has type 'any'.
+src/app/components/[componentId]/page.tsx(117,5): error TS2717: Subsequent property declarations must have the same type.  Property 'onConfigChange' must be of type '(key: keyof FlipGridConfig, value: unknown) => void', but here has type '(key: string, value: unknown) => void'.
+src/app/components/[componentId]/page.tsx(175,83): error TS2345: Argument of type '"shape"' is not assignable to parameter of type 'keyof FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(176,147): error TS2339: Property 'shape' does not exist on type 'FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(186,88): error TS2339: Property 'scale' does not exist on type 'FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(186,151): error TS2345: Argument of type '"scale"' is not assignable to parameter of type 'keyof FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(187,81): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/app/components/[componentId]/page.tsx(188,92): error TS2339: Property 'fontSize' does not exist on type 'FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(188,165): error TS2345: Argument of type '"fontSize"' is not assignable to parameter of type 'keyof FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(196,83): error TS2339: Property 'color' does not exist on type 'FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(196,134): error TS2339: Property 'color' does not exist on type 'FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(196,173): error TS2345: Argument of type '"color"' is not assignable to parameter of type 'keyof FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(200,87): error TS2345: Argument of type '"invert"' is not assignable to parameter of type 'keyof FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(200,105): error TS2339: Property 'invert' does not exist on type 'FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(200,184): error TS2339: Property 'invert' does not exist on type 'FlipGridConfig'.
+src/app/components/[componentId]/page.tsx(201,150): error TS2339: Property 'invert' does not exist on type 'FlipGridConfig'.
+src/components/ui/AsciiSimulation.tsx(57,26): error TS2554: Expected 1 arguments, but got 0.

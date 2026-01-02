@@ -1,8 +1,10 @@
 import { ProgressiveBlur, DotPattern, Hero, StyleShowcase, Footer } from "@/components/ui";
+import { HomeVisitTracker } from "@/components/ui/HomeVisitTracker";
 
 export default function Home() {
   return (
     <main className="relative">
+      <HomeVisitTracker />
       {/* ===== SECTION 1: HERO ===== */}
       <section className="relative min-h-screen">
         {/* Animated dot pattern background */}

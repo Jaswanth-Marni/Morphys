@@ -74,59 +74,67 @@ const Menu = () => {
                     `}
                 >
                     {/* Menu Content */}
-                    <nav className="flex flex-col items-center justify-center flex-1 gap-8">
-                        <Link href="/" onClick={handleLinkClick}>
-                            <motion.span
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                                className={`font-heading text-5xl md:text-7xl tracking-wide hover:opacity-70 transition-opacity block
-                                    ${isLight ? 'text-[#171717]' : 'text-[#ededed]'}
-                                `}
-                            >
-                                Home
-                            </motion.span>
+                    <nav className="flex flex-col items-center justify-center flex-1 gap-4 md:gap-8">
+                        <Link href="/" onClick={handleLinkClick} className="group overflow-hidden">
+                            <AnimatedLink text="Home" isLight={isLight} delayBase={0.2} />
                         </Link>
-                        <Link href="/components" onClick={handleLinkClick}>
-                            <motion.span
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
-                                className={`font-heading text-5xl md:text-7xl tracking-wide hover:opacity-70 transition-opacity block
-                                    ${isLight ? 'text-[#171717]' : 'text-[#ededed]'}
-                                `}
-                            >
-                                Components
-                            </motion.span>
+                        <Link href="/components" onClick={handleLinkClick} className="group overflow-hidden">
+                            <AnimatedLink text="Components" isLight={isLight} delayBase={0.3} />
                         </Link>
-                        <Link href="#" onClick={handleLinkClick}>
-                            <motion.span
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 }}
-                                className={`font-heading text-5xl md:text-7xl tracking-wide hover:opacity-70 transition-opacity block
-                                    ${isLight ? 'text-[#171717]' : 'text-[#ededed]'}
-                                `}
-                            >
-                                About
-                            </motion.span>
+                        <Link href="#" onClick={handleLinkClick} className="group overflow-hidden">
+                            <AnimatedLink text="About" isLight={isLight} delayBase={0.4} />
                         </Link>
-                        <Link href="#" onClick={handleLinkClick}>
-                            <motion.span
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5 }}
-                                className={`font-heading text-5xl md:text-7xl tracking-wide hover:opacity-70 transition-opacity block
-                                    ${isLight ? 'text-[#171717]' : 'text-[#ededed]'}
-                                `}
-                            >
-                                Contact
-                            </motion.span>
+                        <Link href="#" onClick={handleLinkClick} className="group overflow-hidden">
+                            <AnimatedLink text="Contact" isLight={isLight} delayBase={0.5} />
                         </Link>
                     </nav>
                 </motion.div>
             )}
         </AnimatePresence>
+    );
+};
+
+interface AnimatedLinkProps {
+    text: string;
+    isLight: boolean;
+    delayBase: number;
+}
+
+const AnimatedLink = ({ text, isLight, delayBase }: AnimatedLinkProps) => {
+    const letters = text.split("");
+    const centerIndex = (letters.length - 1) / 2;
+
+    return (
+        <span className="relative block overflow-hidden">
+            <span className="block">
+                {letters.map((char, index) => {
+                    const dist = Math.abs(index - centerIndex);
+                    // Standard step animation: stagger from center
+                    const delay = delayBase + (dist * 0.05);
+
+                    return (
+                        <motion.span
+                            key={index}
+                            initial={{ y: "150%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "150%" }}
+                            transition={{
+                                duration: 0.5,
+                                delay: delay,
+                                ease: [0.33, 1, 0.68, 1],
+                            }}
+                            style={{ fontVariationSettings: "'wght' 700" }}
+                            className={`
+                                inline-block font-heading font-black uppercase text-[43px] md:text-8xl tracking-tighter group-hover:opacity-70 transition-opacity
+                                ${isLight ? 'text-[#171717]' : 'text-[#ededed]'}
+                            `}
+                        >
+                            {char === " " ? "\u00A0" : char}
+                        </motion.span>
+                    );
+                })}
+            </span>
+        </span>
     );
 };
 

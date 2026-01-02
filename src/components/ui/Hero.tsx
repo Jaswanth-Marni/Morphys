@@ -64,10 +64,10 @@ const DraggableLetter = ({
     const impactRotate = useSpring(0, { stiffness: 250, damping: 8, mass: 0.5 });
 
     // Wave animation timing
-    const WAVE_EXPAND_DURATION = 150;
-    const WAVE_HOLD_DURATION = 100;
-    const WAVE_CONTRACT_DURATION = 150;
-    const WAVE_LETTER_DELAY = 80;
+    const WAVE_EXPAND_DURATION = 250;
+    const WAVE_HOLD_DURATION = 0;
+    const WAVE_CONTRACT_DURATION = 250;
+    const WAVE_LETTER_DELAY = 60;
 
     // Ref to hold the latest trigger function
     const triggerImpactRef = useRef<((intensity: number, direction: { x: number; y: number }) => void) | undefined>(undefined);
@@ -305,7 +305,10 @@ const DraggableLetter = ({
                 userSelect: 'none',
                 position: 'relative',
                 zIndex: isDragging ? 50 : 1,
-                willChange: 'transform',
+                transition: isWaveActive
+                    ? `font-variation-settings ${WAVE_EXPAND_DURATION}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`
+                    : 'font-variation-settings 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                willChange: 'transform, font-variation-settings',
             }}
             drag
             dragMomentum={false}

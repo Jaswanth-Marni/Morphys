@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useMenu } from "@/context/MenuContext";
 import {
     DotPattern,
     Footer,
@@ -13,6 +15,17 @@ import { type TabId } from "@/components/ui/ComponentsSwitcher";
 
 export default function ComponentsPage() {
     const [activeTab, setActiveTab] = useState<TabId>("styles");
+    const { hasVisitedHome } = useMenu();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!hasVisitedHome) {
+            router.push("/");
+        }
+    }, [hasVisitedHome, router]);
+
+    // Don't render content if redirecting (optional optimization, prevents flash)
+    if (!hasVisitedHome) return null;
 
     return (
         <main className="relative min-h-screen pt-32 md:pt-24">
