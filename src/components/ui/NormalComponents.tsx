@@ -6,12 +6,14 @@ import { componentsData } from "@/data/componentsData";
 import { FlipGridPreview } from "./FlipGrid";
 import { AsciiSimulationPreview } from "./AsciiSimulation";
 import { LiquidMorphPreview } from "./LiquidMorph";
+import { PageRevealPreview } from "./PageReveal";
 
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
     'ascii-simulation': AsciiSimulationPreview,
     'liquid-morph': LiquidMorphPreview,
+    'page-reveal': PageRevealPreview,
 };
 
 export function NormalComponents() {

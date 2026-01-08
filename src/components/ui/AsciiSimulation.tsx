@@ -30,6 +30,7 @@ export interface AsciiSimulationProps {
     config?: Partial<AsciiSimulationConfig>;
     className?: string;
     autoPlay?: boolean;
+    isFullScreen?: boolean; // If true, adapts to fill the fullscreen viewport
 }
 
 // ============================================
@@ -98,7 +99,8 @@ const parseObj = (text: string, maxVertices = 10000): ObjMesh => {
 export function AsciiSimulation({
     config: userConfig,
     className = "",
-    autoPlay = true
+    autoPlay = true,
+    isFullScreen = false
 }: AsciiSimulationProps) {
     const config = { ...defaultConfig, ...userConfig };
     const containerRef = useRef<HTMLDivElement>(null);
@@ -106,6 +108,7 @@ export function AsciiSimulation({
     const animationRef = useRef<number>(0);
     const meshCache = useRef<ObjMesh | null>(null);
     const [isLoadingModel, setIsLoadingModel] = useState(false);
+    const [modelReady, setModelReady] = useState(0); // Counter to trigger re-render when model loads
 
     // Rotation state
     const A = useRef(0);
@@ -147,6 +150,7 @@ export function AsciiSimulation({
 
                     meshCache.current = mesh;
                     setIsLoadingModel(false);
+                    setModelReady(prev => prev + 1); // Trigger re-render
                 })
                 .catch(err => {
                     console.error("Failed to load car model", err);
@@ -156,6 +160,8 @@ export function AsciiSimulation({
     }, [config.shape]);
 
     const [dimensions, setDimensions] = useState({ width: 100, height: 50 });
+    // Create a primitive key for dimensions to use in dependency array
+    const dimensionsKey = `${dimensions.width}x${dimensions.height}`;
 
     useEffect(() => {
         const updateDimensions = () => {
@@ -171,8 +177,10 @@ export function AsciiSimulation({
                 // Fill the container with characters
                 const w = Math.floor(containerWidth / charW);
                 const h = Math.floor(containerHeight / charH);
-                // Cap max resolution to prevent performance death on huge containers
-                setDimensions({ width: Math.min(300, Math.max(20, w)), height: Math.min(150, Math.max(10, h)) });
+                // Fill the container with characters - use higher caps for full-screen mode
+                const maxWidth = isFullScreen ? 3000 : 500;
+                const maxHeight = isFullScreen ? 2000 : 300;
+                setDimensions({ width: Math.min(maxWidth, Math.max(20, w)), height: Math.min(maxHeight, Math.max(10, h)) });
             }
         };
 
@@ -189,7 +197,7 @@ export function AsciiSimulation({
             window.removeEventListener('resize', updateDimensions);
             resizeObserver.disconnect();
         };
-    }, [config.fontSize]);
+    }, [config.fontSize, isFullScreen]);
 
     const renderFrame = () => {
         if (!preRef.current) return;
@@ -382,12 +390,12 @@ export function AsciiSimulation({
     };
 
     useEffect(() => {
-        // Start LOOP
+        // Start LOOP - also re-run when model finishes loading or dimensions change
         renderFrame();
         return () => {
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
-    }, [config.shape, config.charSet, config.speed, config.scale, config.rotationX, config.rotationY, config.invert, autoPlay]);
+    }, [config.shape, config.charSet, config.speed, config.scale, config.rotationX, config.rotationY, config.invert, autoPlay, modelReady, dimensionsKey]);
 
     return (
         <div
@@ -417,16 +425,20 @@ export function AsciiSimulation({
 // ============================================
 
 export function AsciiSimulationPreview() {
+    // Real ASCII simulation but with autoPlay disabled for static side view
     return (
         <AsciiSimulation
             config={{
                 scale: 1.2,
-                speed: 0.5,
+                speed: 0,
                 fontSize: 5,
                 shape: 'car',
-                color: 'var(--foreground)'
+                color: 'var(--foreground)',
+                rotationX: 0,
+                rotationY: Math.PI / 2, // 90 degrees - side view of the car
             }}
-            autoPlay={true}
+            autoPlay={false}
+            className="w-full h-full"
         />
     );
 }

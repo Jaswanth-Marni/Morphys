@@ -437,21 +437,43 @@ export function FlipGrid({
 // ============================================
 
 export function FlipGridPreview() {
+    // Static preview - no animations to prevent lag when switching pages
+    const rows = 6;
+    const cols = 8;
+    const gap = 2;
+    const borderRadius = 2;
+
     return (
-        <FlipGrid
-            config={{
-                cols: 8,
-                rows: 6,
-                pattern: 'wave',
-                easing: 'spring',
-                speed: 'normal',
-                interactive: false,
-                gap: 2,
-                borderRadius: 2,
-            }}
-            autoPlay={true}
-            autoPlayInterval={2500}
-        />
+        <div className="w-full h-full flex items-center justify-center p-4">
+            <div
+                className="grid w-full h-full"
+                style={{
+                    gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                    gridTemplateRows: `repeat(${rows}, 1fr)`,
+                    gap: `${gap}px`,
+                }}
+            >
+                {Array.from({ length: rows * cols }).map((_, i) => {
+                    // Create a wave pattern - some tiles flipped, some not
+                    const row = Math.floor(i / cols);
+                    const col = i % cols;
+                    const isFlipped = (row + col) % 3 === 0;
+
+                    return (
+                        <div
+                            key={i}
+                            className="w-full h-full"
+                            style={{
+                                backgroundColor: isFlipped
+                                    ? 'var(--background)'
+                                    : 'var(--foreground)',
+                                borderRadius: `${borderRadius}px`,
+                            }}
+                        />
+                    );
+                })}
+            </div>
+        </div>
     );
 }
 

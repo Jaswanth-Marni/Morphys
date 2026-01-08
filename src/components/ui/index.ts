@@ -19,6 +19,7 @@ export { NormalComponents } from "./NormalComponents";
 export * from './FlipGrid';
 export * from './AsciiSimulation';
 export * from './LiquidMorph';
+export * from './PageReveal';
 
 
 // Infinite Canvas components

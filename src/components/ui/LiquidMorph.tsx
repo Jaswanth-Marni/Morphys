@@ -23,6 +23,8 @@ export interface LiquidMorphProps {
     config?: Partial<LiquidMorphConfig>;
     className?: string;
     autoRotate?: boolean; // If true, adds subtle rotation
+    static?: boolean; // If true, disables all animations for preview mode
+    isFullScreen?: boolean; // If true, adapts to fill the fullscreen viewport
 }
 
 // ============================================
@@ -86,26 +88,45 @@ function useStripedPattern() {
     }, []);
 }
 
-function Blob({ config, autoRotate }: { config: LiquidMorphConfig; autoRotate: boolean }) {
+function Blob({ config, autoRotate, isStatic, isFullScreen }: { config: LiquidMorphConfig; autoRotate: boolean; isStatic: boolean; isFullScreen: boolean }) {
     const meshRef = useRef<THREE.Mesh>(null);
     const materialRef = useRef<any>(null);
     const texture = useStripedPattern();
 
     useFrame((state) => {
-        if (!meshRef.current || !materialRef.current) return;
+        if (!meshRef.current || !materialRef.current || isStatic) return;
 
         // Subtle rotation if autoRotate is true or always to make it look alive
         if (autoRotate) {
             meshRef.current.rotation.y += 0.005;
             meshRef.current.rotation.x += 0.002;
         }
-
-        // We can modulate distortion based on mouse interactions if we had access to them,
-        // or just let the shader handle the time-based distortion (handled by MeshDistortMaterial speed)
-
-        // Optional: Make ripples more intense on rotation
-        // For now, steady state nicely is good.
     });
+
+    // Keep sphere scale consistent - camera adjustment handles fullscreen sizing
+    const sphereScale = 1.5;
+
+    const sphereContent = (
+        <Sphere args={[config.radius, 64, 64]} ref={meshRef} scale={sphereScale}>
+            <MeshDistortMaterial
+                ref={materialRef}
+                map={texture}
+                color={config.color}
+                envMapIntensity={0}
+                clearcoat={0}
+                clearcoatRoughness={0.1}
+                metalness={0.2}
+                roughness={0.2}
+                distort={isStatic ? config.distort : config.distort}
+                speed={isStatic ? 0 : config.speed}
+            />
+        </Sphere>
+    );
+
+    // If static mode, skip Float animation wrapper
+    if (isStatic) {
+        return sphereContent;
+    }
 
     return (
         <Float
@@ -113,20 +134,7 @@ function Blob({ config, autoRotate }: { config: LiquidMorphConfig; autoRotate: b
             rotationIntensity={1} // XYZ rotation intensity
             floatIntensity={2} // Up/down float intensity
         >
-            <Sphere args={[config.radius, 64, 64]} ref={meshRef} scale={1.5}>
-                <MeshDistortMaterial
-                    ref={materialRef}
-                    map={texture}
-                    color={config.color}
-                    envMapIntensity={0}
-                    clearcoat={0}
-                    clearcoatRoughness={0.1}
-                    metalness={0.2}
-                    roughness={0.2}
-                    distort={config.distort}
-                    speed={config.speed}
-                />
-            </Sphere>
+            {sphereContent}
         </Float>
     );
 }
@@ -138,21 +146,29 @@ function Blob({ config, autoRotate }: { config: LiquidMorphConfig; autoRotate: b
 export function LiquidMorph({
     config: userConfig,
     className = "",
-    autoRotate = true
+    autoRotate = true,
+    static: isStatic = false,
+    isFullScreen = false
 }: LiquidMorphProps) {
     const config = useMemo(() => ({ ...defaultConfig, ...userConfig }), [userConfig]);
 
+    // Camera position: closer in fullscreen mode for better viewport fill
+    const cameraZ = isFullScreen ? 3.2 : 4;
+
     return (
-        <div className={`w-full h-full relative ${className}`}>
+        <div className={`w-full h-full relative ${className}`} style={{ minHeight: '100%' }}>
             <Canvas
-                camera={{ position: [0, 0, 4], fov: 45 }}
+                key={`canvas-${isFullScreen}`}
+                camera={{ position: [0, 0, cameraZ], fov: 45 }}
                 dpr={[1, 2]}
                 gl={{ antialias: true, alpha: true }}
+                frameloop={isStatic ? 'demand' : 'always'}
+                style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
             >
                 <ambientLight intensity={3} />
 
                 <Center>
-                    <Blob config={config} autoRotate={autoRotate} />
+                    <Blob config={config} autoRotate={autoRotate} isStatic={isStatic} isFullScreen={isFullScreen} />
                 </Center>
 
                 {/* Environment for reflections - iridescence from colorful environment */}
@@ -167,15 +183,18 @@ export function LiquidMorph({
 // ============================================
 
 export function LiquidMorphPreview() {
+    // Real 3D component but with animations disabled for performance
     return (
         <LiquidMorph
             config={{
                 distort: 0.6,
-                speed: 3,
+                speed: 0, // No distortion animation
                 color: "#e2e8f0", // silvery white
                 radius: 1,
             }}
             className="w-full h-full"
+            autoRotate={false}
+            static={true}
         />
     );
 }

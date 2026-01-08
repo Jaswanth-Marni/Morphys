@@ -959,6 +959,395 @@ export default LiquidMorph;`,
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
     },
+    {
+        id: 'page-reveal',
+        name: 'Page Reveal',
+        index: 4,
+        description: 'A dramatic full-page reveal animation featuring a logo with blur-to-reveal effect, followed by a staircase curtain animation that unveils the content beneath.',
+        tags: ['animation', 'page-transition', 'reveal', 'loading', 'intro', 'curtain'],
+        category: 'animation',
+        previewConfig: {
+            logoText: 'MORPHYS',
+            splitCount: 8,
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { PageReveal } from '@/components/ui';
+
+// Basic usage - wraps your page content
+<PageReveal>
+    <YourPageContent />
+</PageReveal>
+
+// With custom configuration
+<PageReveal
+    config={{
+        logoText: 'BRAND',
+        logoFontSize: 100,
+        splitCount: { mobile: 5, tablet: 8, desktop: 12 },
+        logoBlurDuration: 1,
+        logoHoldDuration: 0.5,
+        slitAnimationDuration: 0.8,
+        slitStaggerDelay: 0.08,
+        backgroundColor: '#000000',
+        logoColor: '#ffffff',
+    }}
+    onComplete={() => console.log('Animation complete!')}
+    autoStart={true}
+>
+    <YourPageContent />
+</PageReveal>`,
+        fullCode: `"use client";
+
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// ============================================
+// TYPES & INTERFACES
+// ============================================
+
+export interface PageRevealConfig {
+    logoText: string;
+    logoFontSize: number;
+    splitCount: {
+        mobile: number;
+        tablet: number;
+        desktop: number;
+    };
+    logoBlurDuration: number;
+    logoHoldDuration: number;
+    slitAnimationDuration: number;
+    slitStaggerDelay: number;
+    backgroundColor: string;
+    logoColor: string;
+}
+
+export interface PageRevealProps {
+    config?: Partial<PageRevealConfig>;
+    onComplete?: () => void;
+    className?: string;
+    children?: React.ReactNode;
+    autoStart?: boolean;
+    isPreview?: boolean;
+}
+
+// ============================================
+// DEFAULT CONFIG
+// ============================================
+
+const defaultConfig: PageRevealConfig = {
+    logoText: "MORPHYS",
+    logoFontSize: 80,
+    splitCount: {
+        mobile: 5,
+        tablet: 8,
+        desktop: 12,
+    },
+    logoBlurDuration: 0.8,
+    logoHoldDuration: 0.5,
+    logoBlurExit: 0.6,
+    slitAnimationDuration: 0.6,
+    slitStaggerDelay: 0.06,
+    backgroundColor: "#000000",
+    logoColor: "#ffffff",
+} as PageRevealConfig & { logoBlurExit: number };
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+function getSplitCount(width: number, config: PageRevealConfig): number {
+    if (width < 768) return config.splitCount.mobile;
+    if (width < 1024) return config.splitCount.tablet;
+    return config.splitCount.desktop;
+}
+
+// ============================================
+// LOGO COMPONENT
+// ============================================
+
+interface LogoProps {
+    text: string;
+    fontSize: number;
+    color: string;
+    phase: 'entering' | 'visible' | 'exiting' | 'hidden';
+    blurDuration: number;
+    holdDuration: number;
+    exitDuration: number;
+    onExitComplete?: () => void;
+}
+
+function Logo({ 
+    text, 
+    fontSize, 
+    color, 
+    phase, 
+    blurDuration, 
+    exitDuration,
+    onExitComplete 
+}: LogoProps) {
+    const variants = {
+        entering: {
+            filter: 'blur(30px)',
+            opacity: 0,
+            scale: 0.8,
+        },
+        visible: {
+            filter: 'blur(0px)',
+            opacity: 1,
+            scale: 1,
+            transition: {
+                duration: blurDuration,
+                ease: [0.22, 1, 0.36, 1],
+            }
+        },
+        exiting: {
+            filter: 'blur(30px)',
+            opacity: 0,
+            scale: 0.9,
+            transition: {
+                duration: exitDuration,
+                ease: [0.22, 1, 0.36, 1],
+            }
+        },
+        hidden: {
+            filter: 'blur(30px)',
+            opacity: 0,
+            scale: 0.8,
+        }
+    };
+
+    return (
+        <motion.div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+            initial="entering"
+            animate={phase}
+            variants={variants}
+            onAnimationComplete={() => {
+                if (phase === 'exiting' && onExitComplete) {
+                    onExitComplete();
+                }
+            }}
+        >
+            <h1
+                className="font-bold tracking-wider select-none"
+                style={{
+                    fontSize: 'clamp(32px, 10vw, ' + fontSize + 'px)',
+                    color,
+                    fontFamily: "'Inter', 'SF Pro Display', system-ui, sans-serif",
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                }}
+            >
+                {text}
+            </h1>
+        </motion.div>
+    );
+}
+
+// ============================================
+// SPLIT OVERLAY COMPONENT
+// ============================================
+
+interface SplitOverlayProps {
+    splitCount: number;
+    backgroundColor: string;
+    isAnimating: boolean;
+    duration: number;
+    staggerDelay: number;
+    onComplete?: () => void;
+}
+
+function SplitOverlay({
+    splitCount,
+    backgroundColor,
+    isAnimating,
+    duration,
+    staggerDelay,
+    onComplete,
+}: SplitOverlayProps) {
+    const completedCount = useRef(0);
+
+    const handleSlitComplete = useCallback(() => {
+        completedCount.current += 1;
+        if (completedCount.current >= splitCount && onComplete) {
+            onComplete();
+        }
+    }, [splitCount, onComplete]);
+
+    useEffect(() => {
+        if (isAnimating) {
+            completedCount.current = 0;
+        }
+    }, [isAnimating]);
+
+    const slits = useMemo(() => {
+        return Array.from({ length: splitCount }, (_, i) => ({
+            index: i,
+            delay: i * staggerDelay,
+        }));
+    }, [splitCount, staggerDelay]);
+
+    return (
+        <div className="absolute inset-0 flex overflow-hidden pointer-events-none">
+            {slits.map(({ index, delay }) => (
+                <motion.div
+                    key={index}
+                    className="h-full"
+                    style={{
+                        width: (100 / splitCount) + '%',
+                        backgroundColor,
+                    }}
+                    initial={{ y: 0 }}
+                    animate={isAnimating ? { y: '-100%' } : { y: 0 }}
+                    transition={{
+                        duration,
+                        delay,
+                        ease: [0.65, 0, 0.35, 1],
+                    }}
+                    onAnimationComplete={() => {
+                        if (isAnimating && index === splitCount - 1) {
+                            setTimeout(handleSlitComplete, 50);
+                        }
+                    }}
+                />
+            ))}
+        </div>
+    );
+}
+
+// ============================================
+// MAIN PAGE REVEAL COMPONENT
+// ============================================
+
+export function PageReveal({
+    config: userConfig,
+    onComplete,
+    className = "",
+    children,
+    autoStart = true,
+    isPreview = false,
+}: PageRevealProps) {
+    const config = useMemo(() => ({ ...defaultConfig, ...userConfig }), [userConfig]);
+    
+    const [phase, setPhase] = useState<'logo-enter' | 'logo-hold' | 'logo-exit' | 'curtain' | 'complete'>(
+        autoStart ? 'logo-enter' : 'complete'
+    );
+    const [splitCount, setSplitCount] = useState(config.splitCount.desktop);
+    const [isOverlayVisible, setIsOverlayVisible] = useState(autoStart);
+
+    useEffect(() => {
+        const updateSplitCount = () => {
+            setSplitCount(getSplitCount(window.innerWidth, config));
+        };
+        
+        updateSplitCount();
+        window.addEventListener('resize', updateSplitCount);
+        return () => window.removeEventListener('resize', updateSplitCount);
+    }, [config]);
+
+    useEffect(() => {
+        if (isPreview) return;
+        
+        if (phase === 'logo-enter') {
+            const timer = setTimeout(() => {
+                setPhase('logo-hold');
+            }, config.logoBlurDuration * 1000);
+            return () => clearTimeout(timer);
+        }
+        
+        if (phase === 'logo-hold') {
+            const timer = setTimeout(() => {
+                setPhase('logo-exit');
+            }, config.logoHoldDuration * 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [phase, config.logoBlurDuration, config.logoHoldDuration, isPreview]);
+
+    const handleLogoExitComplete = useCallback(() => {
+        if (!isPreview) {
+            setPhase('curtain');
+        }
+    }, [isPreview]);
+
+    const handleCurtainComplete = useCallback(() => {
+        if (!isPreview) {
+            setPhase('complete');
+            setIsOverlayVisible(false);
+            if (onComplete) {
+                onComplete();
+            }
+        }
+    }, [onComplete, isPreview]);
+
+    const getLogoPhase = (): 'entering' | 'visible' | 'exiting' | 'hidden' => {
+        if (isPreview) return 'visible';
+        
+        switch (phase) {
+            case 'logo-enter':
+                return 'visible';
+            case 'logo-hold':
+                return 'visible';
+            case 'logo-exit':
+                return 'exiting';
+            default:
+                return 'hidden';
+        }
+    };
+
+    const extendedConfig = config as typeof config & { logoBlurExit?: number };
+
+    return (
+        <div className={"relative w-full h-full " + className}>
+            <div className="relative w-full h-full">
+                {children}
+            </div>
+
+            <AnimatePresence>
+                {(isOverlayVisible || isPreview) && (
+                    <motion.div
+                        className="fixed inset-0 z-[9999]"
+                        initial={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <SplitOverlay
+                            splitCount={splitCount}
+                            backgroundColor={config.backgroundColor}
+                            isAnimating={phase === 'curtain'}
+                            duration={config.slitAnimationDuration}
+                            staggerDelay={config.slitStaggerDelay}
+                            onComplete={handleCurtainComplete}
+                        />
+
+                        {(phase !== 'curtain' && phase !== 'complete') && (
+                            <Logo
+                                text={config.logoText}
+                                fontSize={config.logoFontSize}
+                                color={config.logoColor}
+                                phase={getLogoPhase()}
+                                blurDuration={config.logoBlurDuration}
+                                holdDuration={config.logoHoldDuration}
+                                exitDuration={extendedConfig.logoBlurExit ?? 0.6}
+                                onExitComplete={handleLogoExitComplete}
+                            />
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+export default PageReveal;`,
+        props: [
+            { name: 'config', type: 'Partial<PageRevealConfig>', default: '{}', description: 'Configuration object for animation timing and appearance' },
+            { name: 'onComplete', type: '() => void', default: 'undefined', description: 'Callback fired when the reveal animation completes' },
+            { name: 'autoStart', type: 'boolean', default: 'true', description: 'Whether to start the animation automatically on mount' },
+            { name: 'children', type: 'React.ReactNode', default: 'undefined', description: 'Content to reveal after animation completes' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes for the container' },
+            { name: 'isPreview', type: 'boolean', default: 'false', description: 'Enable preview mode for demonstration purposes' },
+        ]
+    },
     // More components will be added here
 ];
 
