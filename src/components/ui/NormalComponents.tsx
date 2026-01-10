@@ -7,6 +7,12 @@ import { FlipGridPreview } from "./FlipGrid";
 import { AsciiSimulationPreview } from "./AsciiSimulation";
 import { LiquidMorphPreview } from "./LiquidMorph";
 import { PageRevealPreview } from "./PageReveal";
+import { NavbarMenuPreview } from "./NavbarMenu";
+import { SpotlightSearchPreview } from "./SpotlightSearch";
+import { ImageTrailCursorPreview } from "./ImageTrailCursor";
+import { RealityLensPreview } from "./RealityLens";
+import { NavbarMenu2Preview } from "./NavbarMenu2";
+import { ScrollToRevealPreview } from "./ScrollToReveal";
 
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
@@ -14,6 +20,12 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'ascii-simulation': AsciiSimulationPreview,
     'liquid-morph': LiquidMorphPreview,
     'page-reveal': PageRevealPreview,
+    'navbar-menu': NavbarMenuPreview,
+    'navbar-menu-2': NavbarMenu2Preview,
+    'spotlight-search': SpotlightSearchPreview,
+    'image-trail-cursor': ImageTrailCursorPreview,
+    'reality-lens': RealityLensPreview,
+    'scroll-to-reveal': ScrollToRevealPreview,
 };
 
 export function NormalComponents() {

@@ -1348,7 +1348,981 @@ export default PageReveal;`,
             { name: 'isPreview', type: 'boolean', default: 'false', description: 'Enable preview mode for demonstration purposes' },
         ]
     },
+    {
+        id: 'navbar-menu',
+        name: 'Glass Navbar Menu',
+        index: 5,
+        description: 'A sleek, floating navigation pill with glassmorphism effects. Features a smooth, spring-animated dropdown menu that expands seamlessly from the navbar container.',
+        tags: ['navigation', 'menu', 'glassmorphism', 'animation', 'ui'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react', 'lucide-react'],
+        usage: `import { NavbarMenu } from '@/components/ui';
+
+// Usage
+<NavbarMenu />`,
+        fullCode: `"use client";
+
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+export function NavbarMenuPreview() {
+    return (
+        <div className="w-full h-full flex items-center justify-center relative bg-black/5">
+            <NavbarMenu />
+        </div>
+    );
+}
+
+export function NavbarMenu() {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div className="relative flex flex-col items-center">
+            {/* Navbar Container */}
+            <motion.div 
+                layout
+                className="w-[320px] h-[64px] glass-navbar flex items-center justify-between px-6 relative z-50 rounded-[32px]"
+                initial={false}
+            >
+                {/* Logo */}
+                <div className="flex items-center">
+                    {/* Using a simple text logo with italic style to simulate movement/speed */}
+                    <span className="font-heading font-black italic text-xl tracking-wider text-white">
+                        RUN
+                    </span>
+                </div>
+
+                {/* Menu Button */}
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="text-xs font-bold tracking-widest text-white hover:text-white/70 transition-colors uppercase"
+                >
+                    {isOpen ? "CLOSE" : "MENU"}
+                </button>
+            </motion.div>
+
+            {/* Dropdown Menu */}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20, height: 0, filter: "blur(10px)" }}
+                        animate={{ opacity: 1, y: 8, height: "auto", filter: "blur(0px)" }}
+                        exit={{ opacity: 0, y: -20, height: 0, filter: "blur(10px)" }}
+                        transition={{ 
+                            duration: 0.4, 
+                            type: "spring", 
+                            bounce: 0,
+                            ease: [0.23, 1, 0.32, 1] 
+                        }}
+                        className="w-[320px] glass-navbar overflow-hidden flex flex-col relative z-40 mt-0 rounded-[32px]"
+                    >
+                         {/* Menu Items */}
+                         <div className="flex flex-col items-center gap-2 py-8 w-full">
+                            {["HOME", "REGISTER", "TRAINING", "ABOUT"].map((item, i) => (
+                                <motion.a
+                                    key={item}
+                                    href="#"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{ delay: i * 0.05 + 0.1, duration: 0.3 }}
+                                    className="text-red-500 hover:text-white font-heading font-black text-3xl tracking-tighter transition-colors uppercase"
+                                >
+                                    {item}
+                                </motion.a>
+                            ))}
+                         </div>
+                         
+                         {/* Footer Strip */}
+                         <motion.div 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="w-full bg-white/5 border-t border-white/5 py-3 px-6 flex justify-between items-center text-[10px] text-white/40 font-mono uppercase"
+                         >
+                            <span className="cursor-pointer hover:text-white transition-colors">Privacy Policy</span>
+                            <span className="cursor-pointer hover:text-white transition-colors">Terms of Use</span>
+                         </motion.div>
+
+                         {/* Language Toggle/Extra */}
+                         <div className="w-full grid grid-cols-4 divide-x divide-white/5 border-t border-white/5">
+                            {['EN', 'ES', 'KR', 'CN'].map((lang) => (
+                                <button key={lang} className="py-2 text-[10px] font-bold text-white/40 hover:text-red-500 hover:bg-white/5 transition-colors">
+                                    {lang}
+                                </button>
+                            ))}
+                         </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}`,
+        props: []
+    },
     // More components will be added here
+    {
+        id: 'spotlight-search',
+        name: 'Spotlight Search',
+        index: 6,
+        description: 'A macOS Tahoe-inspired spotlight search that morphs from a bar into a segmented action menu with fluid animations and glassmorphism.',
+        tags: ['search', 'interaction', 'morph', 'glassmorphism', 'animation'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'lucide-react'],
+        usage: `import { SpotlightSearch } from '@/components/ui';
+
+// Basic usage
+<SpotlightSearch />`,
+        fullCode: `'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, AppWindow, Folder, Layers, File, Command } from 'lucide-react';
+
+export default function SpotlightSearch() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMorphed, setIsMorphed] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (inputRef.current) inputRef.current.focus();
+      const timer = setTimeout(() => {
+        setIsMorphed(true);
+      }, 800); // 800ms delay before morphing
+      return () => clearTimeout(timer);
+    } else {
+      setIsMorphed(false);
+    }
+  }, [isOpen]);
+
+  const toggleSearch = () => setIsOpen(!isOpen);
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.9 }
+  };
+
+  const actionButtons = [
+    { icon: AppWindow, label: "Apps" },
+    { icon: Folder, label: "Finder" },
+    { icon: Layers, label: "Stack" },
+    { icon: File, label: "Files" },
+  ];
+
+  return (
+    <div className="min-h-screen w-full flex flex-col items-center justify-center relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-black overflow-hidden font-sans">
+      
+      {/* Background decoration to show glass effect */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl mix-blend-multiply deep-blend" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl mix-blend-multiply deep-blend" />
+      </div>
+
+      <div className="z-10 flex flex-col items-center gap-8">
+        <h1 className="text-4xl font-light tracking-tight text-gray-800 dark:text-gray-100">
+          Tahoe Spotlight
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          Click the button below to trigger the experience
+        </p>
+      </div>
+
+      {/* Main Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
+            />
+
+            {/* Search Container */}
+            <motion.div
+              layout
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={containerVariants}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="relative z-10 flex items-center"
+              style={{ height: '64px' }}
+            >
+              {/* Search Bar Input Area */}
+              <motion.div
+                layout
+                className={\`
+                  relative flex items-center h-full overflow-hidden
+                  bg-white/40 dark:bg-black/40 
+                  backdrop-blur-xl border border-white/40 dark:border-white/10
+                  shadow-[0_8px_32px_0_rgba(31,38,135,0.15)]
+                \`}
+                animate={{
+                  width: isMorphed ? 380 : 600,
+                  borderRadius: 32,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 30,
+                  mass: 0.8
+                }}
+              >
+                <div className="pl-6 pr-4 text-gray-500 dark:text-gray-400">
+                  <Search size={24} strokeWidth={2} />
+                </div>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Spotlight Search"
+                  className="w-full h-full bg-transparent border-none outline-none text-xl text-gray-800 dark:text-white placeholder-gray-500/70 dark:placeholder-gray-400/70"
+                />
+                
+                {/* Right side placeholder that disappears */}
+                 <AnimatePresence mode='popLayout'>
+                  {!isMorphed && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute right-6 flex items-center gap-2 text-sm text-gray-500/70 font-medium"
+                    >
+                      <span className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-md border border-white/20">
+                         <Command size={14} /> K
+                      </span>
+                    </motion.div>
+                  )}
+                 </AnimatePresence>
+              </motion.div>
+
+              {/* Action Buttons (Morphing out) */}
+              <div className="flex items-center gap-3 ml-3 h-full">
+                <AnimatePresence mode='popLayout'>
+                  {isMorphed && actionButtons.map((btn, index) => (
+                    <motion.button
+                      key={btn.label}
+                      initial={{ scale: 0, opacity: 0, x: -20 }}
+                      animate={{ 
+                        scale: 1, 
+                        opacity: 1, 
+                        x: 0,
+                        transition: {
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 15,
+                          delay: index * 0.05 + 0.1
+                        }
+                      }}
+                      exit={{ 
+                        scale: 0, 
+                        opacity: 0, 
+                        x: -20,
+                        transition: { duration: 0.2 } 
+                      }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={\`
+                        w-16 h-16 rounded-full flex items-center justify-center
+                        bg-white/40 dark:bg-black/40 
+                        backdrop-blur-xl border border-white/40 dark:border-white/10
+                        shadow-lg text-gray-700 dark:text-gray-200
+                        hover:bg-white/60 dark:hover:bg-white/20
+                      \`}
+                    >
+                      <btn.icon size={24} strokeWidth={2} />
+                    </motion.button>
+                  ))}
+                </AnimatePresence>
+              </div>
+
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Trigger Button at Bottom */}
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-40">
+        <motion.button
+          onClick={toggleSearch}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="
+            flex items-center gap-3 px-6 py-3 rounded-full
+            bg-white/30 dark:bg-black/30 backdrop-blur-md
+            border border-white/40 dark:border-white/10
+            shadow-lg hover:shadow-xl transition-all
+            text-gray-800 dark:text-white font-medium
+          "
+        >
+          <Search size={20} />
+          <span>Open Spotlight</span>
+        </motion.button>
+      </div>
+
+    </div>
+  );
+}`,
+        props: []
+    },
+    {
+        id: 'image-trail-cursor',
+        name: 'Image Trail',
+        index: 7,
+        description: 'A smooth, dynamic cursor trail effect that disperses style images as you move. Adds a layer of depth and artistic flair to mouse interactions.',
+        tags: ['cursor', 'trail', 'interaction', 'image', 'effect'],
+        category: 'effect',
+        previewConfig: {
+            size: 150,
+            rotation: true,
+            fadeDuration: 0.6
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { ImageTrailCursor } from '@/components/ui';
+
+// Basic usage
+<ImageTrailCursor />
+
+// Custom configuration
+<ImageTrailCursor
+    config={{
+        size: 150,
+        rotation: true,
+        fadeDuration: 0.6,
+        distanceThreshold: 40
+    }}
+/>`,
+        fullCode: `"use client";
+
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export interface ImageTrailCursorConfig {
+    size: number;
+    rotation: boolean;
+    fadeDuration: number;
+    distanceThreshold: number;
+}
+
+export interface ImageTrailCursorProps {
+    config?: Partial<ImageTrailCursorConfig>;
+}
+
+const defaultImages = [
+    '/Glassmophism.jpg',
+    '/Material 3.png',
+    '/Retro.jpg',
+    '/SKEUOMORPHISM.png',
+    '/minimalism.jpg',
+    '/neo brutalism.jpg',
+    '/neumorphism.jpg',
+    '/pop art.png'
+];
+
+const defaultConfig: ImageTrailCursorConfig = {
+    size: 150,
+    rotation: true,
+    fadeDuration: 0.6,
+    distanceThreshold: 40,
+};
+
+interface TrailPoint {
+    id: number;
+    x: number;
+    y: number;
+    image: string;
+    rotation: number;
+}
+
+export default function ImageTrailCursor({ config: userConfig }: ImageTrailCursorProps = {}) {
+    // Merge provided config with defaults
+    const config = { ...defaultConfig, ...userConfig };
+
+    const [trail, setTrail] = useState<TrailPoint[]>([]);
+    const lastPoint = useRef<{ x: number, y: number } | null>(null);
+    const pointId = useRef(0);
+    const imageIndex = useRef(0);
+
+    useEffect(() => {
+        const handleMove = (x: number, y: number) => {
+            if (!lastPoint.current) {
+                lastPoint.current = { x, y };
+                return;
+            }
+
+            const dx = x - lastPoint.current.x;
+            const dy = y - lastPoint.current.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance >= config.distanceThreshold) {
+                const newPoint: TrailPoint = {
+                    id: pointId.current++,
+                    x,
+                    y,
+                    image: defaultImages[imageIndex.current % defaultImages.length],
+                    rotation: config.rotation ? (Math.random() - 0.5) * 40 : 0
+                };
+
+                imageIndex.current += 1;
+                lastPoint.current = { x, y };
+
+                // Use functional update to ensure we have latest state if needed, 
+                // though usually for trails we just append.
+                // Limit trail size to avoid memory issues if fade is slow
+                setTrail(prev => {
+                    const newTrail = [...prev, newPoint];
+                    if (newTrail.length > 20) return newTrail.slice(newTrail.length - 20);
+                    return newTrail;
+                });
+            }
+        };
+
+        const onMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY);
+        const onTouchMove = (e: TouchEvent) => {
+            if (e.touches.length > 0) {
+                handleMove(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        };
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('touchmove', onTouchMove);
+
+        return () => {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('touchmove', onTouchMove);
+        };
+    }, [config.distanceThreshold, config.rotation]);
+
+    return (
+        <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+            <AnimatePresence mode="popLayout">
+                {trail.map((point) => (
+                    <motion.div
+                        key={point.id}
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.2, filter: 'blur(10px)' }}
+                        transition={{ duration: config.fadeDuration, ease: "easeOut" }}
+                        onAnimationComplete={() => {
+                            setTrail(prev => prev.filter(p => p.id !== point.id));
+                        }}
+                        style={{
+                            position: 'absolute',
+                            left: point.x,
+                            top: point.y,
+                            width: config.size,
+                            height: config.size * 0.75, // Aspect ratio roughly 4:3
+                            rotate: point.rotation,
+                            x: "-50%",
+                            y: "-50%",
+                        }}
+                        className="rounded-xl overflow-hidden shadow-xl border border-white/20"
+                    >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={point.image}
+                            alt="trail"
+                            className="w-full h-full object-cover"
+                        />
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+export function ImageTrailCursorPreview() {
+    return (
+        <div className="w-full h-full flex items-center justify-center bg-zinc-900 rounded-[20px] overflow-hidden relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative">
+                    <div className="w-16 h-12 rounded-lg bg-zinc-800 border border-white/10 absolute -left-10 -top-6 rotate-[-12deg] z-10 shadow-lg"
+                        style={{ backgroundImage: "url('/Glassmophism.jpg')", backgroundSize: 'cover' }} />
+                    <div className="w-16 h-12 rounded-lg bg-zinc-800 border border-white/10 absolute -left-2 -top-2 rotate-[-5deg] z-20 shadow-lg"
+                        style={{ backgroundImage: "url('/Material 3.png')", backgroundSize: 'cover' }} />
+                    <div className="w-16 h-12 rounded-lg bg-zinc-800 border border-white/10 absolute top-4 left-6 rotate-[10deg] z-30 shadow-lg"
+                        style={{ backgroundImage: "url('/Retro.jpg')", backgroundSize: 'cover' }} />
+
+                    {/* Cursor */}
+                    <svg
+                        className="absolute left-16 top-16 z-40 text-white fill-white drop-shadow-md"
+                        width="24" height="24" viewBox="0 0 24 24"
+                    >
+                        <path d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19169L11.7841 12.3673H5.65376Z" stroke="black" strokeWidth="1" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    );
+}"`,
+        props: [
+            { name: 'config', type: 'Partial<ImageTrailCursorConfig>', default: '{}', description: 'Appearance configuration' },
+        ]
+    },
+    {
+        id: 'reality-lens',
+        name: 'Liquid Reveal',
+        index: 8,
+        description: 'A liquid-like brush that paints revealing strokes over content. The persistent liquid trail lingers before evaporating, allowing for artistic and organic reveal effects.',
+        tags: ['interaction', 'liquid', 'reveal', 'brush', 'cursor'],
+        category: 'interaction',
+        previewConfig: {
+            lensSize: 120,
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { RealityLens } from '@/components/ui';
+
+// Basic usage
+<RealityLens
+  revealContent={<img src="/after.jpg" className="w-full h-full object-cover" />}
+>
+  <img src="/before.jpg" className="w-full h-full object-cover grayscale" />
+</RealityLens>
+
+// Custom lens size
+<RealityLens lensSize={250} revealContent={...}>
+  {...}
+</RealityLens>`,
+        fullCode: `"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import { motion, useSpring } from "framer-motion";
+
+interface RealityLensProps {
+  /** The base content visible by default */
+  children: React.ReactNode;
+  /** The content to reveal inside the lens */
+  revealContent: React.ReactNode;
+  /** Size of the lens in pixels. Default: 150 */
+  lensSize?: number;
+  /** Custom class for the container */
+  className?: string;
+  /** Optional: Magnification scale for the revealed content. Default: 1 (no zoom) */
+  zoomScale?: number;
+}
+
+export function RealityLens({
+  children,
+  revealContent,
+  lensSize = 150,
+  className = "",
+  zoomScale = 1,
+}: RealityLensProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isHovering, setIsHovering] = useState(false);
+
+  // Use spring physics for smooth lens movement
+  const mouseX = useSpring(0, { stiffness: 300, damping: 30 });
+  const mouseY = useSpring(0, { stiffness: 300, damping: 30 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    let clientX, clientY;
+
+    if ('touches' in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = (e as React.MouseEvent).clientX;
+      clientY = (e as React.MouseEvent).clientY;
+    }
+
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className={\`relative overflow-hidden w-full h-full cursor-none selection:bg-none \${className}\`}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      onMouseMove={handleMouseMove}
+      onTouchMove={handleMouseMove}
+      onTouchStart={() => setIsHovering(true)}
+      onTouchEnd={() => setIsHovering(false)}
+    >
+      {/* Base Layer */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none">
+        {children}
+      </div>
+
+      {/* Reveal Layer (Masked) */}
+      <motion.div
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{
+          maskImage: "radial-gradient(circle at var(--x) var(--y), black var(--size), transparent var(--size))",
+          WebkitMaskImage: "radial-gradient(circle at var(--x) var(--y), black var(--size), transparent var(--size))",
+          // @ts-ignore
+          "--x": mouseX,
+          "--y": mouseY,
+          "--size": \`\${lensSize / 2}px\`,
+        }}
+      >
+        {revealContent}
+      </motion.div>
+
+      {/* Lens Border / UI Element */}
+      {isHovering && (
+        <motion.div
+            style={{
+                x: mouseX,
+                y: mouseY,
+                width: lensSize,
+                height: lensSize,
+                left: -lensSize / 2,
+                top: -lensSize / 2,
+            }}
+            className="absolute pointer-events-none rounded-full border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.2)] backdrop-blur-[1px]"
+        />
+      )}
+    </div>
+  );
+}`,
+        props: [
+            { name: 'children', type: 'ReactNode', default: 'undefined', description: 'Base visible content' },
+            { name: 'revealContent', type: 'ReactNode', default: 'undefined', description: 'Content shown inside the lens' },
+            { name: 'lensSize', type: 'number', default: '150', description: 'Diameter of the lens in pixels' },
+        ]
+    },
+    {
+        id: 'navbar-menu-2',
+        name: 'Navbar Menu 2',
+        index: 22,
+        description: 'A premium expanding navbar that smoothly transitions from a floating capsule to a full-screen menu. Features high-performance layout animations.',
+        tags: ['navbar', 'menu', 'animation', 'layout', 'overlay'],
+        category: 'layout',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { NavbarMenu2 } from '@/components/ui';
+
+// Basic usage
+<NavbarMenu2 />
+
+// Custom configuration
+<NavbarMenu2
+    config={{
+        logoText: "Brand",
+        backgroundColor: "#ffffff",
+        textColor: "#000000"
+    }}
+/>`,
+        fullCode: `"use client";
+
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+// ============================================
+// PREVIEW COMPONENT (For Component Card)
+// ============================================
+
+export function NavbarMenu2Preview() {
+    return (
+        <div className="w-full h-full flex items-center justify-center p-4 bg-gray-50/50">
+            {/* Navbar representation */}
+            <div className="w-[180px] h-10 bg-white rounded-full flex items-center justify-between px-4 shadow-sm border border-black/5">
+                <span className="font-serif italic font-black text-xs text-black">Offsite</span>
+                <div className="flex flex-col gap-[3px]">
+                    <div className="w-3 h-0.5 bg-black rounded-full" />
+                    <div className="w-3 h-0.5 bg-black rounded-full" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ============================================
+// TYPES & CONFIG
+// ============================================
+
+export interface NavbarMenu2Config {
+    logoText: string;
+    backgroundColor: string;
+    textColor: string;
+}
+
+export interface NavbarMenu2Props {
+    config?: Partial<NavbarMenu2Config>;
+}
+
+const defaultConfig: NavbarMenu2Config = {
+    logoText: "Offsite",
+    backgroundColor: "#ffffff",
+    textColor: "#000000",
+};
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
+
+export function NavbarMenu2({ config: userConfig }: NavbarMenu2Props = {}) {
+    const config = { ...defaultConfig, ...userConfig };
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Toggle menu state
+    const toggleMenu = () => setIsOpen(!isOpen);
+
+    // Animation transition - "smooth AF"
+    // Using a slightly lower stiffness/damping ratio for a buttery smooth feel
+    const transition = {
+        type: "spring",
+        stiffness: 100,
+        damping: 20,
+        mass: 1,
+    };
+
+    const staggerTransition = {
+        staggerChildren: 0.1,
+        delayChildren: 0.2, // Wait for expand a bit
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 50, rotateX: 20 },
+        show: {
+            opacity: 1,
+            y: 0,
+            rotateX: 0,
+            transition: {
+                type: "spring",
+                stiffness: 100,
+                damping: 20
+            }
+        }
+    };
+
+    return (
+        <div className="w-full h-full flex items-center justify-center relative z-50">
+            <motion.div
+                layout
+                data-isOpen={isOpen}
+                initial={false}
+                transition={transition}
+                className={\`
+                    shadow-lg overflow-hidden z-50
+                    \${isOpen ? 'fixed inset-0 m-0 w-full h-full rounded-none' : 'relative w-[280px] h-[60px] rounded-full'}
+                \`}
+                style={{
+                    backgroundColor: config.backgroundColor,
+                    color: config.textColor,
+                    boxShadow: isOpen
+                        ? 'none'
+                        : '0px 10px 30px -10px rgba(0,0,0,0.1), 0px 4px 10px -2px rgba(0,0,0,0.05)'
+                }}
+            >
+                {/* Navbar Header Content */}
+                <motion.div
+                    layout="position"
+                    className="absolute top-0 left-0 w-full px-6 md:px-8 h-[60px] md:h-[80px] flex items-center justify-between z-50"
+                >
+                    {/* Logo */}
+                    <div className="flex items-center gap-2">
+                        <motion.span
+                            layout="position"
+                            className="font-serif italic font-black text-2xl tracking-tight z-50 cursor-pointer"
+                        >
+                            {config.logoText}
+                        </motion.span>
+                    </div>
+
+                    {/* Menu Trigger / Close Button */}
+                    <motion.button
+                        layout="position"
+                        onClick={toggleMenu}
+                        className="relative z-50 p-2 mix-blend-difference focus:outline-none"
+                    >
+                        <div className="flex flex-col gap-[6px] items-end justify-center w-8 h-8">
+                            <motion.span
+                                animate={isOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
+                                className="w-8 h-[2px] bg-black block origin-center"
+                                style={{ backgroundColor: config.textColor }}
+                            />
+                            <motion.span
+                                animate={isOpen ? { opacity: 0 } : { opacity: 1 }}
+                                className="w-8 h-[2px] bg-black block"
+                                style={{ backgroundColor: config.textColor }}
+                            />
+                            <motion.span
+                                animate={isOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
+                                className="w-8 h-[2px] bg-black block origin-center"
+                                style={{ backgroundColor: config.textColor }}
+                            />
+                        </div>
+                    </motion.button>
+                </motion.div>
+
+                {/* Expanded Menu Content */}
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            initial="hidden"
+                            animate="show"
+                            exit="hidden"
+                            variants={staggerTransition}
+                            className="w-full h-full flex flex-col justify-center items-center relative z-40 p-10"
+                        >
+                            {/* Main Links */}
+                            <div className="flex flex-col items-center justify-center gap-4 md:gap-8">
+                                {['SERVICES', 'ABOUT', 'ROLES', 'CONTACT'].map((item, i) => (
+                                    <div key={item} className="overflow-hidden relative group cursor-pointer">
+                                        <motion.div
+                                            variants={itemVariants}
+                                            className="relative"
+                                        >
+                                            <span className="block text-5xl md:text-8xl lg:text-9xl font-serif font-medium tracking-tight hover:italic transition-all duration-300">
+                                                {item}
+                                            </span>
+                                            <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-current transition-all duration-300 group-hover:w-full" />
+                                        </motion.div>
+                                        
+                                        <motion.span 
+                                            variants={itemVariants}
+                                            className="absolute -top-2 -right-4 text-xs font-mono opacity-50 hidden md:block"
+                                        >
+                                            0{i + 1}
+                                        </motion.span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Footer Info inside Menu */}
+                            <motion.div
+                                variants={itemVariants}
+                                className="absolute bottom-10 left-0 w-full px-10 flex flex-col md:flex-row justify-between items-end text-sm font-mono opacity-60"
+                            >
+                                <div className="max-w-xs">
+                                    <p>This is the room. These are the people. We are Offsite.</p>
+                                </div>
+                                <div className="flex gap-8 mt-4 md:mt-0">
+                                    <a href="#" className="hover:underline">INSTAGRAM</a>
+                                    <a href="#" className="hover:underline">LINKEDIN</a>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
+        </div>
+    );
+}
+
+export default NavbarMenu2;`,
+        props: [
+            { name: 'config', type: 'Partial<NavbarMenu2Config>', default: '{}', description: 'Configuration object' }
+        ]
+    },
+    {
+        id: 'scroll-to-reveal',
+        name: 'Scroll To Reveal',
+        index: 23,
+        description: 'Text that lights up as you scroll, highlighting words in the center of the scroll container. Works within any scrollable element.',
+        tags: ['text', 'scroll', 'animation', 'reveal', 'spotlight'],
+        category: 'animation',
+        previewConfig: {
+            text: "AT OFFSITE, WE ARE INVESTING IN THE FUTURE OF DESIGN & CREATIVE TALENT BY PUTTING COMMUNITY FIRST.",
+            minOpacity: 0.15
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { ScrollToReveal, ScrollToRevealSandbox } from '@/components/ui';
+
+// For page-level scroll (uses window scroll)
+<ScrollToReveal
+    text="Your long text here..."
+    className="text-4xl font-bold"
+    minOpacity={0.15}
+/>
+
+// For container-based scroll (self-contained sandbox)
+<ScrollToRevealSandbox
+    text="Your long text here..."
+    className="text-4xl font-bold"
+    minOpacity={0.15}
+/>`,
+        fullCode: `"use client";
+
+import { motion, useScroll, useTransform } from "framer-motion";
+import React, { useRef, createContext, useContext } from "react";
+import { cn } from "@/lib/utils";
+
+// Context for container-based scrolling
+const ScrollContainerContext = createContext<React.RefObject<HTMLDivElement | null> | null>(null);
+
+interface ScrollToRevealProps {
+    text: string;
+    className?: string;
+    minOpacity?: number;
+}
+
+const Word = ({
+    children,
+    minOpacity = 0.3
+}: {
+    children: string;
+    minOpacity?: number;
+}) => {
+    const ref = useRef<HTMLSpanElement>(null);
+    const containerRef = useContext(ScrollContainerContext);
+
+    const { scrollYProgress } = useScroll({
+        target: ref,
+        container: containerRef || undefined,
+        offset: ["start 0.9", "end 0.25"],
+    });
+
+    const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [minOpacity, 1, minOpacity]);
+
+    return (
+        <motion.span ref={ref} style={{ opacity }} className="mr-2 inline-block">
+            {children}
+        </motion.span>
+    );
+};
+
+// Page-level scroll version
+export const ScrollToReveal: React.FC<ScrollToRevealProps> = ({ text, className, minOpacity = 0.15 }) => {
+    const words = text.split(" ");
+    return (
+        <div className={cn("flex flex-wrap leading-[1.5]", className)}>
+            {words.map((word, i) => <Word key={i} minOpacity={minOpacity}>{word}</Word>)}
+        </div>
+    );
+};
+
+// Container-based scroll version (self-contained sandbox)
+export const ScrollToRevealSandbox: React.FC<ScrollToRevealProps> = ({ text, className, minOpacity = 0.15 }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const words = text.split(" ");
+    return (
+        <ScrollContainerContext.Provider value={containerRef}>
+            <div ref={containerRef} className="w-full h-full overflow-y-auto overscroll-contain">
+                <div className="h-[50vh]" />
+                <div className={cn("px-4 md:px-16 flex flex-wrap leading-[1.3]", className)}>
+                    {words.map((word, i) => <Word key={i} minOpacity={minOpacity}>{word}</Word>)}
+                </div>
+                <div className="h-[50vh]" />
+            </div>
+        </ScrollContainerContext.Provider>
+    );
+};
+
+export default ScrollToReveal;`,
+        props: [
+            { name: 'text', type: 'string', default: 'undefined', description: 'The text content to reveal' },
+            { name: 'className', type: 'string', default: 'undefined', description: 'Additional CSS classes for styling' },
+            { name: 'minOpacity', type: 'number', default: '0.15', description: 'Opacity of words not in focus (0-1)' }
+        ]
+    }
 ];
 
 // Get component by ID

@@ -20,6 +20,10 @@ export * from './FlipGrid';
 export * from './AsciiSimulation';
 export * from './LiquidMorph';
 export * from './PageReveal';
+export * from './NavbarMenu';
+export * from './NavbarMenu2';
+export { default as SpotlightSearch } from './SpotlightSearch';
+export { default as ImageTrailCursor } from './ImageTrailCursor';
 
 
 // Infinite Canvas components
@@ -29,3 +33,5 @@ export { PositionIndicator } from "./PositionIndicator";
 export { StyleDetailSection } from "./StyleDetailSection";
 export { TransitionProvider } from "./TransitionProvider";
 export { CanvasOverlay } from "./CanvasOverlay";
+export { RealityLens } from "./RealityLens";
+export { ScrollToReveal } from "./ScrollToReveal";

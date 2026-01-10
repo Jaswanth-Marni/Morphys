@@ -2,13 +2,19 @@
 
 import { useParams, notFound } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { getComponentById, ComponentData } from "@/data/componentsData";
 import { FlipGrid, FlipGridConfig, GridPattern, EasingType, SpeedType } from "@/components/ui/FlipGrid";
 import { AsciiSimulation, AsciiSimulationConfig, AsciiShape } from "@/components/ui/AsciiSimulation";
 import { LiquidMorph, LiquidMorphConfig } from "@/components/ui/LiquidMorph";
 import { PageReveal, PageRevealConfig } from "@/components/ui/PageReveal";
+import { NavbarMenu } from "@/components/ui/NavbarMenu";
+import { NavbarMenu2 } from "@/components/ui/NavbarMenu2";
+import SpotlightSearch from "@/components/ui/SpotlightSearch";
+import ImageTrailCursor, { ImageTrailCursorConfig } from "@/components/ui/ImageTrailCursor";
+import { RealityLens } from "@/components/ui/RealityLens";
+import { ScrollToReveal, ScrollToRevealSandbox } from "@/components/ui/ScrollToReveal";
 
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
@@ -46,6 +52,18 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'ascii-simulation': AsciiSimulation,
     'liquid-morph': LiquidMorph,
     'page-reveal': PageReveal as React.ComponentType<{ config?: any }>,
+    'navbar-menu': NavbarMenu as React.ComponentType<{ config?: any }>,
+    'navbar-menu-2': NavbarMenu2 as React.ComponentType<{ config?: any }>,
+    'spotlight-search': SpotlightSearch as React.ComponentType<{ config?: any }>,
+    'image-trail-cursor': ImageTrailCursor as React.ComponentType<{ config?: any }>,
+    'reality-lens': RealityLens as React.ComponentType<{ config?: any }>,
+    'scroll-to-reveal': ({ config }: { config: any }) => (
+        <ScrollToRevealSandbox
+            text={config.text || "AT OFFSITE, WE ARE INVESTING IN THE FUTURE OF DESIGN & CREATIVE TALENT BY PUTTING COMMUNITY FIRST. WE BELIEVE THAT HUMANS DO THEIR BEST WORK WHEN THEY ARE SURROUNDED BY A CAST OF OTHERS WHO CHAMPION CREATIVITY AND ENCOURAGE A CONSISTENT REDEFINITION OF GREATNESS. OUR FOCUS IS ON CULTIVATING THE NEXT GENERATION OF DESIGN LEADERS. WE CREATE SPACES WHERE IDEAS FLOURISH AND INNOVATION THRIVES. EVERY PROJECT WE UNDERTAKE IS A TESTAMENT TO OUR COMMITMENT TO EXCELLENCE AND OUR PASSION FOR PUSHING BOUNDARIES. THE WORLD OF DESIGN IS CONSTANTLY EVOLVING, AND WE ARE AT THE FOREFRONT OF THIS EVOLUTION. WE EMBRACE CHANGE, WELCOME CHALLENGES, AND TRANSFORM OBSTACLES INTO OPPORTUNITIES. OUR TEAM CONSISTS OF VISIONARIES, DREAMERS, AND DOERS WHO SHARE A COMMON GOAL: TO MAKE THE WORLD A MORE BEAUTIFUL PLACE THROUGH THOUGHTFUL DESIGN. JOIN US ON THIS JOURNEY AS WE CONTINUE TO REDEFINE WHAT IS POSSIBLE IN THE REALM OF CREATIVE EXPRESSION."}
+            className={config.className || "text-3xl md:text-5xl lg:text-6xl font-serif font-medium text-[#e8e4dc] uppercase tracking-wide"}
+            minOpacity={config.minOpacity ?? 0.15}
+        />
+    ),
 };
 
 
@@ -60,9 +78,28 @@ interface NumberControlProps {
 }
 
 function NumberControl({ label, value, min, max, suffix = '', onChange }: NumberControlProps) {
-    const handleChange = (newVal: number) => {
-        if (newVal >= min && newVal <= max) {
-            onChange(newVal);
+    const safeValue = value ?? min ?? 0;
+    const [localValue, setLocalValue] = useState(safeValue.toString());
+
+    // Sync local state when prop changes (e.g. from buttons or external resets)
+    useEffect(() => {
+        setLocalValue((value ?? min ?? 0).toString());
+    }, [value, min]);
+
+    const handleCommit = () => {
+        const parsed = parseInt(localValue);
+        if (!isNaN(parsed)) {
+            const clamped = Math.min(Math.max(parsed, min), max);
+            onChange(clamped);
+            setLocalValue(clamped.toString());
+        } else {
+            setLocalValue(value.toString()); // Revert if invalid
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            (e.target as HTMLInputElement).blur();
         }
     };
 
@@ -71,8 +108,8 @@ function NumberControl({ label, value, min, max, suffix = '', onChange }: Number
             <span className="text-xs text-foreground/40 block mb-1.5">{label}</span>
             <div className="flex items-center gap-2">
                 <button
-                    onClick={() => handleChange(value - 1)}
-                    disabled={value <= min}
+                    onClick={() => onChange(Math.max(safeValue - 1, min))}
+                    disabled={safeValue <= min}
                     className="w-8 h-8 flex items-center justify-center rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-50 transition-colors text-foreground/70"
                 >
                     -
@@ -80,18 +117,17 @@ function NumberControl({ label, value, min, max, suffix = '', onChange }: Number
                 <div className="flex-1 relative">
                     <input
                         type="number"
-                        value={value}
-                        onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (!isNaN(val)) onChange(Math.min(Math.max(val, min), max));
-                        }}
+                        value={localValue}
+                        onChange={(e) => setLocalValue(e.target.value)}
+                        onBlur={handleCommit}
+                        onKeyDown={handleKeyDown}
                         className="w-full h-8 px-2 text-center bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20 appearance-none"
                     />
                     {suffix && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-foreground/40 pointer-events-none">{suffix}</span>}
                 </div>
                 <button
-                    onClick={() => handleChange(value + 1)}
-                    disabled={value >= max}
+                    onClick={() => onChange(Math.min(safeValue + 1, max))}
+                    disabled={safeValue >= max}
                     className="w-8 h-8 flex items-center justify-center rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-50 transition-colors text-foreground/70"
                 >
                     +
@@ -99,7 +135,6 @@ function NumberControl({ label, value, min, max, suffix = '', onChange }: Number
             </div>
         </div>
     );
-
 }
 
 // ============================================
@@ -144,7 +179,7 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                             md:w-[340px] md:rounded-2xl
                             bg-background/95 backdrop-blur-xl
                             border-l md:border border-foreground/10
-                            z-50 overflow-y-auto scrollbar-thin
+                            z-50 overflow-y-auto overscroll-contain scrollbar-thin
                             p-6
                             md:shadow-2xl
                         "
@@ -272,6 +307,225 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         </div>
                                     </div>
                                 </>
+                            ) : componentId === 'navbar-menu' ? (
+                                // NAVBAR MENU CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Branding</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Logo Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.logoText ?? 'RUN'}
+                                                onChange={(e) => onConfigChange('logoText', e.target.value)}
+                                                maxLength={10}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                                placeholder="Logo text"
+                                            />
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Accent Color</span>
+                                            <input
+                                                type="color"
+                                                value={config.accentColor || '#ef4444'}
+                                                onChange={(e) => onConfigChange('accentColor', e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Animation</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Speed ({config.animationSpeed || 1}x)</span>
+                                            <input
+                                                type="range"
+                                                min="0.5"
+                                                max="2"
+                                                step="0.1"
+                                                value={config.animationSpeed || 1}
+                                                onChange={(e) => onConfigChange('animationSpeed', parseFloat(e.target.value))}
+                                                className="w-full h-2 bg-foreground/10 rounded-lg appearance-none cursor-pointer accent-foreground"
+                                            />
+                                            <div className="flex justify-between text-[10px] text-foreground/30 mt-1">
+                                                <span>Slow</span>
+                                                <span>Fast</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <NumberControl
+                                            label="Border Radius"
+                                            value={config.borderRadius || 32}
+                                            min={8}
+                                            max={48}
+                                            suffix="px"
+                                            onChange={(val) => onConfigChange('borderRadius', val)}
+                                        />
+                                    </div>
+                                </>
+                            ) : componentId === 'navbar-menu-2' ? (
+                                // NAVBAR MENU 2 CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Branding</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Logo Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.logoText ?? 'Morphys'}
+                                                onChange={(e) => onConfigChange('logoText', e.target.value)}
+                                                maxLength={15}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                                placeholder="Logo text"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Colors</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Background</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.backgroundColor || '#ffffff'}
+                                                    onChange={(e) => onConfigChange('backgroundColor', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Text</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.textColor || '#000000'}
+                                                    onChange={(e) => onConfigChange('textColor', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'spotlight-search' ? (
+                                // SPOTLIGHT SEARCH CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Animation</label>
+                                        <NumberControl
+                                            label="Morph Delay"
+                                            value={config.morphDelay || 800}
+                                            min={200}
+                                            max={2000}
+                                            suffix="ms"
+                                            onChange={(val) => onConfigChange('morphDelay', val)}
+                                        />
+                                        <NumberControl
+                                            label="Stiffness"
+                                            value={config.springStiffness || 400}
+                                            min={50}
+                                            max={800}
+                                            onChange={(val) => onConfigChange('springStiffness', val)}
+                                        />
+                                        <NumberControl
+                                            label="Damping"
+                                            value={config.springDamping || 15}
+                                            min={5}
+                                            max={50}
+                                            onChange={(val) => onConfigChange('springDamping', val)}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Layout</label>
+                                        <NumberControl
+                                            label="Search Width"
+                                            value={config.searchWidth || 600}
+                                            min={400}
+                                            max={800}
+                                            suffix="px"
+                                            onChange={(val) => onConfigChange('searchWidth', val)}
+                                        />
+                                    </div>
+                                </>
+                            ) : componentId === 'image-trail-cursor' ? (
+                                // IMAGE TRAIL CURSOR CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <NumberControl
+                                            label="Size"
+                                            value={config.size || 150}
+                                            min={50}
+                                            max={400}
+                                            suffix="px"
+                                            onChange={(val) => onConfigChange('size', val)}
+                                        />
+                                        <NumberControl
+                                            label="Fade Duration"
+                                            value={config.fadeDuration || 0.6}
+                                            min={0.1}
+                                            max={5}
+                                            onChange={(val) => onConfigChange('fadeDuration', parseFloat(val.toFixed(1)))}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Behavior</label>
+                                        <NumberControl
+                                            label="Distance Threshold"
+                                            value={config.distanceThreshold || 40}
+                                            min={10}
+                                            max={100}
+                                            suffix="px"
+                                            onChange={(val) => onConfigChange('distanceThreshold', val)}
+                                        />
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-foreground/60">Rotation</span>
+                                            <button onClick={() => onConfigChange('rotation', !config.rotation)} className={`w-12 h-6 rounded-full relative transition-colors ${config.rotation ? 'bg-foreground' : 'bg-foreground/20'}`}>
+                                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${config.rotation ? 'left-7' : 'left-1'}`} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'reality-lens' ? (
+                                // REALITY LENS CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <NumberControl
+                                            label="Brush Size"
+                                            value={config.lensSize || 120}
+                                            min={50}
+                                            max={400}
+                                            suffix="px"
+                                            onChange={(val) => onConfigChange('lensSize', val)}
+                                        />
+                                    </div>
+                                </>
+                            ) : componentId === 'scroll-to-reveal' ? (
+                                // SCROLL TO REVEAL CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <NumberControl
+                                            label="Min Opacity"
+                                            value={Math.round((config.minOpacity || 0.15) * 100)}
+                                            min={0}
+                                            max={100}
+                                            suffix="%"
+                                            onChange={(val) => onConfigChange('minOpacity', val / 100)}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
+                                            <textarea
+                                                value={config.text}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-32 px-3 py-2 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20 resize-none"
+                                                placeholder="Enter text to reveal..."
+                                            />
+                                        </div>
+                                    </div>
+                                </>
                             ) : (
                                 // FLIP GRID CONTROLS
                                 <>
@@ -368,6 +622,39 @@ interface CodeDisplayProps {
 function CodeDisplay({ config, fullCode, componentId }: CodeDisplayProps) {
     const [activeTab, setActiveTab] = useState<'usage' | 'full'>('usage');
     const [copied, setCopied] = useState(false);
+    const codeContainerRef = useRef<HTMLPreElement>(null);
+
+    // Handle wheel events to prevent parent scroll when scrolling inside code section
+    const handleWheel = (e: React.WheelEvent<HTMLPreElement>) => {
+        const container = codeContainerRef.current;
+        if (!container) return;
+
+        const { scrollTop, scrollHeight, clientHeight, scrollLeft, scrollWidth, clientWidth } = container;
+        const isScrollableY = scrollHeight > clientHeight;
+        const isScrollableX = scrollWidth > clientWidth;
+
+        // If there's vertical or horizontal scrollable content
+        if (isScrollableY || isScrollableX) {
+            const isAtTop = scrollTop === 0;
+            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+            const isAtLeft = scrollLeft === 0;
+            const isAtRight = scrollLeft + clientWidth >= scrollWidth - 1;
+
+            // Prevent parent scroll when scrolling vertically within bounds
+            if (isScrollableY) {
+                if ((e.deltaY < 0 && !isAtTop) || (e.deltaY > 0 && !isAtBottom)) {
+                    e.stopPropagation();
+                }
+            }
+
+            // Prevent parent scroll when scrolling horizontally within bounds
+            if (isScrollableX) {
+                if ((e.deltaX < 0 && !isAtLeft) || (e.deltaX > 0 && !isAtRight)) {
+                    e.stopPropagation();
+                }
+            }
+        }
+    };
 
     // Generate dynamic usage code based on current config
     const dynamicUsage = useMemo(() => {
@@ -461,6 +748,59 @@ function CodeDisplay({ config, fullCode, componentId }: CodeDisplayProps) {
                 return `import { PageReveal } from '@/components/ui';\n\n// Basic usage - wraps your page content\n<PageReveal>\n    <YourPageContent />\n</PageReveal>`;
             }
             return `import { PageReveal } from '@/components/ui';\n\n<PageReveal\n    config={{\n${configEntries.join('\n')}\n    }}\n>\n    <YourPageContent />\n</PageReveal>`;
+        }
+
+        if (componentId === 'spotlight-search') {
+            const defaultConfig = {
+                morphDelay: 800,
+                searchWidth: 600,
+                springStiffness: 400,
+                springDamping: 15,
+            };
+
+            const configEntries: string[] = [];
+            if (config.morphDelay !== defaultConfig.morphDelay) configEntries.push(`        morphDelay: ${config.morphDelay},`);
+            if (config.searchWidth !== defaultConfig.searchWidth) configEntries.push(`        searchWidth: ${config.searchWidth},`);
+            if (config.springStiffness !== defaultConfig.springStiffness) configEntries.push(`        springStiffness: ${config.springStiffness},`);
+            if (config.springDamping !== defaultConfig.springDamping) configEntries.push(`        springDamping: ${config.springDamping},`);
+
+            if (configEntries.length === 0) {
+                return `import { SpotlightSearch } from '@/components/ui';\n\n// Basic usage\n<SpotlightSearch />`;
+            }
+            return `import { SpotlightSearch } from '@/components/ui';\n\n<SpotlightSearch\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
+        }
+
+
+
+        if (componentId === 'image-trail-cursor') {
+            const defaultConfig: ImageTrailCursorConfig = {
+                size: 150,
+                rotation: true,
+                fadeDuration: 0.6,
+                distanceThreshold: 40,
+            };
+
+            const configEntries: string[] = [];
+            if (config.size !== defaultConfig.size) configEntries.push(`        size: ${config.size},`);
+            if (config.rotation !== defaultConfig.rotation) configEntries.push(`        rotation: ${config.rotation},`);
+            if (config.fadeDuration !== defaultConfig.fadeDuration) configEntries.push(`        fadeDuration: ${config.fadeDuration},`);
+            if (config.distanceThreshold !== defaultConfig.distanceThreshold) configEntries.push(`        distanceThreshold: ${config.distanceThreshold},`);
+
+            if (configEntries.length === 0) {
+                return `import { ImageTrailCursor } from '@/components/ui';\n\n// Basic usage\n<ImageTrailCursor />`;
+            }
+            return `import { ImageTrailCursor } from '@/components/ui';\n\n<ImageTrailCursor\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
+        }
+
+        if (componentId === 'scroll-to-reveal') {
+            const defaultConfig = {
+                minOpacity: 0.15,
+                text: "Undefined",
+                className: ""
+            };
+
+            // Props approach
+            return `import { ScrollToReveal } from '@/components/ui';\n\n<ScrollToReveal\n    text="${config.text || 'Your text here...'}"\n    minOpacity={${config.minOpacity ?? 0.15}}\n    className="text-4xl font-bold"\n/>`;
         }
 
         // FLIP GRID (Default)
@@ -560,7 +900,11 @@ ${configEntries.join('\n')}
                 relative rounded-2xl overflow-hidden
                 bg-foreground/5 border border-foreground/10
             ">
-                <pre className="p-6 overflow-auto text-sm max-h-[500px] scrollbar-thin scrollbar-thumb-foreground/20 scrollbar-track-transparent">
+                <pre
+                    ref={codeContainerRef}
+                    onWheel={handleWheel}
+                    className="p-6 overflow-auto text-sm max-h-[500px] scrollbar-thin scrollbar-thumb-foreground/20 scrollbar-track-transparent overscroll-contain"
+                >
                     <code className="text-foreground/80 font-mono">
                         {activeTab === 'usage' ? dynamicUsage : fullCode}
                     </code>
@@ -623,6 +967,42 @@ export default function ComponentDetailPage() {
                 autoStart: true,
             };
         }
+        if (componentId === 'navbar-menu') {
+            return {
+                logoText: "RUN",
+                accentColor: "#ef4444",
+                animationSpeed: 1,
+                borderRadius: 32,
+            };
+        }
+        if (componentId === 'navbar-menu-2') {
+            return {
+                logoText: "Morphys",
+                backgroundColor: "#ffffff",
+                textColor: "#000000",
+            };
+        }
+        if (componentId === 'spotlight-search') {
+            return {
+                morphDelay: 800,
+                searchWidth: 600,
+                springStiffness: 400,
+                springDamping: 15,
+            };
+        }
+        if (componentId === 'image-trail-cursor') {
+            return {
+                size: 150,
+                rotation: true,
+                fadeDuration: 0.6,
+                distanceThreshold: 40,
+            };
+        }
+        if (componentId === 'reality-lens') {
+            return {
+                lensSize: 200,
+            };
+        }
         return {
             cols: 10,
             rows: 8,
@@ -642,6 +1022,8 @@ export default function ComponentDetailPage() {
     const [fullPageRevealKey, setFullPageRevealKey] = useState<number | null>(null); // null = not showing, number = key for remount
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [isClientMounted, setIsClientMounted] = useState(false);
+    const [componentKey, setComponentKey] = useState(0); // For reloading components
+    const sandboxRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setIsClientMounted(true);
@@ -699,6 +1081,24 @@ export default function ComponentDetailPage() {
                 backgroundColor: "#000000",
                 logoColor: "#ffffff",
                 autoStart: true,
+            });
+        } else if (componentId === 'navbar-menu') {
+            setConfig({
+                logoText: "RUN",
+                accentColor: "#ef4444",
+                animationSpeed: 1,
+                borderRadius: 32,
+            });
+        } else if (componentId === 'spotlight-search') {
+            setConfig({
+                morphDelay: 800,
+                searchWidth: 600,
+                springStiffness: 400,
+                springDamping: 15,
+            });
+        } else if (componentId === 'reality-lens') {
+            setConfig({
+                lensSize: 120,
             });
         }
     }, [componentId]);
@@ -780,21 +1180,47 @@ export default function ComponentDetailPage() {
                         `}
                         style={{ fontVariationSettings: "'wght' 700" }}
                     >
-                        {componentData.name.split('').map((char, i) => (
-                            <motion.span
-                                key={i}
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                    duration: 0.5,
-                                    delay: i * 0.03,
-                                    ease: [0.23, 1, 0.32, 1]
-                                }}
-                                className="inline-block"
-                            >
-                                {char === ' ' ? '\u00A0' : char}
-                            </motion.span>
-                        ))}
+                        {componentData.name.split(' ').map((word, wordIndex, wordsArray) => {
+                            // Calculate the character offset for animation delay
+                            const charOffset = wordsArray
+                                .slice(0, wordIndex)
+                                .reduce((acc, w) => acc + w.length + 1, 0);
+
+                            return (
+                                <span key={wordIndex} className="inline-block whitespace-nowrap">
+                                    {word.split('').map((char, charIndex) => (
+                                        <motion.span
+                                            key={charIndex}
+                                            initial={{ opacity: 0, y: 50 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{
+                                                duration: 0.5,
+                                                delay: (charOffset + charIndex) * 0.03,
+                                                ease: [0.23, 1, 0.32, 1]
+                                            }}
+                                            className="inline-block"
+                                        >
+                                            {char}
+                                        </motion.span>
+                                    ))}
+                                    {/* Add space after word if not the last word */}
+                                    {wordIndex < wordsArray.length - 1 && (
+                                        <motion.span
+                                            initial={{ opacity: 0, y: 50 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{
+                                                duration: 0.5,
+                                                delay: (charOffset + word.length) * 0.03,
+                                                ease: [0.23, 1, 0.32, 1]
+                                            }}
+                                            className="inline-block"
+                                        >
+                                            {'\u00A0'}
+                                        </motion.span>
+                                    )}
+                                </span>
+                            );
+                        })}
                     </h1>
 
                     <motion.p
@@ -851,316 +1277,396 @@ export default function ComponentDetailPage() {
                                     overflow-hidden
                                 `}
                             >
-                        {/* Sandbox Content */}
-                        <div className="absolute inset-0">
-                            {PreviewComponent && componentId === 'page-reveal' ? (
-                                <PageReveal
-                                    key={config._replay || 'initial'}
-                                    config={config}
-                                    autoStart={true}
-                                    contained={true}
-                                >
-                                    {/* Demo content to reveal */}
-                                    {/* Demo content to reveal */}
-                                    <div className="w-full h-full bg-background flex flex-col items-center justify-center p-8 overflow-hidden relative">
-                                        {/* Background Grid Pattern */}
-                                        <div className="absolute inset-0 opacity-[0.03]"
-                                            style={{
-                                                backgroundImage: `linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)`,
-                                                backgroundSize: '40px 40px'
+                                {/* Sandbox Content */}
+                                <div ref={sandboxRef} className="absolute inset-0">
+                                    {PreviewComponent && componentId === 'page-reveal' ? (
+                                        <PageReveal
+                                            key={config._replay || 'initial'}
+                                            config={config}
+                                            autoStart={true}
+                                            contained={true}
+                                        >
+                                            {/* Demo content to reveal */}
+                                            {/* Demo content to reveal */}
+                                            <div className="w-full h-full bg-background flex flex-col items-center justify-center p-8 overflow-hidden relative">
+                                                {/* Background Grid Pattern */}
+                                                <div className="absolute inset-0 opacity-[0.03]"
+                                                    style={{
+                                                        backgroundImage: `linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)`,
+                                                        backgroundSize: '40px 40px'
+                                                    }}
+                                                />
+
+                                                {/* Mock Interface */}
+                                                <div className="z-10 w-full max-w-2xl flex flex-col gap-8">
+                                                    {/* Mock Header */}
+                                                    <div className="w-full h-8 flex items-center justify-between border-b border-foreground/10 pb-4">
+                                                        <div className="h-4 w-4 rounded-full bg-foreground/20"></div>
+                                                        <div className="flex gap-2">
+                                                            <div className="h-2 w-12 rounded-full bg-foreground/10"></div>
+                                                            <div className="h-2 w-12 rounded-full bg-foreground/10"></div>
+                                                            <div className="h-2 w-12 rounded-full bg-foreground/10"></div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Hero Content */}
+                                                    <div className="flex flex-col items-center text-center gap-4 py-8">
+                                                        <div className="px-3 py-1 rounded-full border border-foreground/10 bg-foreground/5 text-foreground/60 text-[10px] uppercase tracking-wider font-medium mb-2">
+                                                            Reveal Animation
+                                                        </div>
+                                                        <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-foreground">
+                                                            Seamless Entry.
+                                                        </h2>
+                                                        <p className="text-foreground/60 max-w-md text-sm md:text-base leading-relaxed">
+                                                            Create impactful first impressions with a cinematic reveal effect that transitions smoothly into your content.
+                                                        </p>
+
+                                                        <div className="flex gap-3 mt-4">
+                                                            <div className="px-6 py-2 rounded-lg bg-foreground text-background text-sm font-medium">
+                                                                Get Started
+                                                            </div>
+                                                            <div className="px-6 py-2 rounded-lg border border-foreground/10 text-foreground text-sm font-medium">
+                                                                Learn More
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Bottom Cards */}
+                                                    <div className="grid grid-cols-3 gap-4 opacity-50">
+                                                        {[1, 2, 3].map(i => (
+                                                            <div key={i} className="aspect-[4/3] rounded-lg bg-foreground/5 border border-foreground/5"></div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </PageReveal>
+                                    ) : PreviewComponent && componentId === 'liquid-morph' ? (
+                                        <LiquidMorph config={config} isFullScreen={isFullScreen} />
+                                    ) : PreviewComponent && componentId === 'ascii-simulation' ? (
+                                        <AsciiSimulation config={config} isFullScreen={isFullScreen} />
+                                    ) : PreviewComponent && componentId === 'image-trail-cursor' ? (
+                                        <ImageTrailCursor config={config} containerRef={sandboxRef} />
+                                    ) : PreviewComponent && componentId === 'reality-lens' ? (
+                                        <RealityLens
+                                            lensSize={config.lensSize || 200}
+                                            revealContent={
+                                                <div
+                                                    className="w-full h-full bg-cover bg-center bg-no-repeat"
+                                                    style={{ backgroundImage: "url('/backcol.jpg')" }}
+                                                />
+                                            }
+                                        >
+                                            {/* Base layer - Normal view */}
+                                            <div
+                                                className="w-full h-full bg-cover bg-center bg-no-repeat"
+                                                style={{ backgroundImage: "url('/back5.png')" }}
+                                            />
+                                        </RealityLens>
+                                    ) : PreviewComponent && (
+                                        <PreviewComponent key={componentKey} config={config} />
+                                    )}
+                                </div>
+
+                                {/* Additional Floating Buttons for Page Reveal */}
+                                {componentId === 'page-reveal' && (
+                                    <>
+                                        {/* Desktop Buttons */}
+                                        <motion.div
+                                            initial={{ right: 16 }}
+                                            animate={{
+                                                right: controlsOpen ? 370 : 16,
                                             }}
-                                        />
+                                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                                            className="hidden md:flex flex-col gap-2 z-[60] absolute bottom-[72px]"
+                                        >
+                                            {/* Replay Button */}
+                                            <button
+                                                onClick={() => handleConfigChange('_replay', Date.now())}
+                                                title="Replay Animation"
+                                                className="
+                                            w-12 h-12 rounded-full
+                                            bg-foreground/10 backdrop-blur-lg
+                                            border border-foreground/10
+                                            flex items-center justify-center
+                                            hover:bg-foreground/20 transition-colors
+                                        "
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M23 4v6h-6" />
+                                                    <path d="M1 20v-6h6" />
+                                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                                </svg>
+                                            </button>
 
-                                        {/* Mock Interface */}
-                                        <div className="z-10 w-full max-w-2xl flex flex-col gap-8">
-                                            {/* Mock Header */}
-                                            <div className="w-full h-8 flex items-center justify-between border-b border-foreground/10 pb-4">
-                                                <div className="h-4 w-4 rounded-full bg-foreground/20"></div>
-                                                <div className="flex gap-2">
-                                                    <div className="h-2 w-12 rounded-full bg-foreground/10"></div>
-                                                    <div className="h-2 w-12 rounded-full bg-foreground/10"></div>
-                                                    <div className="h-2 w-12 rounded-full bg-foreground/10"></div>
-                                                </div>
-                                            </div>
+                                            {/* Full Page Button */}
+                                            <button
+                                                onClick={() => {
+                                                    setFullPageRevealKey(Date.now());
+                                                    setControlsOpen(false);
+                                                }}
+                                                title="Present Full Page"
+                                                className="
+                                            w-12 h-12 rounded-full
+                                            bg-foreground/10 backdrop-blur-lg
+                                            border border-foreground/10
+                                            flex items-center justify-center
+                                            hover:bg-foreground/20 transition-colors
+                                        "
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M15 3h6v6" />
+                                                    <path d="M9 21H3v-6" />
+                                                    <path d="M21 3l-7 7" />
+                                                    <path d="M3 21l7-7" />
+                                                </svg>
+                                            </button>
+                                        </motion.div>
 
-                                            {/* Hero Content */}
-                                            <div className="flex flex-col items-center text-center gap-4 py-8">
-                                                <div className="px-3 py-1 rounded-full border border-foreground/10 bg-foreground/5 text-foreground/60 text-[10px] uppercase tracking-wider font-medium mb-2">
-                                                    Reveal Animation
-                                                </div>
-                                                <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-foreground">
-                                                    Seamless Entry.
-                                                </h2>
-                                                <p className="text-foreground/60 max-w-md text-sm md:text-base leading-relaxed">
-                                                    Create impactful first impressions with a cinematic reveal effect that transitions smoothly into your content.
-                                                </p>
-
-                                                <div className="flex gap-3 mt-4">
-                                                    <div className="px-6 py-2 rounded-lg bg-foreground text-background text-sm font-medium">
-                                                        Get Started
-                                                    </div>
-                                                    <div className="px-6 py-2 rounded-lg border border-foreground/10 text-foreground text-sm font-medium">
-                                                        Learn More
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Bottom Cards */}
-                                            <div className="grid grid-cols-3 gap-4 opacity-50">
-                                                {[1, 2, 3].map(i => (
-                                                    <div key={i} className="aspect-[4/3] rounded-lg bg-foreground/5 border border-foreground/5"></div>
-                                                ))}
-                                            </div>
+                                        {/* Mobile Buttons */}
+                                        <div className="absolute bottom-[72px] right-4 md:hidden flex flex-col gap-2 z-[60]">
+                                            <button
+                                                onClick={() => handleConfigChange('_replay', Date.now())}
+                                                className="
+                                            w-12 h-12 rounded-full
+                                            bg-foreground/10 backdrop-blur-lg
+                                            border border-foreground/10
+                                            flex items-center justify-center
+                                            hover:bg-foreground/20 transition-colors
+                                        "
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M23 4v6h-6" />
+                                                    <path d="M1 20v-6h6" />
+                                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setFullPageRevealKey(Date.now());
+                                                    setControlsOpen(false);
+                                                }}
+                                                className="
+                                            w-12 h-12 rounded-full
+                                            bg-foreground/10 backdrop-blur-lg
+                                            border border-foreground/10
+                                            flex items-center justify-center
+                                            hover:bg-foreground/20 transition-colors
+                                        "
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M15 3h6v6" />
+                                                    <path d="M9 21H3v-6" />
+                                                    <path d="M21 3l-7 7" />
+                                                    <path d="M3 21l7-7" />
+                                                </svg>
+                                            </button>
                                         </div>
-                                    </div>
-                                </PageReveal>
-                            ) : PreviewComponent && componentId === 'liquid-morph' ? (
-                                <LiquidMorph config={config} isFullScreen={isFullScreen} />
-                            ) : PreviewComponent && componentId === 'ascii-simulation' ? (
-                                <AsciiSimulation config={config} isFullScreen={isFullScreen} />
-                            ) : PreviewComponent && (
-                                <PreviewComponent config={config} />
-                            )}
-                        </div>
+                                    </>
+                                )}
 
-                        {/* Additional Floating Buttons for Page Reveal */}
-                        {componentId === 'page-reveal' && (
-                            <>
-                                {/* Desktop Buttons */}
-                                <motion.div
+                                {/* Additional Floating Buttons for Other Components (Generic Full Screen) */}
+                                {componentId !== 'page-reveal' && (
+                                    <>
+                                        {/* Desktop Buttons */}
+                                        <motion.div
+                                            initial={{ right: 16 }}
+                                            animate={{
+                                                right: controlsOpen ? 370 : 16,
+                                            }}
+                                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                                            className="hidden md:flex flex-col gap-2 z-[60] absolute bottom-[72px]"
+                                        >
+                                            <button
+                                                onClick={() => setIsFullScreen(!isFullScreen)}
+                                                title={isFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
+                                                className={`
+                                                    w-12 h-12 rounded-full
+                                                    backdrop-blur-lg
+                                                    flex items-center justify-center
+                                                    transition-colors
+                                                    ${componentId === 'scroll-to-reveal'
+                                                        ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
+                                                        : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
+                                                `}
+                                            >
+                                                {isFullScreen ? (
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M15 3h6v6" />
+                                                        <path d="M9 21H3v-6" />
+                                                        <path d="M21 3l-7 7" />
+                                                        <path d="M3 21l7-7" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        </motion.div>
+
+                                        {/* Mobile Buttons */}
+                                        <div className="absolute bottom-[72px] right-4 md:hidden flex flex-col gap-2 z-[60]">
+                                            <button
+                                                onClick={() => setIsFullScreen(!isFullScreen)}
+                                                className={`
+                                                    w-12 h-12 rounded-full
+                                                    backdrop-blur-lg
+                                                    flex items-center justify-center
+                                                    transition-colors
+                                                    ${componentId === 'scroll-to-reveal'
+                                                        ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
+                                                        : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
+                                                `}
+                                            >
+                                                {isFullScreen ? (
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M15 3h6v6" />
+                                                        <path d="M9 21H3v-6" />
+                                                        <path d="M21 3l-7 7" />
+                                                        <path d="M3 21l7-7" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Reload Button for NavbarMenu2 */}
+                                {componentId === 'navbar-menu-2' && (
+                                    <>
+                                        {/* Desktop Reload Button */}
+                                        <motion.div
+                                            initial={{ right: 16 }}
+                                            animate={{
+                                                right: controlsOpen ? 370 : 16,
+                                            }}
+                                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                                            className="hidden md:flex flex-col gap-2 z-[60] absolute bottom-[128px]"
+                                        >
+                                            <button
+                                                onClick={() => setComponentKey(prev => prev + 1)}
+                                                title="Reload Component"
+                                                className="
+                                                    w-12 h-12 rounded-full
+                                                    bg-foreground/10 backdrop-blur-lg
+                                                    border border-foreground/10
+                                                    flex items-center justify-center
+                                                    hover:bg-foreground/20 transition-colors
+                                                "
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M23 4v6h-6" />
+                                                    <path d="M1 20v-6h6" />
+                                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                                </svg>
+                                            </button>
+                                        </motion.div>
+
+                                        {/* Mobile Reload Button */}
+                                        <div className="absolute bottom-[128px] right-4 md:hidden flex flex-col gap-2 z-[60]">
+                                            <button
+                                                onClick={() => setComponentKey(prev => prev + 1)}
+                                                title="Reload Component"
+                                                className="
+                                                    w-12 h-12 rounded-full
+                                                    bg-foreground/10 backdrop-blur-lg
+                                                    border border-foreground/10
+                                                    flex items-center justify-center
+                                                    hover:bg-foreground/20 transition-colors
+                                                "
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M23 4v6h-6" />
+                                                    <path d="M1 20v-6h6" />
+                                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Controls Toggle Button - Animates left on desktop when panel is open */}
+                                <motion.button
+                                    onClick={() => setControlsOpen(!controlsOpen)}
                                     initial={{ right: 16 }}
                                     animate={{
                                         right: controlsOpen ? 370 : 16,
                                     }}
                                     transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                                    className="hidden md:flex flex-col gap-2 z-[60] absolute bottom-[72px]"
+                                    style={{ bottom: 16 }}
+                                    className={`
+                                        absolute
+                                        w-12 h-12 rounded-full
+                                        backdrop-blur-lg
+                                        flex items-center justify-center
+                                        z-[60]
+                                        hidden md:flex
+                                        transition-colors
+                                        ${componentId === 'scroll-to-reveal'
+                                            ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
+                                            : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
+                                    `}
                                 >
-                                    {/* Replay Button */}
-                                    <button
-                                        onClick={() => handleConfigChange('_replay', Date.now())}
-                                        title="Replay Animation"
-                                        className="
-                                            w-12 h-12 rounded-full
-                                            bg-foreground/10 backdrop-blur-lg
-                                            border border-foreground/10
-                                            flex items-center justify-center
-                                            hover:bg-foreground/20 transition-colors
-                                        "
+                                    <motion.svg
+                                        animate={{ rotate: controlsOpen ? 45 : 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
                                     >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M23 4v6h-6" />
-                                            <path d="M1 20v-6h6" />
-                                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                                        </svg>
-                                    </button>
+                                        <circle cx="12" cy="12" r="3" />
+                                        <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" />
+                                    </motion.svg>
+                                </motion.button>
 
-                                    {/* Full Page Button */}
-                                    <button
-                                        onClick={() => {
-                                            setFullPageRevealKey(Date.now());
-                                            setControlsOpen(false);
-                                        }}
-                                        title="Present Full Page"
-                                        className="
-                                            w-12 h-12 rounded-full
-                                            bg-foreground/10 backdrop-blur-lg
-                                            border border-foreground/10
-                                            flex items-center justify-center
-                                            hover:bg-foreground/20 transition-colors
-                                        "
-                                    >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M15 3h6v6" />
-                                            <path d="M9 21H3v-6" />
-                                            <path d="M21 3l-7 7" />
-                                            <path d="M3 21l7-7" />
-                                        </svg>
-                                    </button>
-                                </motion.div>
-
-                                {/* Mobile Buttons */}
-                                <div className="absolute bottom-[72px] right-4 md:hidden flex flex-col gap-2 z-[60]">
-                                    <button
-                                        onClick={() => handleConfigChange('_replay', Date.now())}
-                                        className="
-                                            w-12 h-12 rounded-full
-                                            bg-foreground/10 backdrop-blur-lg
-                                            border border-foreground/10
-                                            flex items-center justify-center
-                                            hover:bg-foreground/20 transition-colors
-                                        "
-                                    >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M23 4v6h-6" />
-                                            <path d="M1 20v-6h6" />
-                                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setFullPageRevealKey(Date.now());
-                                            setControlsOpen(false);
-                                        }}
-                                        className="
-                                            w-12 h-12 rounded-full
-                                            bg-foreground/10 backdrop-blur-lg
-                                            border border-foreground/10
-                                            flex items-center justify-center
-                                            hover:bg-foreground/20 transition-colors
-                                        "
-                                    >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M15 3h6v6" />
-                                            <path d="M9 21H3v-6" />
-                                            <path d="M21 3l-7 7" />
-                                            <path d="M3 21l7-7" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Additional Floating Buttons for Other Components (Generic Full Screen) */}
-                        {componentId !== 'page-reveal' && (
-                            <>
-                                {/* Desktop Buttons */}
-                                <motion.div
-                                    initial={{ right: 16 }}
-                                    animate={{
-                                        right: controlsOpen ? 370 : 16,
-                                    }}
-                                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                                    className="hidden md:flex flex-col gap-2 z-[60] absolute bottom-[72px]"
+                                {/* Mobile Toggle Button - Fixed position */}
+                                <button
+                                    onClick={() => setControlsOpen(true)}
+                                    className={`
+                                        absolute bottom-4 right-4
+                                        w-12 h-12 rounded-full
+                                        backdrop-blur-lg
+                                        flex items-center justify-center
+                                        transition-colors
+                                        z-[60]
+                                        md:hidden
+                                        ${componentId === 'scroll-to-reveal'
+                                            ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
+                                            : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
+                                    `}
                                 >
-                                    <button
-                                        onClick={() => setIsFullScreen(!isFullScreen)}
-                                        title={isFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
-                                        className="
-                                            w-12 h-12 rounded-full
-                                            bg-foreground/10 backdrop-blur-lg
-                                            border border-foreground/10
-                                            flex items-center justify-center
-                                            hover:bg-foreground/20 transition-colors
-                                        "
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
                                     >
-                                        {isFullScreen ? (
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
-                                            </svg>
-                                        ) : (
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M15 3h6v6" />
-                                                <path d="M9 21H3v-6" />
-                                                <path d="M21 3l-7 7" />
-                                                <path d="M3 21l7-7" />
-                                            </svg>
-                                        )}
-                                    </button>
-                                </motion.div>
+                                        <circle cx="12" cy="12" r="3" />
+                                        <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" />
+                                    </svg>
+                                </button>
 
-                                {/* Mobile Buttons */}
-                                <div className="absolute bottom-[72px] right-4 md:hidden flex flex-col gap-2 z-[60]">
-                                    <button
-                                        onClick={() => setIsFullScreen(!isFullScreen)}
-                                        className="
-                                            w-12 h-12 rounded-full
-                                            bg-foreground/10 backdrop-blur-lg
-                                            border border-foreground/10
-                                            flex items-center justify-center
-                                            hover:bg-foreground/20 transition-colors
-                                        "
-                                    >
-                                        {isFullScreen ? (
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
-                                            </svg>
-                                        ) : (
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M15 3h6v6" />
-                                                <path d="M9 21H3v-6" />
-                                                <path d="M21 3l-7 7" />
-                                                <path d="M3 21l7-7" />
-                                            </svg>
-                                        )}
-                                    </button>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Controls Toggle Button - Animates left on desktop when panel is open */}
-                        <motion.button
-                            onClick={() => setControlsOpen(!controlsOpen)}
-                            initial={{ right: 16 }}
-                            animate={{
-                                right: controlsOpen ? 370 : 16,
-                            }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            style={{ bottom: 16 }}
-                            className="
-                                absolute
-                                w-12 h-12 rounded-full
-                                bg-foreground/10 backdrop-blur-lg
-                                border border-foreground/10
-                                flex items-center justify-center
-                                hover:bg-foreground/20
-                                z-[60]
-                                hidden md:flex
-                            "
-                        >
-                            <motion.svg
-                                animate={{ rotate: controlsOpen ? 45 : 0 }}
-                                transition={{ duration: 0.2 }}
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <circle cx="12" cy="12" r="3" />
-                                <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" />
-                            </motion.svg>
-                        </motion.button>
-
-                        {/* Mobile Toggle Button - Fixed position */}
-                        <button
-                            onClick={() => setControlsOpen(true)}
-                            className="
-                                absolute bottom-4 right-4
-                                w-12 h-12 rounded-full
-                                bg-foreground/10 backdrop-blur-lg
-                                border border-foreground/10
-                                flex items-center justify-center
-                                hover:bg-foreground/20 transition-colors
-                                z-[60]
-                                md:hidden
-                            "
-                        >
-                            <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <circle cx="12" cy="12" r="3" />
-                                <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" />
-                            </svg>
-                        </button>
-
-                        {/* Controls Panel - Inside sandbox on desktop */}
-                        <ControlsPanel
-                            isOpen={controlsOpen}
-                            onClose={() => setControlsOpen(false)}
-                            config={config}
-                            onConfigChange={handleConfigChange}
-                            componentId={componentId}
-                        />
+                                {/* Controls Panel - Inside sandbox on desktop */}
+                                <ControlsPanel
+                                    isOpen={controlsOpen}
+                                    onClose={() => setControlsOpen(false)}
+                                    config={config}
+                                    onConfigChange={handleConfigChange}
+                                    componentId={componentId}
+                                />
                             </motion.div>
                         );
 
