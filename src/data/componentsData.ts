@@ -2322,6 +2322,211 @@ export default ScrollToReveal;`,
             { name: 'className', type: 'string', default: 'undefined', description: 'Additional CSS classes for styling' },
             { name: 'minOpacity', type: 'number', default: '0.15', description: 'Opacity of words not in focus (0-1)' }
         ]
+    },
+    {
+        id: 'diffuse-text',
+        name: 'Diffuse Text',
+        index: 11,
+        description: 'A cinematic text effect that simulates diffuse light bleeding through a foggy atmosphere. Creates a soft, breathing glow with layered blurs for a premium, ethereal aesthetic.',
+        tags: ['text', 'blur', 'glow', 'cinema', 'atmosphere', 'light'],
+        category: 'effect',
+        previewConfig: {
+            text: 'BASS',
+            blurLevel: 24,
+            intensity: 1,
+            color: '#ffffff',
+            backgroundColor: '#7ca5b8'
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { DiffuseText } from '@/components/ui';
+
+// Basic usage
+<DiffuseText />
+
+// Custom configuration
+<DiffuseText 
+    config={{
+        text: 'ECHO',
+        blurLevel: 20,
+        intensity: 0.8,
+        color: '#ffdd00'
+    }}
+/>`,
+        fullCode: `"use client";
+
+import React, { useEffect, useRef } from "react";
+import { motion, useAnimation, useMotionValue, useTransform } from "framer-motion";
+import { cn } from "@/lib/utils";
+
+// ============================================
+// TYPES
+// ============================================
+
+export interface DiffuseTextConfig {
+    text: string;
+    subtextLeft?: string;
+    subtextRight?: string;
+    blurLevel: number;
+    intensity: number;
+    color: string;
+    backgroundColor: string;
+}
+
+export interface DiffuseTextProps {
+    config?: Partial<DiffuseTextConfig>;
+    className?: string;
+}
+
+// ============================================
+// DEFAULT CONFIG
+// ============================================
+
+const defaultConfig: DiffuseTextConfig = {
+    text: "BASS",
+    subtextLeft: "Barcelona Arts Summer School",
+    subtextRight: "by ESCAC / ESMUC / Institut del Teatre",
+    blurLevel: 24,
+    intensity: 1,
+    color: "#ffffff",
+    backgroundColor: "#7ca5b8", // Muted slate blue from image
+};
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
+
+export function DiffuseText({ config: userConfig, className }: DiffuseTextProps) {
+    const config = { ...defaultConfig, ...userConfig };
+    
+    // Animation controls for the breathing effect
+    const controls = useAnimation();
+
+    useEffect(() => {
+        controls.start({
+            filter: [
+                \`blur(\${config.blurLevel}px) brightness(\${1 + config.intensity * 0.2})\`,
+                \`blur(\${config.blurLevel * 1.5}px) brightness(\${1 + config.intensity * 0.5})\`,
+                \`blur(\${config.blurLevel}px) brightness(\${1 + config.intensity * 0.2})\`,
+            ],
+            transition: {
+                duration: 4,
+                ease: "easeInOut",
+                repeat: Infinity,
+            }
+        });
+    }, [config.blurLevel, config.intensity, controls]);
+
+    return (
+        <div 
+            className={cn("relative w-full h-full overflow-hidden font-sans", className)}
+            style={{ 
+                background: \`linear-gradient(135deg, \${config.backgroundColor} 0%, #4a5568 100%)\` 
+            }}
+        >
+            {/* Ambient Light Overlay */}
+            <div className="absolute inset-0 bg-black/10 mix-blend-overlay pointer-events-none" />
+
+            {/* Main Center Content */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                <div className="relative w-full text-center">
+                    {/* Layer 1: Deep Atmosphere Glow (The "Aura") */}
+                    <motion.h1 
+                        className="text-[25vw] sm:text-[30vw] font-black leading-none tracking-tighter"
+                        style={{ 
+                            color: config.color,
+                            opacity: 0.4 * config.intensity,
+                            filter: \`blur(\${config.blurLevel * 2}px)\`,
+                        }}
+                        animate={{
+                            opacity: [0.4 * config.intensity, 0.6 * config.intensity, 0.4 * config.intensity],
+                            scale: [1, 1.05, 1],
+                        }}
+                        transition={{
+                            duration: 5,
+                            ease: "easeInOut",
+                            repeat: Infinity,
+                            repeatType: "reverse"
+                        }}
+                    >
+                        {config.text}
+                    </motion.h1>
+
+                    {/* Layer 2: The Core Shape (Animated Breathing) */}
+                    <motion.h1 
+                        className="absolute top-0 left-0 right-0 text-[25vw] sm:text-[30vw] font-black leading-none tracking-tighter mix-blend-screen"
+                        style={{ color: config.color }}
+                        animate={controls}
+                    >
+                        {config.text}
+                    </motion.h1>
+
+                     {/* Layer 3: Subtle Definition (Optional tint for depth) */}
+                     <h1 
+                        className="absolute top-0 left-0 right-0 text-[25vw] sm:text-[30vw] font-black leading-none tracking-tighter opacity-10"
+                        style={{ 
+                            color: config.color,
+                            filter: \`blur(\${config.blurLevel * 0.5}px)\`
+                        }}
+                    >
+                        {config.text}
+                    </h1>
+                </div>
+            </div>
+
+            {/* Foreground UI Layer (Sharp) */}
+            <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-12 z-10 pointer-events-none">
+                {/* Top Row - empty for now or could have nav */}
+                <div className="w-full flex justify-between" />
+                
+                {/* Bottom Row - Subtext */}
+                <div className="w-full flex items-end justify-between text-[#fcd34d] text-xs md:text-sm font-medium tracking-wide opacity-90 mix-blend-hard-light">
+                    <span className="max-w-[30%] text-left">
+                        {config.subtextLeft}
+                    </span>
+                    <span className="max-w-[30%] text-right">
+                        {config.subtextRight}
+                    </span>
+                </div>
+            </div>
+
+            {/* Simple Grain/Noise Overlay for Texture */}
+            <div 
+                className="absolute inset-0 opacity-[0.07] pointer-events-none mix-blend-overlay"
+                style={{
+                    backgroundImage: \`url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")\`
+                }}
+            />
+        </div>
+    );
+}
+
+// ============================================
+// PREVIEW COMPONENT
+// ============================================
+
+export function DiffuseTextPreview() {
+    return (
+        <div className="w-full h-full relative overflow-hidden bg-[#7ca5b8]">
+            <div className="absolute inset-0 flex items-center justify-center">
+                 <h1 
+                    className="text-[80px] font-black tracking-tighter text-white/90 blur-xl scale-150 opacity-80"
+                >
+                    BASS
+                </h1>
+            </div>
+             <div className="absolute bottom-4 left-4 text-[10px] text-[#fcd34d] font-medium opacity-80">
+                Barcelona Arts...
+            </div>
+             <div className="absolute bottom-4 right-4 text-[10px] text-[#fcd34d] font-medium opacity-80">
+                by ESCAC...
+            </div>
+        </div>
+    );
+}`,
+        props: [
+            { name: 'config', type: 'Partial<DiffuseTextConfig>', default: '{}', description: 'Configuration object' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
     }
 ];
 

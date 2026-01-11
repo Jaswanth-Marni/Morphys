@@ -15,6 +15,7 @@ import SpotlightSearch from "@/components/ui/SpotlightSearch";
 import ImageTrailCursor, { ImageTrailCursorConfig } from "@/components/ui/ImageTrailCursor";
 import { RealityLens } from "@/components/ui/RealityLens";
 import { ScrollToReveal, ScrollToRevealSandbox } from "@/components/ui/ScrollToReveal";
+import { DiffuseText } from "@/components/ui/DiffuseText";
 
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
@@ -64,6 +65,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
             minOpacity={config.minOpacity ?? 0.15}
         />
     ),
+    'diffuse-text': DiffuseText as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -526,6 +528,64 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         </div>
                                     </div>
                                 </>
+                            ) : componentId === 'diffuse-text' ? (
+                                // DIFFUSE TEXT CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <NumberControl
+                                            label="Blur Amount"
+                                            value={config.blurLevel ?? 24}
+                                            min={0}
+                                            max={100}
+                                            suffix="px"
+                                            onChange={(val) => onConfigChange('blurLevel', val)}
+                                        />
+                                        <NumberControl
+                                            label="Intensity"
+                                            value={Math.round((config.intensity ?? 1) * 100)}
+                                            min={0}
+                                            max={200}
+                                            suffix="%"
+                                            onChange={(val) => onConfigChange('intensity', val / 100)}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Colors</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <span className="text-xs text-foreground/40">Text</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.color || '#ffffff'}
+                                                    onChange={(e) => onConfigChange('color', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-foreground/40">Background</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.backgroundColor || '#7ca5b8'}
+                                                    onChange={(e) => onConfigChange('backgroundColor', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Main Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.text || ''}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                            />
+                                        </div>
+                                    </div>
+                                </>
                             ) : (
                                 // FLIP GRID CONTROLS
                                 <>
@@ -853,6 +913,28 @@ function CodeDisplay({ config, fullCode, componentId }: CodeDisplayProps) {
             return `import { ScrollToReveal } from '@/components/ui';\n\n<ScrollToReveal\n    text="${config.text || 'Your text here...'}"\n    minOpacity={${config.minOpacity ?? 0.15}}\n    className="text-4xl font-bold"\n/>`;
         }
 
+        if (componentId === 'diffuse-text') {
+            const defaultConfig = {
+                text: "MORPHYS",
+                blurLevel: 24,
+                intensity: 1,
+                color: "#ffffff",
+                backgroundColor: "#7ca5b8",
+            };
+
+            const configEntries: string[] = [];
+            if (config.text !== defaultConfig.text) configEntries.push(`        text: '${config.text}',`);
+            if (config.blurLevel !== defaultConfig.blurLevel) configEntries.push(`        blurLevel: ${config.blurLevel},`);
+            if (config.intensity !== defaultConfig.intensity) configEntries.push(`        intensity: ${config.intensity},`);
+            if (config.color !== defaultConfig.color) configEntries.push(`        color: '${config.color}',`);
+            if (config.backgroundColor !== defaultConfig.backgroundColor) configEntries.push(`        backgroundColor: '${config.backgroundColor}',`);
+
+            if (configEntries.length === 0) {
+                return `import { DiffuseText } from '@/components/ui';\n\n// Basic usage\n<DiffuseText />`;
+            }
+            return `import { DiffuseText } from '@/components/ui';\n\n<DiffuseText\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
+        }
+
         // FLIP GRID (Default)
         const defaultConfig: FlipGridConfig = {
             cols: 10,
@@ -1149,6 +1231,16 @@ export default function ComponentDetailPage() {
         } else if (componentId === 'reality-lens') {
             setConfig({
                 lensSize: 120,
+            });
+        } else if (componentId === 'diffuse-text') {
+            setConfig({
+                text: "MORPHYS",
+                subtextLeft: "Barcelona Arts Summer School",
+                subtextRight: "by ESCAC / ESMUC / Institut del Teatre",
+                blurLevel: 24,
+                intensity: 1,
+                color: "#ffffff",
+                backgroundColor: "#7ca5b8",
             });
         }
     }, [componentId]);

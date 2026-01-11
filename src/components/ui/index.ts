@@ -35,3 +35,4 @@ export { TransitionProvider } from "./TransitionProvider";
 export { CanvasOverlay } from "./CanvasOverlay";
 export { RealityLens } from "./RealityLens";
 export { ScrollToReveal } from "./ScrollToReveal";
+export { DiffuseText } from "./DiffuseText";

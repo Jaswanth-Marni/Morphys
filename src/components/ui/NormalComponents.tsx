@@ -13,6 +13,7 @@ import { ImageTrailCursorPreview } from "./ImageTrailCursor";
 import { RealityLensPreview } from "./RealityLens";
 import { NavbarMenu2Preview } from "./NavbarMenu2";
 import { ScrollToRevealPreview } from "./ScrollToReveal";
+import { DiffuseTextPreview } from "./DiffuseText";
 
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
@@ -26,6 +27,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'image-trail-cursor': ImageTrailCursorPreview,
     'reality-lens': RealityLensPreview,
     'scroll-to-reveal': ScrollToRevealPreview,
+    'diffuse-text': DiffuseTextPreview,
 };
 
 export function NormalComponents() {
