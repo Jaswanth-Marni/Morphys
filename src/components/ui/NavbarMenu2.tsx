@@ -93,7 +93,7 @@ export function NavbarMenu2({ config: userConfig }: NavbarMenu2Props = {}) {
 
     // Animation transition - buttery smooth spring
     const springTransition = {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 80,
         damping: 18,
         mass: 0.8,
@@ -110,7 +110,7 @@ export function NavbarMenu2({ config: userConfig }: NavbarMenu2Props = {}) {
             y: 0,
             filter: "blur(0px)",
             transition: {
-                type: "spring",
+                type: "spring" as const,
                 stiffness: 100,
                 damping: 20,
                 delay: i * 0.08 + 0.15

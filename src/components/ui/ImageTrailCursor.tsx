@@ -12,7 +12,7 @@ export interface ImageTrailCursorConfig {
 
 export interface ImageTrailCursorProps {
     config?: Partial<ImageTrailCursorConfig>;
-    containerRef?: RefObject<HTMLElement>;
+    containerRef?: React.RefObject<HTMLElement | null>;
 }
 
 const defaultImages = [

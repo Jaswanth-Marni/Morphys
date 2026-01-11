@@ -27,9 +27,24 @@
   font-display: swap;
 }
 
+/* Kugile Font */
+@font-face {
+  font-family: 'Kugile';
+  src: url('/Kugile_Demo.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Logo font class */
 .font-logo {
   font-family: 'Yorkmade', sans-serif;
+}
+
+/* Kugile font class */
+.font-kugile {
+  font-family: 'Kugile', serif;
+  font-weight: 400;
 }
 
 /* Thunder font class */

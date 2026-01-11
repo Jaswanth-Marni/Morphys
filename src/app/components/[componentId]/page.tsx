@@ -1395,7 +1395,7 @@ export default function ComponentDetailPage() {
                                     ) : PreviewComponent && componentId === 'ascii-simulation' ? (
                                         <AsciiSimulation config={config} isFullScreen={isFullScreen} />
                                     ) : PreviewComponent && componentId === 'image-trail-cursor' ? (
-                                        <ImageTrailCursor config={config} containerRef={sandboxRef} />
+                                        <ImageTrailCursor config={config} containerRef={sandboxRef as React.RefObject<HTMLElement | null>} />
                                     ) : PreviewComponent && componentId === 'reality-lens' ? (
                                         <RealityLens
                                             lensSize={config.lensSize || 200}
