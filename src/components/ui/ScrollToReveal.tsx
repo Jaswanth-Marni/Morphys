@@ -1,13 +1,13 @@
 "use client";
 
-import { motion, useMotionValue, useMotionTemplate } from "framer-motion";
+import { motion, useMotionValue } from "framer-motion";
 import React, { useRef, createContext, useContext, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 // Context to pass the scroll container ref and scroll trigger
 interface ScrollContextValue {
     containerRef: React.RefObject<HTMLDivElement | null>;
-    registerWord: (element: HTMLSpanElement, update: (opacity: number, blur: number, scale: number) => void) => () => void;
+    registerWord: (element: HTMLSpanElement, setOpacity: (val: number) => void) => () => void;
 }
 
 const ScrollContainerContext = createContext<ScrollContextValue | null>(null);
@@ -28,34 +28,23 @@ const Word = ({
     const ref = useRef<HTMLSpanElement>(null);
     const context = useContext(ScrollContainerContext);
     const opacity = useMotionValue(minOpacity);
-    const blur = useMotionValue(5);
-    const scale = useMotionValue(0.95);
-
-    // Dynamic filter using template literal
-    const filter = useMotionTemplate`blur(${blur}px)`;
 
     useEffect(() => {
         if (!ref.current || !context) return;
 
-        const updateValues = (o: number, b: number, s: number) => {
-            opacity.set(o);
-            blur.set(b);
-            scale.set(s);
+        const setOpacityValue = (val: number) => {
+            opacity.set(val);
         };
 
-        const unregister = context.registerWord(ref.current, updateValues);
+        const unregister = context.registerWord(ref.current, setOpacityValue);
         return unregister;
-    }, [context, opacity, blur, scale]);
+    }, [context, opacity]);
 
     return (
         <motion.span
             ref={ref}
-            style={{
-                opacity,
-                filter,
-                scale
-            }}
-            className="mr-1.5 md:mr-2 inline-block will-change-transform transform-gpu"
+            style={{ opacity }}
+            className="mr-3 md:mr-4 inline-block"
         >
             {children}
         </motion.span>
@@ -68,13 +57,13 @@ export const ScrollToReveal: React.FC<ScrollToRevealProps> = ({
     minOpacity = 0.15,
 }) => {
     const words = text.split(" ");
-    // ... Simplified version for component preview if needed, or just redirect
+
     return (
-        <div className={cn("flex flex-wrap leading-[1.5]", className)}>
+        <div className={cn("flex flex-wrap leading-[1.5] font-kugile", className)}>
             {words.map((word, i) => (
-                <span key={i} className="mr-3 md:mr-4 inline-block opacity-20">
+                <Word key={i} minOpacity={minOpacity}>
                     {word}
-                </span>
+                </Word>
             ))}
         </div>
     );
@@ -94,9 +83,9 @@ export const ScrollToRevealSandbox: React.FC<ScrollToRevealSandboxProps> = ({
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const words = text.split(" ");
-    const wordRefs = useRef<Map<HTMLSpanElement, (o: number, b: number, s: number) => void>>(new Map());
+    const wordRefs = useRef<Map<HTMLSpanElement, (val: number) => void>>(new Map());
 
-    // Calculate variations based on element position within container
+    // Calculate opacity based on element position within container
     const updateOpacities = useCallback(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -104,7 +93,7 @@ export const ScrollToRevealSandbox: React.FC<ScrollToRevealSandboxProps> = ({
         const containerRect = container.getBoundingClientRect();
         const containerCenter = containerRect.height / 2;
 
-        wordRefs.current.forEach((update, element) => {
+        wordRefs.current.forEach((setOpacity, element) => {
             const elementRect = element.getBoundingClientRect();
             // Get element center relative to container top
             const elementCenterY = elementRect.top - containerRect.top + elementRect.height / 2;
@@ -116,27 +105,19 @@ export const ScrollToRevealSandbox: React.FC<ScrollToRevealSandboxProps> = ({
             const normalizedDistance = Math.min(1, Math.max(0, distanceFromCenter));
 
             // Apply power curve for sharper falloff - higher power = more focused highlight
+            // This makes only ~2-3 lines bright at a time
             const sharpness = 4;
-            const focusedFalloff = Math.pow(1 - normalizedDistance, sharpness); // 1.0 at center, 0.0 at edges
-
-            // Calculate Opacity
+            const focusedFalloff = Math.pow(1 - normalizedDistance, sharpness);
             const calculatedOpacity = minOpacity + focusedFalloff * (1 - minOpacity);
 
-            // Calculate Blur (0px at center, 4px at edges)
-            const maxBlur = 4;
-            const calculatedBlur = (1 - focusedFalloff) * maxBlur;
-
-            // Calculate Scale (1.0 at center, 0.92 at edges)
-            const minScale = 0.92;
-            const calculatedScale = minScale + focusedFalloff * (1 - minScale);
-
-            update(calculatedOpacity, calculatedBlur, calculatedScale);
+            setOpacity(calculatedOpacity);
         });
     }, [minOpacity]);
 
     // Register word elements
-    const registerWord = useCallback((element: HTMLSpanElement, update: (o: number, b: number, s: number) => void) => {
-        wordRefs.current.set(element, update);
+    const registerWord = useCallback((element: HTMLSpanElement, setOpacity: (val: number) => void) => {
+        wordRefs.current.set(element, setOpacity);
+        // Initial update
         requestAnimationFrame(updateOpacities);
         return () => {
             wordRefs.current.delete(element);
@@ -153,6 +134,7 @@ export const ScrollToRevealSandbox: React.FC<ScrollToRevealSandboxProps> = ({
         };
 
         container.addEventListener('scroll', handleScroll, { passive: true });
+        // Initial calculation
         handleScroll();
 
         return () => {
@@ -160,28 +142,75 @@ export const ScrollToRevealSandbox: React.FC<ScrollToRevealSandboxProps> = ({
         };
     }, [updateOpacities]);
 
+    // Smooth scroll state
+    const targetScrollRef = useRef(0);
+    const currentScrollRef = useRef(0);
+    const isAnimatingRef = useRef(false);
+
     // Use native event listener to prevent Lenis from intercepting scroll
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
 
-        const handleWheel = (e: WheelEvent) => {
-            const { scrollTop, scrollHeight, clientHeight } = container;
-            const isAtTop = scrollTop <= 0;
-            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+        // Initialize scroll positions
+        targetScrollRef.current = container.scrollTop;
+        currentScrollRef.current = container.scrollTop;
 
-            const scrollingDown = e.deltaY > 0;
-            const scrollingUp = e.deltaY < 0;
+        const smoothScroll = () => {
+            if (!container) return;
 
-            if ((scrollingDown && !isAtBottom) || (scrollingUp && !isAtTop)) {
-                e.preventDefault();
-                e.stopPropagation();
-                container.scrollTop += e.deltaY;
+            // Lerp towards target
+            const ease = 0.12; // Lower = smoother, higher = snappier
+            currentScrollRef.current += (targetScrollRef.current - currentScrollRef.current) * ease;
+
+            // Apply scroll
+            container.scrollTop = currentScrollRef.current;
+
+            // Continue animation if not close enough
+            if (Math.abs(targetScrollRef.current - currentScrollRef.current) > 0.5) {
+                requestAnimationFrame(smoothScroll);
+            } else {
+                isAnimatingRef.current = false;
+                currentScrollRef.current = targetScrollRef.current;
+                container.scrollTop = targetScrollRef.current;
             }
         };
 
+        const handleWheel = (e: WheelEvent) => {
+            const { scrollHeight, clientHeight } = container;
+            const maxScroll = scrollHeight - clientHeight;
+
+            // Calculate new target
+            const scrollAmount = e.deltaY * 0.8; // Reduce scroll speed slightly
+            let newTarget = targetScrollRef.current + scrollAmount;
+
+            // Clamp target
+            newTarget = Math.max(0, Math.min(maxScroll, newTarget));
+
+            const isAtTop = newTarget <= 0 && e.deltaY < 0;
+            const isAtBottom = newTarget >= maxScroll && e.deltaY > 0;
+
+            // If we can scroll in the direction of the wheel, capture the event
+            if (!isAtTop && !isAtBottom) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                targetScrollRef.current = newTarget;
+
+                // Start animation if not already running
+                if (!isAnimatingRef.current) {
+                    isAnimatingRef.current = true;
+                    requestAnimationFrame(smoothScroll);
+                }
+            }
+        };
+
+        // Use passive: false to allow preventDefault
         container.addEventListener('wheel', handleWheel, { passive: false });
-        return () => container.removeEventListener('wheel', handleWheel);
+
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+        };
     }, []);
 
     const contextValue: ScrollContextValue = {
@@ -191,30 +220,22 @@ export const ScrollToRevealSandbox: React.FC<ScrollToRevealSandboxProps> = ({
 
     return (
         <ScrollContainerContext.Provider value={contextValue}>
-            {/* Dark background wrapper with noise texture */}
-            <div className="w-full h-full bg-[#050505] relative overflow-hidden">
-                {/* Noise texture overlay */}
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
-                }} />
-
-                {/* Subtle spotlight gradient at the top */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[30%] bg-gradient-to-b from-white/5 to-transparent pointer-events-none blur-3xl" />
-
+            {/* Dark background wrapper */}
+            <div className="w-full h-full bg-[#0a0a0a]">
                 <div
                     ref={containerRef}
-                    className="w-full h-full overflow-y-auto relative z-10"
+                    className="w-full h-full overflow-y-auto"
                     style={{
                         overscrollBehavior: 'contain',
                     }}
                     onPointerDown={(e) => e.stopPropagation()}
                 >
-                    {/* Top spacer */}
+                    {/* Top spacer for scroll room - allows first words to reach center */}
                     <div className="h-[50%]" />
 
                     {/* Main text content */}
                     <div className={cn(
-                        "px-6 md:px-20 lg:px-32 flex flex-wrap leading-[1.2] justify-start",
+                        "px-6 md:px-20 lg:px-32 flex flex-wrap leading-[1.15] justify-start font-kugile",
                         className
                     )}>
                         {words.map((word, i) => (
@@ -224,7 +245,7 @@ export const ScrollToRevealSandbox: React.FC<ScrollToRevealSandboxProps> = ({
                         ))}
                     </div>
 
-                    {/* Bottom spacer */}
+                    {/* Bottom spacer for scroll room - allows last words to reach center */}
                     <div className="h-[50%]" />
                 </div>
             </div>
@@ -234,16 +255,43 @@ export const ScrollToRevealSandbox: React.FC<ScrollToRevealSandboxProps> = ({
 
 // Preview component for the card (static, no scroll needed)
 export function ScrollToRevealPreview() {
+    // Sample words with opacity values simulating the center-focused highlight effect
+    const previewWords = [
+        { text: "Morphys", opacity: 0.15 },
+        { text: "is", opacity: 0.15 },
+        { text: "a", opacity: 0.25 },
+        { text: "curated", opacity: 0.4 },
+        { text: "collection", opacity: 0.7 },
+        { text: "of", opacity: 0.9 },
+        { text: "high", opacity: 1 },
+        { text: "performance", opacity: 1 },
+        { text: "UI", opacity: 0.9 },
+        { text: "components", opacity: 0.7 },
+        { text: "designed", opacity: 0.4 },
+        { text: "to", opacity: 0.25 },
+        { text: "elevate", opacity: 0.15 },
+        { text: "your", opacity: 0.15 },
+    ];
+
     return (
-        <div className="w-full h-full p-6 flex flex-col items-center justify-center bg-[#050505] overflow-hidden relative">
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
-            }} />
-            <p className="text-xl md:text-2xl font-serif text-center font-medium leading-relaxed uppercase relative z-10">
-                <span className="text-[#e8e4dc]/20 blur-[1px]">Premium </span>
-                <span className="text-[#e8e4dc]">Scroll</span>
-                <span className="text-[#e8e4dc]/20 blur-[1px]"> reveal </span>
-            </p>
+        <div className="w-full h-full bg-[#0a0a0a] overflow-hidden">
+            {/* Content wrapper with same padding as original */}
+            <div className="w-full h-full flex items-center">
+                <div className="px-4 md:px-6 flex flex-wrap leading-[1.15] justify-start font-kugile text-xl md:text-2xl lg:text-3xl">
+                    {previewWords.map((word, i) => (
+                        <span
+                            key={i}
+                            className="mr-2 md:mr-3 inline-block"
+                            style={{
+                                opacity: word.opacity,
+                                color: '#e8e4dc'
+                            }}
+                        >
+                            {word.text}
+                        </span>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }

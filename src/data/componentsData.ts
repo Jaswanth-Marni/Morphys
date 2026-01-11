@@ -2000,7 +2000,7 @@ export function RealityLens({
     {
         id: 'navbar-menu-2',
         name: 'Navbar Menu 2',
-        index: 22,
+        index: 9,
         description: 'A premium expanding navbar that smoothly transitions from a floating capsule to a full-screen menu. Features high-performance layout animations.',
         tags: ['navbar', 'menu', 'animation', 'layout', 'overlay'],
         category: 'layout',
@@ -2225,12 +2225,12 @@ export default NavbarMenu2;`,
     {
         id: 'scroll-to-reveal',
         name: 'Scroll To Reveal',
-        index: 23,
+        index: 10,
         description: 'Text that lights up as you scroll, highlighting words in the center of the scroll container. Works within any scrollable element.',
         tags: ['text', 'scroll', 'animation', 'reveal', 'spotlight'],
         category: 'animation',
         previewConfig: {
-            text: "AT OFFSITE, WE ARE INVESTING IN THE FUTURE OF DESIGN & CREATIVE TALENT BY PUTTING COMMUNITY FIRST.",
+            text: "Morphys is a curated collection of high-performance, aesthetically pleasing UI components designed to elevate your web applications. Built with React, Tailwind CSS, and Framer Motion, it offers seamless integration for developers seeking valid, modern design. Our library features a diverse range of animations, interactions, and layout utilities that are fully customizable and responsive.",
             minOpacity: 0.15
         },
         dependencies: ['framer-motion', 'react'],

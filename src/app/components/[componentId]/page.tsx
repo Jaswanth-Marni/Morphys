@@ -57,10 +57,10 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'spotlight-search': SpotlightSearch as React.ComponentType<{ config?: any }>,
     'image-trail-cursor': ImageTrailCursor as React.ComponentType<{ config?: any }>,
     'reality-lens': RealityLens as React.ComponentType<{ config?: any }>,
-    'scroll-to-reveal': ({ config }: { config: any }) => (
+    'scroll-to-reveal': ({ config = {} }: { config?: any }) => (
         <ScrollToRevealSandbox
-            text={config.text || "AT OFFSITE, WE ARE INVESTING IN THE FUTURE OF DESIGN & CREATIVE TALENT BY PUTTING COMMUNITY FIRST. WE BELIEVE THAT HUMANS DO THEIR BEST WORK WHEN THEY ARE SURROUNDED BY A CAST OF OTHERS WHO CHAMPION CREATIVITY AND ENCOURAGE A CONSISTENT REDEFINITION OF GREATNESS. OUR FOCUS IS ON CULTIVATING THE NEXT GENERATION OF DESIGN LEADERS. WE CREATE SPACES WHERE IDEAS FLOURISH AND INNOVATION THRIVES. EVERY PROJECT WE UNDERTAKE IS A TESTAMENT TO OUR COMMITMENT TO EXCELLENCE AND OUR PASSION FOR PUSHING BOUNDARIES. THE WORLD OF DESIGN IS CONSTANTLY EVOLVING, AND WE ARE AT THE FOREFRONT OF THIS EVOLUTION. WE EMBRACE CHANGE, WELCOME CHALLENGES, AND TRANSFORM OBSTACLES INTO OPPORTUNITIES. OUR TEAM CONSISTS OF VISIONARIES, DREAMERS, AND DOERS WHO SHARE A COMMON GOAL: TO MAKE THE WORLD A MORE BEAUTIFUL PLACE THROUGH THOUGHTFUL DESIGN. JOIN US ON THIS JOURNEY AS WE CONTINUE TO REDEFINE WHAT IS POSSIBLE IN THE REALM OF CREATIVE EXPRESSION."}
-            className={config.className || "text-3xl md:text-5xl lg:text-6xl font-serif font-medium text-[#e8e4dc] uppercase tracking-wide"}
+            text={config.text || "Morphys is a curated collection of high-performance, aesthetically pleasing UI components designed to elevate your web applications. Built with React, Tailwind CSS, and Framer Motion, it offers seamless integration for developers seeking valid, modern design. Our library features a diverse range of animations, interactions, and layout utilities that are fully customizable and responsive. Whether you're building stunning landing pages or complex applications, Morphys provides the essential building blocks to create immersive user experiences that captivate and engage your audience."}
+            className={config.className || "text-3xl md:text-5xl lg:text-7xl font-kugile text-[#e8e4dc]"}
             minOpacity={config.minOpacity ?? 0.15}
         />
     ),
@@ -770,7 +770,57 @@ function CodeDisplay({ config, fullCode, componentId }: CodeDisplayProps) {
             return `import { SpotlightSearch } from '@/components/ui';\n\n<SpotlightSearch\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
         }
 
+        if (componentId === 'navbar-menu') {
+            const defaultConfig = {
+                logoText: "RUN",
+                accentColor: "#ef4444",
+                animationSpeed: 1,
+                borderRadius: 32,
+            };
 
+            const configEntries: string[] = [];
+            if (config.logoText !== defaultConfig.logoText) configEntries.push(`        logoText: '${config.logoText}',`);
+            if (config.accentColor !== defaultConfig.accentColor) configEntries.push(`        accentColor: '${config.accentColor}',`);
+            if (config.animationSpeed !== defaultConfig.animationSpeed) configEntries.push(`        animationSpeed: ${config.animationSpeed},`);
+            if (config.borderRadius !== defaultConfig.borderRadius) configEntries.push(`        borderRadius: ${config.borderRadius},`);
+
+            if (configEntries.length === 0) {
+                return `import { NavbarMenu } from '@/components/ui';\n\n// Basic usage\n<NavbarMenu />`;
+            }
+            return `import { NavbarMenu } from '@/components/ui';\n\n<NavbarMenu\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
+        }
+
+        if (componentId === 'navbar-menu-2') {
+            const defaultConfig = {
+                logoText: "Morphys",
+                backgroundColor: "#ffffff",
+                textColor: "#000000",
+            };
+
+            const configEntries: string[] = [];
+            if (config.logoText !== defaultConfig.logoText) configEntries.push(`        logoText: '${config.logoText}',`);
+            if (config.backgroundColor !== defaultConfig.backgroundColor) configEntries.push(`        backgroundColor: '${config.backgroundColor}',`);
+            if (config.textColor !== defaultConfig.textColor) configEntries.push(`        textColor: '${config.textColor}',`);
+
+            if (configEntries.length === 0) {
+                return `import { NavbarMenu2 } from '@/components/ui';\n\n// Basic usage\n<NavbarMenu2 />`;
+            }
+            return `import { NavbarMenu2 } from '@/components/ui';\n\n<NavbarMenu2\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
+        }
+
+        if (componentId === 'reality-lens') {
+            const defaultConfig = {
+                lensSize: 120,
+            };
+
+            const configEntries: string[] = [];
+            if (config.lensSize !== defaultConfig.lensSize) configEntries.push(`        lensSize: ${config.lensSize},`);
+
+            if (configEntries.length === 0) {
+                return `import { RealityLens } from '@/components/ui';\n\n// Basic usage - wrap content to reveal\n<RealityLens\n    revealContent={<YourHiddenContent />}\n>\n    <YourVisibleContent />\n</RealityLens>`;
+            }
+            return `import { RealityLens } from '@/components/ui';\n\n<RealityLens\n    lensSize={${config.lensSize}}\n    revealContent={<YourHiddenContent />}\n>\n    <YourVisibleContent />\n</RealityLens>`;
+        }
 
         if (componentId === 'image-trail-cursor') {
             const defaultConfig: ImageTrailCursorConfig = {
