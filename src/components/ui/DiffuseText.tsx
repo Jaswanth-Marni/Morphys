@@ -112,7 +112,7 @@ export function DiffuseText({ config: userConfig, className }: DiffuseTextProps)
                         style={{
                             fontSize,
                             color: config.color,
-                            opacity: 0.3, // Even lighter transparency
+                            opacity: 0.4, // Slightly less transparent
                             filter: `blur(${config.blurLevel}px)`,
                         }}
                         animate={{
@@ -130,7 +130,7 @@ export function DiffuseText({ config: userConfig, className }: DiffuseTextProps)
                         style={{
                             fontSize,
                             color: config.color,
-                            opacity: 0.4, // Significant transparency
+                            opacity: 0.55, // More solid core
                             filter: `blur(${config.blurLevel * 0.2}px)`,
                         }}
                         animate={{
