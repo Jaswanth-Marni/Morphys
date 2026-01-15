@@ -14,6 +14,45 @@ import { RealityLensPreview } from "./RealityLens";
 import { NavbarMenu2Preview } from "./NavbarMenu2";
 import { ScrollToRevealPreview } from "./ScrollToReveal";
 import { DiffuseTextPreview } from "./DiffuseText";
+import { DiagonalFocusPreview } from "./DiagonalFocus";
+import { NotificationStackPreview } from "./NotificationStack";
+import { TextPressure } from "./TextPressure";
+import { FluidHeightPreview } from "./FluidHeight";
+import FluidHeight from "./FluidHeight";
+import TextMirror from "./TextMirror";
+import { StepMorphPreview } from "./StepMorph";
+import StepMorph from "./StepMorph";
+
+// Wrapper for interactive previews
+const FluidHeightInteractive = () => (
+    <FluidHeight
+        className="text-[3rem]"
+        containerClassName="pb-12"
+        showHint={false}
+    />
+);
+
+const TextMirrorInteractive = () => (
+    <TextMirror
+        text="MORPHYS"
+        hasTrigger={false}
+        config={{
+            fontSize: 40,
+            spread: 15,
+            idleTimeout: 3000
+        }}
+    />
+);
+
+const StepMorphInteractive = () => (
+    <StepMorph
+        className="text-[2.5rem]"
+        containerClassName=""
+        innerClassName=""
+        stepSize={14}
+        showHint={false}
+    />
+);
 
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
@@ -28,6 +67,12 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'reality-lens': RealityLensPreview,
     'scroll-to-reveal': ScrollToRevealPreview,
     'diffuse-text': DiffuseTextPreview,
+    'diagonal-focus': DiagonalFocusPreview,
+    'notification-stack': NotificationStackPreview,
+    'text-pressure': TextPressure,
+    'fluid-height': FluidHeightInteractive,
+    'text-mirror': TextMirrorInteractive,
+    'step-morph': StepMorphInteractive,
 };
 
 export function NormalComponents() {
@@ -44,12 +89,13 @@ export function NormalComponents() {
                             className="block"
                         >
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, scale: 0.8, y: 50, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-50px" }}
                                 transition={{
-                                    duration: 0.5,
-                                    delay: i * 0.05,
-                                    ease: [0.23, 1, 0.32, 1]
+                                    duration: 0.8,
+                                    delay: (i % 3) * 0.1, // Stagger based on column (assuming ~3 cols)
+                                    ease: [0.2, 0.8, 0.2, 1], // Smooth custom bezier
                                 }}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}

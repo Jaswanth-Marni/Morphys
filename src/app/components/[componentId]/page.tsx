@@ -16,6 +16,12 @@ import ImageTrailCursor, { ImageTrailCursorConfig } from "@/components/ui/ImageT
 import { RealityLens } from "@/components/ui/RealityLens";
 import { ScrollToReveal, ScrollToRevealSandbox } from "@/components/ui/ScrollToReveal";
 import { DiffuseText } from "@/components/ui/DiffuseText";
+import { DiagonalFocus } from "@/components/ui/DiagonalFocus";
+import { NotificationStack } from "@/components/ui/NotificationStack";
+import { TextPressure } from "@/components/ui/TextPressure";
+import FluidHeight from "@/components/ui/FluidHeight";
+import TextMirror from "@/components/ui/TextMirror";
+import StepMorph from "@/components/ui/StepMorph";
 
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
@@ -66,6 +72,12 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
         />
     ),
     'diffuse-text': DiffuseText as React.ComponentType<{ config?: any }>,
+    'diagonal-focus': DiagonalFocus as React.ComponentType<{ config?: any }>,
+    'notification-stack': NotificationStack as React.ComponentType<{ config?: any }>,
+    'text-pressure': TextPressure as React.ComponentType<{ config?: any }>,
+    'fluid-height': FluidHeight as React.ComponentType<{ config?: any }>,
+    'text-mirror': TextMirror as React.ComponentType<{ config?: any }>,
+    'step-morph': StepMorph as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -586,6 +598,76 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         </div>
                                     </div>
                                 </>
+                            ) : componentId === 'text-mirror' ? (
+                                // TEXT MIRROR CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl
+                                                label="Font Size"
+                                                value={config.fontSize || 120}
+                                                min={60}
+                                                max={300}
+                                                suffix="px"
+                                                onChange={(val) => onConfigChange('fontSize', val)}
+                                            />
+                                            <NumberControl
+                                                label="Spread"
+                                                value={config.spread || 30}
+                                                min={10}
+                                                max={100}
+                                                onChange={(val) => onConfigChange('spread', val)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Color</span>
+                                            <input
+                                                type="color"
+                                                value={config.color || '#ffffff'}
+                                                onChange={(e) => onConfigChange('color', e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Behavior</label>
+                                        <NumberControl
+                                            label="Idle Timeout"
+                                            value={config.idleTimeout || 5000}
+                                            min={500}
+                                            max={10000}
+                                            suffix="ms"
+                                            onChange={(val) => onConfigChange('idleTimeout', val)}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.text || 'MORPHYS'}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'notification-stack' || componentId === 'diagonal-focus' || componentId === 'text-pressure' || componentId === 'fluid-height' || componentId === 'step-morph' ? (
+                                // NOTIFICATION STACK / DIAGONAL FOCUS / TEXT PRESSURE / STEP MORPH - No adjustable settings
+                                <div className="text-center py-8">
+                                    <div className="w-12 h-12 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground/40">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <path d="M12 16v-4" />
+                                            <path d="M12 8h.01" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-sm text-foreground/50">
+                                        This component uses pre-configured settings optimized for the best visual experience.
+                                    </p>
+                                </div>
                             ) : (
                                 // FLIP GRID CONTROLS
                                 <>
@@ -935,6 +1017,54 @@ function CodeDisplay({ config, fullCode, componentId }: CodeDisplayProps) {
             return `import { DiffuseText } from '@/components/ui';\n\n<DiffuseText\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
         }
 
+        if (componentId === 'notification-stack') {
+            return `import { NotificationStack } from '@/components/ui';\n\n// Basic usage\n<NotificationStack />`;
+        }
+
+        if (componentId === 'text-pressure') {
+            return `import { TextPressure } from '@/components/ui';\n\n// Basic usage\n<TextPressure text="TEXT FORCE" />`;
+        }
+
+        if (componentId === 'fluid-height') {
+            return `import { FluidHeight } from '@/components/ui';
+
+// Basic usage
+<FluidHeight />`;
+        }
+
+        if (componentId === 'text-mirror') {
+            const defaultConfig = {
+                text: "MORPHYS",
+                idleTimeout: 5000,
+                spread: 30,
+                color: "#ffffff",
+                fontSize: 120,
+            };
+
+            const configEntries: string[] = [];
+            if (config.text !== defaultConfig.text) configEntries.push(`    text="${config.text}"`);
+
+            const nestedConfig: string[] = [];
+            if (config.idleTimeout !== defaultConfig.idleTimeout) nestedConfig.push(`        idleTimeout: ${config.idleTimeout}`);
+            if (config.spread !== defaultConfig.spread) nestedConfig.push(`        spread: ${config.spread}`);
+            if (config.color !== defaultConfig.color) nestedConfig.push(`        color: '${config.color}'`);
+            if (config.fontSize !== defaultConfig.fontSize) nestedConfig.push(`        fontSize: ${config.fontSize}`);
+
+            if (nestedConfig.length === 0 && configEntries.length === 0) {
+                return `import { TextMirror } from '@/components/ui';\n\n// Basic usage\n<TextMirror />`;
+            }
+
+            let props = '';
+            if (configEntries.length > 0) props = '\n' + configEntries.join('\n');
+
+            let configProp = '';
+            if (nestedConfig.length > 0) {
+                configProp = `\n    config={{\n${nestedConfig.join(',\n')}\n    }}`;
+            }
+
+            return `import { TextMirror } from '@/components/ui';\n\n<TextMirror${props}${configProp}\n/>`;
+        }
+
         // FLIP GRID (Default)
         const defaultConfig: FlipGridConfig = {
             cols: 10,
@@ -1241,6 +1371,14 @@ export default function ComponentDetailPage() {
                 intensity: 1,
                 color: "#ffffff",
                 backgroundColor: "#7ca5b8",
+            });
+        } else if (componentId === 'text-mirror') {
+            setConfig({
+                text: "MORPHYS",
+                idleTimeout: 5000,
+                spread: 30,
+                color: "#ffffff",
+                fontSize: 120,
             });
         }
     }, [componentId]);
@@ -1628,7 +1766,9 @@ export default function ComponentDetailPage() {
                                                     transition-colors
                                                     ${componentId === 'scroll-to-reveal'
                                                         ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
-                                                        : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
+                                                        : componentId === 'notification-stack'
+                                                            ? 'bg-background/20 border border-background/20 text-background hover:bg-background/30'
+                                                            : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
                                                 `}
                                             >
                                                 {isFullScreen ? (
@@ -1657,7 +1797,9 @@ export default function ComponentDetailPage() {
                                                     transition-colors
                                                     ${componentId === 'scroll-to-reveal'
                                                         ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
-                                                        : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
+                                                        : componentId === 'notification-stack'
+                                                            ? 'bg-background/20 border border-background/20 text-background hover:bg-background/30'
+                                                            : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
                                                 `}
                                             >
                                                 {isFullScreen ? (
@@ -1750,7 +1892,9 @@ export default function ComponentDetailPage() {
                                         transition-colors
                                         ${componentId === 'scroll-to-reveal'
                                             ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
-                                            : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
+                                            : componentId === 'notification-stack'
+                                                ? 'bg-background/20 border border-background/20 text-background hover:bg-background/30'
+                                                : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
                                     `}
                                 >
                                     <motion.svg
@@ -1783,7 +1927,9 @@ export default function ComponentDetailPage() {
                                         md:hidden
                                         ${componentId === 'scroll-to-reveal'
                                             ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
-                                            : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
+                                            : componentId === 'notification-stack'
+                                                ? 'bg-background/20 border border-background/20 text-background hover:bg-background/30'
+                                                : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'}
                                     `}
                                 >
                                     <svg

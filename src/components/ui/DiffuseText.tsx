@@ -159,9 +159,19 @@ export function DiffuseText({ config: userConfig, className }: DiffuseTextProps)
 export function DiffuseTextPreview() {
     return (
         <div className="w-full h-full relative overflow-hidden bg-slate-900">
-            <div className="absolute inset-0 bg-blue-900/50" />
-            <div className="absolute inset-0 flex items-center justify-center z-10">
-                <h1 className="text-5xl font-black tracking-tighter text-white blur-[2px]">
+            {/* Gradient Background matching the video vibe */}
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/80 to-slate-900" />
+
+            {/* Glow Overlay */}
+            <div className="absolute inset-0 bg-blue-500/10 mix-blend-overlay" />
+
+            <div className="absolute inset-0 flex items-center justify-center z-10 scale-75">
+                {/* Layer 1: Glow */}
+                <h1 className="absolute text-5xl font-black tracking-tighter text-white/40 blur-[12px]">
+                    MORPHYS
+                </h1>
+                {/* Layer 2: Core */}
+                <h1 className="relative text-5xl font-black tracking-tighter text-white/80 blur-[1px]">
                     MORPHYS
                 </h1>
             </div>

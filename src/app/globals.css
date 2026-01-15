@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-/* Custom Fonts */
+/* Andora Font */
 @font-face {
-  font-family: 'Yorkmade';
-  src: url('/Yorkmade Demo.otf') format('opentype');
+  font-family: 'Andora';
+  src: url('/andora.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -38,7 +38,7 @@
 
 /* Logo font class */
 .font-logo {
-  font-family: 'Yorkmade', sans-serif;
+  font-family: 'Andora', sans-serif;
 }
 
 /* Kugile font class */

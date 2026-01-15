@@ -2033,7 +2033,7 @@ export function NavbarMenu2Preview() {
         <div className="w-full h-full flex items-center justify-center p-4 bg-gray-50/50">
             {/* Navbar representation */}
             <div className="w-[180px] h-10 bg-white rounded-full flex items-center justify-between px-4 shadow-sm border border-black/5">
-                <span className="font-serif italic font-black text-xs text-black">Offsite</span>
+                <span className="font-logo italic font-black text-xs text-black">Offsite</span>
                 <div className="flex flex-col gap-[3px]">
                     <div className="w-3 h-0.5 bg-black rounded-full" />
                     <div className="w-3 h-0.5 bg-black rounded-full" />
@@ -2130,7 +2130,7 @@ export function NavbarMenu2({ config: userConfig }: NavbarMenu2Props = {}) {
                     <div className="flex items-center gap-2">
                         <motion.span
                             layout="position"
-                            className="font-serif italic font-black text-2xl tracking-tight z-50 cursor-pointer"
+                            className="font-logo italic font-black text-2xl tracking-tight z-50 cursor-pointer"
                         >
                             {config.logoText}
                         </motion.span>
@@ -2180,7 +2180,7 @@ export function NavbarMenu2({ config: userConfig }: NavbarMenu2Props = {}) {
                                             variants={itemVariants}
                                             className="relative"
                                         >
-                                            <span className="block text-5xl md:text-8xl lg:text-9xl font-serif font-medium tracking-tight hover:italic transition-all duration-300">
+                                            <span className="block text-5xl md:text-8xl lg:text-9xl font-logo font-medium tracking-tight hover:italic transition-all duration-300">
                                                 {item}
                                             </span>
                                             <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-current transition-all duration-300 group-hover:w-full" />
@@ -2526,6 +2526,1160 @@ export function DiffuseTextPreview() {
         props: [
             { name: 'config', type: 'Partial<DiffuseTextConfig>', default: '{}', description: 'Configuration object' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
+    },
+    {
+        id: 'diagonal-focus',
+        name: 'Diagonal Focus',
+        index: 12,
+        description: 'A linear diagonal list that emphasizes the center item with a physics-based, non-locking scroll. Features progressive blur and grayscale effects for depth.',
+        tags: ['layout', 'interaction', 'scroll', 'focus', '3d'],
+        category: 'layout',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { DiagonalFocus } from '@/components/ui';
+
+// Usage
+<DiagonalFocus />`,
+        fullCode: `"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import { motion, useMotionValue, useSpring, useTransform, PanInfo } from "framer-motion";
+
+// Sample data
+const cards = [
+    { id: 1, image: "https://images.unsplash.com/photo-1535376472810-5d229c65da09?q=80&w=1000&auto=format&fit=crop", title: "Ethereal", category: "Abstract" },
+    { id: 2, image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop", title: "Synthesis", category: "Digital" },
+    { id: 3, image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop", title: "Momentum", category: "Motion" },
+    { id: 4, image: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=1000&auto=format&fit=crop", title: "Spectrum", category: "Light" },
+    { id: 5, image: "https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=1000&auto=format&fit=crop", title: "Flux", category: "Energy" },
+    { id: 6, image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop", title: "Nebula", category: "Space" },
+    { id: 7, image: "https://images.unsplash.com/photo-1614851099511-773084f6911d?q=80&w=1000&auto=format&fit=crop", title: "Eclipse", category: "Phenomenon" },
+];
+
+export function DiagonalFocusPreview() {
+    return (
+        <div className="w-full h-full bg-black relative overflow-hidden">
+            <DiagonalFocus />
+        </div>
+    );
+}
+
+export function DiagonalFocus({ className = "" }) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+
+    // Physics constants
+    const ANGLE = -35; 
+    const ANGLE_RAD = (ANGLE * Math.PI) / 180;
+
+    const x = useMotionValue(0);
+    const smoothX = useSpring(x, { stiffness: 150, damping: 30, mass: 1.2 });
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+        const resizeObserver = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            setContainerSize({ 
+                width: entry.contentRect.width, 
+                height: entry.contentRect.height 
+            });
+        });
+        resizeObserver.observe(containerRef.current);
+        return () => resizeObserver.disconnect();
+    }, []);
+
+    const handleDrag = (_: any, info: PanInfo) => {
+        const delta = info.delta.x * 1.5; 
+        x.set(x.get() + delta);
+    };
+
+    const handleDragEnd = (_: any, info: PanInfo) => {
+        setIsDragging(false);
+        const velocity = info.velocity.x;
+        const currentX = x.get();
+        const predictedDistance = velocity * 0.4;
+        x.set(currentX + predictedDistance);
+    };
+
+    const scrollToCard = (index: number) => {
+        if (isDragging) return;
+        const STEP = 280;
+        const targetX = -index * STEP;
+        x.set(targetX);
+    };
+
+    return (
+        <div 
+            ref={containerRef}
+            className={\`w-full h-full flex items-center justify-center relative bg-transparent overflow-hidden \${className}\`}
+            style={{ perspective: 1000, background: 'transparent' }}
+        >
+            <motion.div 
+                className="absolute inset-0 z-10 cursor-grab active:cursor-grabbing"
+                onPan={handleDrag}
+                onPanStart={() => setIsDragging(true)}
+                onPanEnd={handleDragEnd}
+                style={{ touchAction: "none" }}
+            />
+            <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
+                {cards.map((card, index) => (
+                    <Card 
+                        key={card.id} 
+                        item={card} 
+                        index={index} 
+                        parentX={smoothX} 
+                        angle={ANGLE_RAD}
+                        onSelect={() => scrollToCard(index)}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+const Card = ({ item, index, parentX, angle, onSelect }: any) => {
+    const STEP = 280;
+    const position = useTransform(parentX, (latest: number) => latest + (index * STEP));
+    const distanceFromCenter = useTransform(position, (pos: number) => Math.abs(pos));
+    
+    const grayscale = useTransform(distanceFromCenter, [0, 200], ["0%", "100%"]);
+    const blur = useTransform(distanceFromCenter, [0, 500], ["0px", "6px"]);
+    const scale = useTransform(distanceFromCenter, [0, 300], [1.1, 0.85]);
+    const x = useTransform(position, (pos: number) => pos * Math.cos(angle));
+    const y = useTransform(position, (pos: number) => pos * Math.sin(angle));
+    const zIndex = useTransform(distanceFromCenter, (d) => 1000 - Math.round(d));
+
+    return (
+        <motion.div
+            className="absolute rounded-2xl overflow-hidden shadow-2xl cursor-pointer pointer-events-auto"
+            style={{
+                width: 300,
+                height: 420,
+                x,
+                y,
+                scale,
+                filter: useTransform([grayscale, blur], ([g, b]) => \`grayscale(\${g}) blur(\${b})\`),
+                zIndex,
+            }}
+            onClick={onSelect}
+            whileHover={{ scale: 1.15, transition: { duration: 0.2 } }}
+        >
+            <motion.img 
+                src={item.image} 
+                alt={item.title}
+                className="w-full h-full object-cover"
+                draggable={false}
+            />
+        </motion.div>
+    );
+};`,
+        props: [
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
+    },
+    {
+        id: 'notification-stack',
+        name: 'Stack Carousel',
+        index: 13,
+        description: 'A vertical carousel inspired by iOS notifications with a visual twist. Large image cards emerge from a depth stack at the bottom and curve gracefully at the top, creating a wheel-like fluid scrolling experience.',
+        tags: ['layout', 'carousel', 'stack', 'scroll', 'ios', '3d', 'wheel'],
+        category: 'layout',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { NotificationStack } from '@/components/ui';
+
+// Usage
+<NotificationStack />`,
+        fullCode: `"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import { motion, useMotionValue, useTransform, useSpring, PanInfo, AnimatePresence } from "framer-motion";
+
+// Types
+interface NotificationCard {
+    id: number;
+    title: string;
+    description: string;
+    image: string;
+    color: string;
+}
+
+// Sample Data
+const defaultCards: NotificationCard[] = [
+    { 
+        id: 1, 
+        title: "Ether", 
+        description: "Atmospheric data visualization", 
+        image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop",
+        color: "#8b5cf6" 
+    },
+    { 
+        id: 2, 
+        title: "Synth", 
+        description: "Modular sound synthesis", 
+        image: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=1000&auto=format&fit=crop",
+        color: "#10b981" 
+    },
+    { 
+        id: 3, 
+        title: "Nexus", 
+        description: "Connected node systems", 
+        image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop",
+        color: "#3b82f6" 
+    },
+    { 
+        id: 4, 
+        title: "Void", 
+        description: "Empty space rendering", 
+        image: "https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=1000&auto=format&fit=crop",
+        color: "#f59e0b" 
+    },
+    { 
+        id: 5, 
+        title: "Pulse", 
+        description: "Rhythmic signal processing", 
+        image: "https://images.unsplash.com/photo-1506259091721-347f798196d4?q=80&w=1000&auto=format&fit=crop",
+        color: "#ef4444" 
+    },
+    { 
+        id: 6, 
+        title: "Zenith", 
+        description: "Peak performance metrics", 
+        image: "https://images.unsplash.com/photo-1535376472810-5d229c65da09?q=80&w=1000&auto=format&fit=crop",
+        color: "#ec4899" 
+    },
+];
+
+export function NotificationStackPreview() {
+    return (
+        <div className="w-full h-full bg-neutral-950 flex items-center justify-center overflow-hidden relative">
+            {/* Background ambiance */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
+            <NotificationStack />
+        </div>
+    );
+}
+
+export function NotificationStack({ className = "" }) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [cards] = useState<NotificationCard[]>(defaultCards);
+    
+    // Vertical drag/scroll value
+    const dragY = useMotionValue(0);
+    // Smooth spring physics for the scroll
+    const y = useSpring(dragY, { stiffness: 200, damping: 20, mass: 0.5 });
+    
+    const handleDrag = (_: any, info: PanInfo) => {
+        const load = dragY.get() + info.delta.y;
+        dragY.set(load);
+    };
+
+    return (
+        <div 
+            ref={containerRef}
+            className={\`w-full h-full flex items-center justify-center relative overflow-hidden \${className}\`}
+            style={{ perspective: 1000 }}
+        >
+            {/* Scroll/Drag Surface */}
+            <motion.div 
+                className="absolute inset-0 z-50 cursor-grab active:cursor-grabbing"
+                onPan={handleDrag}
+                style={{ touchAction: "none" }}
+            />
+
+            <div className="relative w-full max-w-md h-[80vh] flex flex-col justify-end items-center pb-10 perspective-1000">
+                {cards.map((card, index) => (
+                    <StackCard 
+                        key={card.id} 
+                        card={card} 
+                        index={index} 
+                        total={cards.length}
+                        y={y} 
+                    />
+                ))}
+            </div>
+            
+             {/* Helper Text */}
+             <div className="absolute bottom-6 right-6 text-white/20 text-xs font-mono select-none pointer-events-none z-0">
+                DRAG TO SCROLL
+            </div>
+        </div>
+    );
+}
+
+function StackCard({ card, index, total, y }: { card: NotificationCard, index: number, total: number, y: any }) {
+    const GAP = 250; 
+    const baseOffset = index * GAP;
+    
+    const displayY = useTransform(y, (currentY: number) => baseOffset + currentY);
+
+    const posTransform = useTransform(displayY, (val: number) => {
+        const BOTTOM_THRESHOLD = 0;
+        const TOP_THRESHOLD = 600;
+        
+        if (val < BOTTOM_THRESHOLD) {
+             return val * 0.15;
+        } else if (val > TOP_THRESHOLD) {
+             const diff = val - TOP_THRESHOLD;
+             return TOP_THRESHOLD + (diff * 0.15);
+        } else {
+             return val;
+        }
+    });
+    
+    const scale = useTransform(posTransform, (val: number) => {
+        const BOTTOM_THRESHOLD = 0;
+        const TOP_THRESHOLD = 600;
+        
+        if (val < BOTTOM_THRESHOLD) {
+             const depth = Math.abs(val);
+             return Math.max(0.7, 1 - (depth * 0.003));
+        } else if (val > TOP_THRESHOLD) {
+             const depth = val - TOP_THRESHOLD;
+             return Math.max(0.7, 1 - (depth * 0.003));
+        }
+        return 1;
+    });
+    
+    const rotateX = useTransform(posTransform, (val: number) => {
+        const BOTTOM_THRESHOLD = 0;
+        const TOP_THRESHOLD = 600;
+        
+        if (val < BOTTOM_THRESHOLD) {
+            const depth = Math.abs(val);
+            return Math.min(45, depth * 0.2); 
+        } else if (val > TOP_THRESHOLD) {
+            const depth = val - TOP_THRESHOLD;
+            return Math.max(-45, -depth * 0.2);
+        }
+        return 0;
+    });
+    
+    const opacity = useTransform(posTransform, (val: number) => {
+        if (val < -100 || val > 700) return 0.6;
+        return 1;
+    });
+
+    const blur = useTransform(posTransform, (val: number) => {
+         if (val < 0) return \`blur(\${Math.abs(val) * 0.05}px)\`;
+         if (val > 600) return \`blur(\${(val - 600) * 0.05}px)\`;
+         return "blur(0px)";
+    });
+
+    const zIndex = useTransform(posTransform, (val: number) => {
+        const distFromCenter = Math.abs(val - 300); 
+        return 1000 - Math.round(distFromCenter);
+    });
+
+    return (
+        <motion.div
+            style={{
+                bottom: posTransform,
+                scale,
+                opacity,
+                filter: blur,
+                zIndex,
+                rotateX,
+                transformPerspective: 1000,
+                transformOrigin: "center center",
+                position: "absolute",
+            }}
+            className="w-full flex justify-center"
+        >
+            <div className="
+                w-full max-w-[90%] md:max-w-[600px] h-[400px] rounded-[30px] 
+                overflow-hidden shadow-2xl
+                relative group
+                cursor-pointer
+            ">
+                <div className="absolute inset-0 bg-neutral-900">
+                    <img 
+                        src={card.image} 
+                        alt={card.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                </div>
+                
+                <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col gap-2">
+                    <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md bg-white/10 border border-white/20 text-white mb-2"
+                        style={{ boxShadow: \`0 0 20px \${card.color}40\` }}
+                    >
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: card.color }} />
+                    </div>
+                    
+                    <div>
+                        <h3 className="text-2xl font-bold text-white tracking-tight">{card.title}</h3>
+                        <p className="text-white/60 text-sm font-medium">{card.description}</p>
+                    </div>
+                </div>
+                
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                     <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+export default NotificationStack;`,
+        props: []
+    },
+    {
+        id: 'text-pressure',
+        name: 'Text Pressure',
+        index: 14,
+        description: 'A typographic component where text weight reacts dynamically to cursor proximity, creating a "pressure" or "force" effect using the Big Shoulders Display variable font.',
+        tags: ['text', 'interactive', 'variable-font', 'animation', 'typography', 'cursor'],
+        category: 'interaction',
+        previewConfig: {
+            text: 'MORPHYS',
+            minFontSize: 36,
+        },
+        dependencies: ['react'],
+        usage: `import { TextPressure } from '@/components/ui';
+
+// Basic usage
+<TextPressure text="MORPHYS" />
+
+// With custom configuration
+<TextPressure
+    text="MORPHYS"
+    textColor="var(--foreground)"
+    minFontSize={48}
+    weight={true}
+    alpha={false}
+/>`,
+        fullCode: `"use client";
+
+import { useEffect, useRef, useState, useCallback } from "react";
+
+interface TextPressureProps {
+    text?: string;
+    fontFamily?: string;
+    className?: string;
+    textColor?: string;
+    strokeColor?: string;
+    strokeWidth?: boolean;
+    minFontSize?: number;
+    weight?: boolean;
+    alpha?: boolean;
+    config?: {
+        text?: string;
+        textColor?: string;
+        minFontSize?: number;
+    };
+}
+
+export function TextPressure({
+    text = "MORPHYS",
+    fontFamily = "Big Shoulders Display", // Default to the variable font (no quotes)
+    className = "",
+    textColor = "var(--foreground)",
+    strokeColor = "#FF0000",
+    strokeWidth = false,
+    minFontSize = 36,
+    weight = true,
+    alpha = false,
+    config,
+}: TextPressureProps) {
+    // Use config props if provided
+    const displayText = config?.text || text;
+    const displayColor = config?.textColor || textColor;
+    const displayMinFontSize = config?.minFontSize || minFontSize;
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const titleRef = useRef<HTMLHeadingElement>(null);
+    const spansRef = useRef<(HTMLSpanElement | null)[]>([]);
+
+    const mouseRef = useRef({ x: 0, y: 0 });
+    const cursorRef = useRef({ x: 0, y: 0 });
+
+    const [fontSize, setFontSize] = useState(displayMinFontSize);
+    const [lineHeight, setLineHeight] = useState(1);
+
+    const chars = displayText.split("");
+
+    const dist = useCallback((a: { x: number; y: number }, b: { x: number; y: number }) => {
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }, []);
+
+    // Mouse/touch tracking
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            cursorRef.current = { x: e.clientX, y: e.clientY };
+        };
+        const handleTouchMove = (e: TouchEvent) => {
+            const touch = e.touches[0];
+            cursorRef.current = { x: touch.clientX, y: touch.clientY };
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("touchmove", handleTouchMove, { passive: true });
+
+        // Initialize cursor position to center of container
+        if (containerRef.current) {
+            const { left, top, width, height } = containerRef.current.getBoundingClientRect();
+            mouseRef.current = { x: left + width / 2, y: top + height / 2 };
+            cursorRef.current = { x: left + width / 2, y: top + height / 2 };
+        }
+
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("touchmove", handleTouchMove);
+        };
+    }, []);
+
+    // Responsive font sizing
+    const setSize = useCallback(() => {
+        if (!containerRef.current || !titleRef.current) return;
+
+        const { width: containerW, height: containerH } = containerRef.current.getBoundingClientRect();
+
+        // "Big Shoulders Display" is very condensed, aspect ratio ~0.4 -> 0.5
+        // We want the text to fill roughly 80% of width
+        const charWidth = 0.5; // Approximation for condensed font
+        let newFontSize = (containerW * 0.8) / (chars.length * charWidth);
+        
+        // Clamp between min and reasonable max (e.g., 300px or container height)
+        newFontSize = Math.min(Math.max(newFontSize, displayMinFontSize), 800, containerH);
+
+        setFontSize(newFontSize);
+        setLineHeight(1);
+    }, [chars.length, displayMinFontSize]);
+
+    useEffect(() => {
+        setSize();
+        window.addEventListener("resize", setSize);
+        return () => window.removeEventListener("resize", setSize);
+    }, [setSize, displayText]);
+
+    // Animation loop - updates font weight based on cursor proximity
+    useEffect(() => {
+        let rafId: number;
+
+        const animate = () => {
+            // Smooth cursor interpolation
+            mouseRef.current.x += (cursorRef.current.x - mouseRef.current.x) * 0.15;
+            mouseRef.current.y += (cursorRef.current.y - mouseRef.current.y) * 0.15;
+
+            if (titleRef.current) {
+                const titleRect = titleRef.current.getBoundingClientRect();
+                const maxDist = titleRect.width * 0.5; // Influence radius
+
+                spansRef.current.forEach((span) => {
+                    if (!span) return;
+
+                    const rect = span.getBoundingClientRect();
+                    const charCenter = {
+                        x: rect.left + rect.width / 2,
+                        y: rect.top + rect.height / 2,
+                    };
+
+                    const d = dist(mouseRef.current, charCenter);
+
+                    // Calculate weight: closer = heavier (up to 900), farther = lighter (down to 100)
+                    const getWeight = (distance: number) => {
+                        if (distance >= maxDist) return 100;
+                        const ratio = 1 - (distance / maxDist);
+                        return Math.floor(100 + ratio * 800); // 100 to 900
+                    };
+
+                    // Calculate alpha if enabled
+                    const getAlpha = (distance: number) => {
+                        if (distance >= maxDist) return 1;
+                        const ratio = 1 - (distance / maxDist); // 1 at center, 0 at edge
+                        return 0.5 + ratio * 0.5; // 0.5 to 1
+                    };
+
+                    const wght = weight ? getWeight(d) : 400;
+                    const alph = alpha ? getAlpha(d) : 1;
+
+                    span.style.opacity = alph.toString();
+                    span.style.fontVariationSettings = \`'wght' \${wght}\`;
+                });
+            }
+
+            rafId = requestAnimationFrame(animate);
+        };
+
+        animate();
+        return () => cancelAnimationFrame(rafId);
+    }, [weight, alpha, dist]);
+
+    return (
+        <div
+            ref={containerRef}
+            className={\`relative w-full h-full flex items-center justify-center overflow-hidden \${className}\`}
+            style={{ background: "transparent" }}
+        >
+            <h1
+                ref={titleRef}
+                className="text-center flex justify-center items-center select-none"
+                style={{
+                    fontFamily: \`\${fontFamily}, sans-serif\`,
+                    fontSize: fontSize,
+                    lineHeight: 1,
+                    color: displayColor,
+                    WebkitTextStroke: strokeWidth ? \`1px \${strokeColor}\` : "none",
+                    whiteSpace: "nowrap",
+                    transformOrigin: "center center",
+                    fontVariationSettings: "'wght' 100", // Initial light weight
+                    textTransform: "uppercase",
+                    letterSpacing: "0.02em",
+                }}
+            >
+                {chars.map((char, i) => (
+                    <span
+                        key={i}
+                        ref={(el) => { spansRef.current[i] = el; }}
+                        style={{
+                            display: "inline-block",
+                            transition: "font-variation-settings 0.1s ease-out",
+                        }}
+                    >
+                        {char === " " ? "\\u00A0" : char}
+                    </span>
+                ))}
+            </h1>
+        </div>
+    );
+}
+
+export default TextPressure;`,
+        props: [
+            { name: 'text', type: 'string', default: 'MORPHYS', description: 'The text to display' },
+            { name: 'fontFamily', type: 'string', default: 'Big Shoulders Display', description: 'Variable font family to use (must support wght axis)' },
+            { name: 'weight', type: 'boolean', default: 'true', description: 'Animate font weight based on cursor proximity' },
+            { name: 'alpha', type: 'boolean', default: 'false', description: 'Animate opacity based on cursor distance' },
+            { name: 'textColor', type: 'string', default: 'var(--foreground)', description: 'Color of the text' },
+            { name: 'minFontSize', type: 'number', default: '36', description: 'Minimum font size in pixels' },
+        ]
+    },
+    {
+        id: 'fluid-height',
+        name: 'Fluid Height',
+        index: 15,
+        description: 'A text interaction where letters fluidly grow in height (YTUC axis) and react to hover by retracting. Uses Roboto Flex variable font features for smooth impact.',
+        tags: ['text', 'animation', 'variable-font', 'interaction'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { FluidHeight } from '@/components/ui';
+
+// Basic usage
+<FluidHeight />`,
+        fullCode: `"use client";
+
+import React, { useState, useEffect } from 'react';
+import { motion, useAnimation, AnimationControls } from 'framer-motion';
+
+const FluidHeight: React.FC = () => {
+  const [hasGrown, setHasGrown] = useState(false);
+  const [impactTrigger, setImpactTrigger] = useState(false);
+
+  // Configuration
+  const text = "MORPHYS";
+  const minHeight = 528; // YTUC min
+  const maxHeight = 760; // YTUC max
+  const duration = 0.8; 
+  const delay = 0.5;
+
+  const containerControls = useAnimation();
+
+  useEffect(() => {
+    const sequence = async () => {
+      // 1. Entrance handled by initial props
+      
+      // 2. Wait for blur to clear
+      await new Promise(r => setTimeout(r, delay * 1000 + 500));
+
+      // 3. Trigger Growth Phase
+      setHasGrown(true);
+
+      // 4. Wait for growth to finish (approx duration)
+      await new Promise(r => setTimeout(r, duration * 1000));
+
+      // 5. Trigger Impact
+      setImpactTrigger(true);
+      setTimeout(() => setImpactTrigger(false), 300);
+    };
+
+    sequence();
+  }, [containerControls]);
+
+  return (
+    <div className="relative w-full h-full bg-[#111] flex flex-col items-center justify-center overflow-hidden font-sans text-white">
+      {/* Import Roboto Flex with all necessary axes */}
+      <style>
+        {\`
+          @import url('https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght,YTLC,YTUC@8..144,25..151,100..1000,416..570,528..760&display=swap');
+          
+          .fluid-font {
+            font-family: 'Roboto Flex', sans-serif;
+            font-variation-settings: 'wdth' 151, 'wght' 200;
+          }
+        \`}
+      </style>
+
+      <motion.div
+        animate={impactTrigger ? { y: [0, 15, -10, 5, 0] } : { y: 0 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        className="relative z-10 flex items-start"
+      >
+        {text.split('').map((char, index) => (
+          <Letter 
+            key={index} 
+            char={char} 
+            hasGrown={hasGrown}
+            minHeight={minHeight} 
+            maxHeight={maxHeight} 
+            duration={duration}
+          />
+        ))}
+      </motion.div>
+
+      <div className="absolute bottom-8 left-0 right-0 text-center text-neutral-600 text-xs tracking-[0.2em] font-light uppercase opacity-60">
+        Hover to retract
+      </div>
+    </div>
+  );
+};
+
+interface LetterProps {
+  char: string;
+  hasGrown: boolean;
+  minHeight: number;
+  maxHeight: number;
+  duration: number;
+}
+
+const Letter: React.FC<LetterProps> = ({ char, hasGrown, minHeight, maxHeight, duration }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Determine current target height based on state
+  // If not grown yet: minHeight
+  // If grown and not hovered: maxHeight
+  // If grown and hovered: minHeight
+  const targetHeight = !hasGrown ? minHeight : (isHovered ? minHeight : maxHeight);
+
+  // Transition settings
+  // If hovering: snappy
+  // If growing initially: smooth and slow
+  const currentDuration = isHovered ? 0.3 : duration;
+  const currentEase = isHovered ? "circOut" : "easeInOut";
+
+  return (
+    <motion.div
+      initial={{ 
+        opacity: 0, 
+        filter: "blur(20px)",
+      }}
+      animate={{ 
+        opacity: 1, 
+        filter: "blur(0px)",
+      }}
+      transition={{ 
+        duration: 0.8,
+        ease: "easeOut" 
+      }}
+      className="fluid-font text-[8rem] md:text-[10rem] leading-[0.8] cursor-pointer select-none origin-top flex justify-center"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <motion.span
+        animate={{
+          fontVariationSettings: \`"wdth" 151, "wght" 200, "YTUC" \${targetHeight}\`
+        }}
+        transition={{
+          duration: currentDuration,
+          ease: currentEase
+        }}
+        style={{
+             display: "block",
+             willChange: "font-variation-settings"
+        }}
+      >
+        {char}
+      </motion.span>
+    </motion.div>
+  );
+};
+
+export default FluidHeight;`,
+        props: []
+    },
+    {
+        id: 'text-mirror',
+        name: 'Text Mirror',
+        index: 16,
+        description: 'A dynamic text effect that creates a trail of mirrored copies tracking cursor movement. Features idle detection to automatically hide the effect when inactive.',
+        tags: ['text', 'mirror', 'trail', 'interactive', 'animation'],
+        category: 'effect',
+        previewConfig: {
+            text: 'MORPHYS',
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { TextMirror } from '@/components/ui';
+
+// Basic usage
+<TextMirror />
+
+// Custom configuration
+<TextMirror
+    text="MORPHYS"
+    config={{
+        idleTimeout: 3000,
+        spread: 40,
+        color: '#ff0000',
+        fontSize: 150
+    }}
+/>`,
+        fullCode: `"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import { motion, useSpring, useMotionValue, useTransform } from "framer-motion";
+
+interface TextMirrorProps {
+    text?: string;
+    className?: string;
+    config?: {
+        idleTimeout?: number;
+        spread?: number;
+        color?: string;
+        fontSize?: number;
+    };
+}
+
+const TextMirror: React.FC<TextMirrorProps> = ({
+    text = "MORPHYS",
+    className = "",
+    config = {},
+}) => {
+    const {
+        idleTimeout = 2000,
+        spread = 30,
+        color = "#ffffff",
+        fontSize = 120,
+    } = config;
+
+    const [isIdle, setIsIdle] = useState(true);
+    const idleTimer = useRef<NodeJS.Timeout | null>(null);
+
+    // Mouse position
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+
+    // Smooth mouse for the main element
+    const smoothX = useSpring(mouseX, { stiffness: 300, damping: 30 });
+    const smoothY = useSpring(mouseY, { stiffness: 300, damping: 30 });
+
+    // Velocity tracking for direction
+    const velocityX = useMotionValue(0);
+    const velocityY = useMotionValue(0);
+
+    // Previous position to calculate delta
+    const prevX = useRef(0);
+    const prevY = useRef(0);
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            // Clear existing timer
+            if (idleTimer.current) {
+                clearTimeout(idleTimer.current);
+            }
+
+            // Calculate delta/velocity
+            const dx = e.clientX - prevX.current;
+            const dy = e.clientY - prevY.current;
+
+            velocityX.set(dx);
+            velocityY.set(dy);
+
+            prevX.current = e.clientX;
+            prevY.current = e.clientY;
+
+            // Update state to active
+            setIsIdle(false);
+
+            // Set new idle timer
+            idleTimer.current = setTimeout(() => {
+                setIsIdle(true);
+                // Reset velocity when idle
+                velocityX.set(0); 
+                velocityY.set(0);
+            }, idleTimeout);
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            if (idleTimer.current) clearTimeout(idleTimer.current);
+        };
+    }, [idleTimeout, velocityX, velocityY]);
+
+    // Generate clones
+    const cloneCount = 6;
+    const clones = Array.from({ length: cloneCount });
+
+    return (
+        <div className={\`relative flex items-center justify-center w-full h-full bg-black overflow-hidden \${className}\`}>
+            <div className="relative" style={{ perspective: "1000px" }}>
+                {clones.map((_, i) => {
+                    // Calculate lag/offset for each clone
+                    // We want the clones to 'trail' or 'mirror' the movement.
+                    // If we move right (positive dx), we might want clones to shift left.
+                    const reverseIndex = cloneCount - i; // 6, 5, 4...
+
+                    // Use transforms based on velocity
+                    // We limit the offset so it doesn't fly off screen
+                    const x = useTransform(velocityX, (v) => {
+                        if (isIdle) return 0;
+                        // Dampen the velocity and multiply by index for spread
+                        const val = -v * (i + 1) * 0.5;
+                        // Clamp for safety
+                        return Math.max(Math.min(val, 100), -100);
+                    });
+
+                    const y = useTransform(velocityY, (v) => {
+                        if (isIdle) return 0;
+                        const val = -v * (i + 1) * 0.5;
+                        return Math.max(Math.min(val, 100), -100);
+                    });
+
+                    // Spring the values for smoothness
+                    const springX = useSpring(x, { stiffness: 150, damping: 15 });
+                    const springY = useSpring(y, { stiffness: 150, damping: 15 });
+
+                    // Opacity fades for further clones
+                    const opacity = 1 - (i / cloneCount) * 0.8;
+
+                    return (
+                        <motion.div
+                            key={i}
+                            className="absolute top-0 left-0 flex items-center justify-center w-full h-full pointer-events-none"
+                            style={{
+                                x: springX,
+                                y: springY,
+                                zIndex: 10 - i, // Closest to main text is higher
+                                opacity: isIdle ? 0 : opacity, // Fade out when idle
+                            }}
+                            animate={{
+                                opacity: isIdle ? 0 : opacity,
+                                scale: isIdle ? 0.95 : 1, // Slight shrink on idle
+                            }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <span
+                                style={{
+                                    fontSize: \`\${fontSize}px\`,
+                                    fontWeight: 900,
+                                    color: "transparent",
+                                    WebkitTextStroke: \`1px \${color}\`, // Outline effect
+                                    fontFamily: "Inter, sans-serif",
+                                    textTransform: "uppercase",
+                                    whiteSpace: "nowrap"
+                                }}
+                            >
+                                {text}
+                            </span>
+                        </motion.div>
+                    );
+                })}
+
+                {/* Main Text */}
+                <motion.div
+                    className="relative z-20"
+                    style={{
+                        // The main text stays relatively still or just slight parallax
+                        x: useSpring(useTransform(velocityX, v => v * 0.1), { stiffness: 200, damping: 20 }),
+                        y: useSpring(useTransform(velocityY, v => v * 0.1), { stiffness: 200, damping: 20 }),
+                    }}
+                >
+                    <span
+                        style={{
+                            fontSize: \`\${fontSize}px\`,
+                            fontWeight: 900,
+                            color: color,
+                            fontFamily: "Inter, sans-serif",
+                            textTransform: "uppercase",
+                            whiteSpace: "nowrap"
+                        }}
+                    >
+                        {text}
+                    </span>
+                </motion.div>
+            </div>
+
+            {/* Instructions/Subtitle */}
+            <div className="absolute bottom-10 text-white/50 text-sm font-light tracking-widest">
+                MOVE CURSOR To ACTIVATE • IDLES IN 2S
+            </div>
+        </div>
+    );
+};
+
+export default TextMirror;`,
+        props: [
+            { name: 'text', type: 'string', default: "'MORPHYS'", description: 'The text to display' },
+            { name: 'config', type: 'object', default: '{}', description: 'Configuration options for timeout, spread, color, etc.' },
+        ]
+    },
+    {
+        id: 'step-morph',
+        name: 'Step Morph',
+        index: 17,
+        description: 'A stepped text layout where letters expand fluidly on hover, growing from their unique step positions to fill the vertical space. Uses Big Shoulders Display.',
+        tags: ['text', 'animation', 'stepped', 'interaction', 'variable-font'],
+        category: 'interaction',
+        previewConfig: {
+            text: 'MORPHYS',
+            stepSize: 40
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { StepMorph } from '@/components/ui';
+
+// Basic usage
+<StepMorph />`,
+        fullCode: `"use client";
+
+import React, { useState, useEffect } from "react";
+import { motion, useSpring } from "framer-motion";
+
+interface StepMorphProps {
+    text?: string;
+    className?: string;
+    stepSize?: number; // Y offset per letter in pixels (or relative units if implemented differently)
+}
+
+const StepMorph: React.FC<StepMorphProps> = ({
+    text = "MORPHYS",
+    className = "",
+    stepSize = 40,
+}) => {
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+    return (
+        <div className={\`relative w-full h-full bg-[#111] flex items-center justify-center overflow-hidden font-sans \${className}\`}>
+            {/* Import Big Shoulders Display */}
+            <style>{\`
+            @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@100..900&display=swap');
+            .step-morph-font {
+                font-family: 'Big Shoulders Display', sans-serif;
+                font-weight: 800;
+            }
+        \`}</style>
+
+            <div className="relative flex items-start justify-center h-[60vh] w-full">
+                {text.split("").map((char, index) => (
+                    <Letter
+                        key={index}
+                        char={char}
+                        index={index}
+                        total={text.length}
+                        stepSize={stepSize}
+                        hoveredIndex={hoveredIndex}
+                        setHoveredIndex={setHoveredIndex}
+                    />
+                ))}
+            </div>
+
+            <div className="absolute bottom-8 left-0 right-0 text-center text-neutral-600 text-xs tracking-[0.2em] font-light uppercase opacity-60">
+                Hover to expand
+            </div>
+        </div>
+    );
+};
+
+interface LetterProps {
+    char: string;
+    index: number;
+    total: number;
+    stepSize: number;
+    hoveredIndex: number | null;
+    setHoveredIndex: (index: number | null) => void;
+}
+
+const Letter: React.FC<LetterProps> = ({
+    char,
+    index,
+    total,
+    stepSize,
+    hoveredIndex,
+    setHoveredIndex,
+}) => {
+    // Config
+    const baseHeight = 1; // scale 1
+    const maxHeight = 3.5; // expansion factor
+    const neighborRange = 2; // letters affected
+
+    // Calculate Target Scale
+    let targetScale = baseHeight;
+
+    if (hoveredIndex !== null) {
+        const distance = Math.abs(hoveredIndex - index);
+        if (distance === 0) {
+            targetScale = maxHeight;
+        } else if (distance <= neighborRange) {
+            // Smooth falloff
+            const progress = 1 - (distance / (neighborRange + 1));
+            targetScale = baseHeight + (maxHeight - baseHeight) * Math.pow(progress, 2); // quadratic falloff
+        }
+    }
+
+    // Determine Transform Origin
+    // M (0) -> Top (0%)
+    // S (last) -> Bottom (100%)
+    // Middle -> Center (50%)
+    const originY = (index / (total - 1)) * 100;
+
+    // Spring physics
+    const scaleY = useSpring(baseHeight, {
+        stiffness: 200,
+        damping: 25,
+        mass: 0.5
+    });
+
+    useEffect(() => {
+        scaleY.set(targetScale);
+    }, [targetScale, scaleY]);
+
+    // Determine vertical offset (step alignment)
+    const yOffset = index * stepSize;
+
+    return (
+        <div
+            className="relative flex flex-col items-center justify-start h-full mx-[-0.05em]"
+            style={{
+                marginTop: \`\${yOffset}px\`,
+                height: '300px',
+            }}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+        >
+            <motion.span
+                className="step-morph-font text-[6rem] md:text-[9rem] uppercase leading-none text-white block cursor-pointer select-none"
+                style={{
+                    scaleY,
+                    transformOrigin: \`50% \${originY}%\`,
+                    willChange: "transform",
+                }}
+            >
+                {char}
+            </motion.span>
+        </div>
+    );
+};
+
+export default StepMorph;`,
+        props: [
+            { name: 'text', type: 'string', default: 'MORPHYS', description: 'The text to display' },
+            { name: 'stepSize', type: 'number', default: '40', description: 'Vertical offset per letter' },
         ]
     }
 ];

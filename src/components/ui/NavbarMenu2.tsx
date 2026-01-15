@@ -12,7 +12,7 @@ export function NavbarMenu2Preview() {
         <div className="w-full h-full flex items-center justify-center p-4 bg-gray-50/50">
             {/* Navbar representation */}
             <div className="w-[180px] h-10 bg-white rounded-full flex items-center justify-between px-4 shadow-sm border border-black/5">
-                <span className="font-serif italic font-black text-xs text-black">Morphys</span>
+                <span className="font-logo italic font-black text-xs text-black">Morphys</span>
                 <div className="flex flex-col gap-[3px]">
                     <div className="w-3 h-0.5 bg-black rounded-full" />
                     <div className="w-3 h-0.5 bg-black rounded-full" />
@@ -191,7 +191,7 @@ export function NavbarMenu2({ config: userConfig }: NavbarMenu2Props = {}) {
                         transition={springTransition}
                     >
                         {/* Logo */}
-                        <span className="font-serif italic font-black text-xl md:text-2xl tracking-tight cursor-pointer select-none">
+                        <span className="font-logo italic font-black text-xl md:text-2xl tracking-tight cursor-pointer select-none">
                             {config.logoText}
                         </span>
 

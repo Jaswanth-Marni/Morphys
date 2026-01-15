@@ -25,6 +25,8 @@ const victoryStriker = localFont({
   variable: "--font-victory",
 });
 
+
+
 export const metadata: Metadata = {
   title: "Morphys - Curated Chaos",
   description: "The art of organized chaos in UI. Discover unique and uncommon components.",
@@ -40,6 +42,10 @@ export default function RootLayout({
       <head>
         <link
           href="https://api.fontshare.com/v2/css?f[]=clash-display@200,300,400,500,600,700&f[]=satoshi@300,400,500,700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@100..900&display=swap"
           rel="stylesheet"
         />
       </head>
