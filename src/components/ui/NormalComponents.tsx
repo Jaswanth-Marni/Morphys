@@ -22,6 +22,7 @@ import FluidHeight from "./FluidHeight";
 import TextMirror from "./TextMirror";
 import { StepMorphPreview } from "./StepMorph";
 import StepMorph from "./StepMorph";
+import { CenterMenu } from "./CenterMenu";
 
 // Wrapper for interactive previews
 const FluidHeightInteractive = () => (
@@ -54,6 +55,12 @@ const StepMorphInteractive = () => (
     />
 );
 
+const CenterMenuPreview = () => (
+    <div className="w-full h-full flex items-center justify-center">
+        <CenterMenu className="pointer-events-none transform-gpu scale-[0.7] !min-h-0 !h-auto !pt-0 !overflow-visible" />
+    </div>
+);
+
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -73,6 +80,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'fluid-height': FluidHeightInteractive,
     'text-mirror': TextMirrorInteractive,
     'step-morph': StepMorphInteractive,
+    'center-menu': CenterMenuPreview,
 };
 
 export function NormalComponents() {

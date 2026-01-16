@@ -24,9 +24,39 @@ const TextMirror: React.FC<TextMirrorProps> = ({
     const {
         idleTimeout = 5000,
         spread = 30,
-        color = "var(--foreground)",
+        color: configColor,
         fontSize = 120,
     } = config;
+
+    // Theme detection
+    const [isLightMode, setIsLightMode] = useState(false);
+    useEffect(() => {
+        const checkTheme = () => {
+            const theme = document.documentElement.getAttribute("data-theme");
+            // Check if theme is explicitly "light", otherwise default to dark mode
+            const isLight = theme === "light";
+            setIsLightMode(isLight);
+        };
+        // Initial check
+        checkTheme();
+
+        // Observer for theme changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === "data-theme") {
+                    checkTheme();
+                }
+            });
+        });
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["data-theme"]
+        });
+        return () => observer.disconnect();
+    }, []);
+
+    // Use config color if provided, otherwise use theme-aware default
+    const color = configColor || (isLightMode ? "#000000" : "#ffffff");
 
     const [isIdle, setIsIdle] = useState(true);
     const idleTimer = useRef<NodeJS.Timeout | null>(null);
@@ -41,20 +71,27 @@ const TextMirror: React.FC<TextMirrorProps> = ({
 
     const containerRef = useRef<HTMLDivElement>(null);
 
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 640);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Responsive font size
+    const responsiveFontSize = isMobile ? Math.min(fontSize, 48) : fontSize;
+
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
 
         const handleMouseMove = (e: MouseEvent) => {
-            // Clear existing timer
             if (idleTimer.current) {
                 clearTimeout(idleTimer.current);
             }
 
-            // Calculate delta/velocity
-            // We use clientX/Y as it's relative to viewport, similar to prevX/Y
-            // If tracking relative to container is needed for position, we would use offset,
-            // but for velocity (delta) client coordinates are fine as long as we track prev.
             const dx = e.clientX - prevX.current;
             const dy = e.clientY - prevY.current;
 
@@ -64,13 +101,10 @@ const TextMirror: React.FC<TextMirrorProps> = ({
             prevX.current = e.clientX;
             prevY.current = e.clientY;
 
-            // Update state to active
             setIsIdle(false);
 
-            // Set new idle timer
             idleTimer.current = setTimeout(() => {
                 setIsIdle(true);
-                // Reset velocity when idle
                 velocityX.set(0);
                 velocityY.set(0);
             }, idleTimeout);
@@ -83,8 +117,6 @@ const TextMirror: React.FC<TextMirrorProps> = ({
             if (idleTimer.current) clearTimeout(idleTimer.current);
         };
 
-        // We only want to track velocity when entering or moving inside.
-        // When entering, we should reset prevX/Y to avoid large initial jump.
         const handleMouseEnter = (e: MouseEvent) => {
             prevX.current = e.clientX;
             prevY.current = e.clientY;
@@ -160,10 +192,10 @@ const TextMirror: React.FC<TextMirrorProps> = ({
                         >
                             <span
                                 style={{
-                                    fontSize: `${fontSize}px`,
+                                    fontSize: `${responsiveFontSize}px`,
                                     fontWeight: 900,
                                     color: "transparent",
-                                    WebkitTextStroke: `1px ${color}`, // Outline effect
+                                    WebkitTextStroke: `1px ${color}`,
                                     fontFamily: "Inter, sans-serif",
                                     textTransform: "uppercase",
                                     whiteSpace: "nowrap"
@@ -186,7 +218,7 @@ const TextMirror: React.FC<TextMirrorProps> = ({
                 >
                     <span
                         style={{
-                            fontSize: `${fontSize}px`,
+                            fontSize: `${responsiveFontSize}px`,
                             fontWeight: 900,
                             color: color,
                             fontFamily: "Inter, sans-serif",

@@ -272,10 +272,31 @@ export function FlipGrid({
     autoPlayInterval = 3000,
 }: FlipGridProps) {
     const config = useMemo(() => ({ ...defaultConfig, ...userConfig }), [userConfig]);
-    const totalCards = config.cols * config.rows;
+
+    // Responsive grid logic
+    const [effectiveCols, setEffectiveCols] = useState(config.cols);
+
+    useEffect(() => {
+        const handleResize = () => {
+            // On mobile, limit columns to ensure decent card size
+            if (window.innerWidth < 640) {
+                setEffectiveCols(Math.min(config.cols, 4));
+            } else if (window.innerWidth < 1024) {
+                setEffectiveCols(Math.min(config.cols, 8));
+            } else {
+                setEffectiveCols(config.cols);
+            }
+        };
+
+        handleResize(); // Initial check
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [config.cols]);
+
+    const totalCards = effectiveCols * config.rows;
 
     // Unique key for this grid configuration
-    const gridKey = `${config.cols}-${config.rows}`;
+    const gridKey = `${effectiveCols}-${config.rows}`;
 
     // Simple toggle state - all cards flip together
     const [isFlipped, setIsFlipped] = useState(false);
@@ -307,11 +328,11 @@ export function FlipGrid({
     // Calculate delays for all cards based on current pattern
     const delays = useMemo(() => {
         return Array.from({ length: totalCards }, (_, i) => {
-            const row = Math.floor(i / config.cols);
-            const col = i % config.cols;
-            return getPatternDelay(i, row, col, config.rows, config.cols, config.pattern, adaptiveStagger);
+            const row = Math.floor(i / effectiveCols);
+            const col = i % effectiveCols;
+            return getPatternDelay(i, row, col, config.rows, effectiveCols, config.pattern, adaptiveStagger);
         });
-    }, [config.cols, config.rows, config.pattern, adaptiveStagger, totalCards]);
+    }, [effectiveCols, config.rows, config.pattern, adaptiveStagger, totalCards]);
 
     // Calculate max delay for proper interval timing
     const maxDelay = useMemo(() => Math.max(...delays, 0), [delays]);
@@ -324,8 +345,8 @@ export function FlipGrid({
         if (imageData) {
             const states = new Array(totalCards).fill(false);
             for (let row = 0; row < Math.min(imageData.length, config.rows); row++) {
-                for (let col = 0; col < Math.min(imageData[row]?.length || 0, config.cols); col++) {
-                    states[row * config.cols + col] = imageData[row][col];
+                for (let col = 0; col < Math.min(imageData[row]?.length || 0, effectiveCols); col++) {
+                    states[row * effectiveCols + col] = imageData[row][col];
                 }
             }
             setImageStates(states);
@@ -362,7 +383,7 @@ export function FlipGrid({
                 intervalRef.current = null;
             }
         };
-    }, [autoPlay, autoPlayInterval, imageData, config.cols, config.rows, maxDelay, animationDuration]);
+    }, [autoPlay, autoPlayInterval, imageData, effectiveCols, config.rows, maxDelay, animationDuration]);
 
     // Cleanup on unmount
     useEffect(() => {
@@ -412,7 +433,7 @@ export function FlipGrid({
             className={`w-full h-full ${className}`}
             style={{
                 display: 'grid',
-                gridTemplateColumns: `repeat(${config.cols}, 1fr)`,
+                gridTemplateColumns: `repeat(${effectiveCols}, 1fr)`,
                 gridTemplateRows: `repeat(${config.rows}, 1fr)`,
                 gap: config.gap,
                 padding: config.gap,

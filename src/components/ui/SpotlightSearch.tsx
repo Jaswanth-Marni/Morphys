@@ -30,16 +30,28 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
     const [isMorphed, setIsMorphed] = useState(false);
     const [isDark, setIsDark] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    const [windowWidth, setWindowWidth] = useState(0);
+    const [containerWidth, setContainerWidth] = useState(0);
 
-    // Handle window resize
+    // Handle resize - measure container
     useEffect(() => {
-        const handleResize = () => setWindowWidth(window.innerWidth);
-        handleResize(); // Init
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        const updateWidth = () => {
+            if (containerRef.current) {
+                setContainerWidth(containerRef.current.offsetWidth);
+            }
+        };
+
+        // Initial measure
+        updateWidth();
+
+        // Listen for window resize
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
     }, []);
+
+    // Helper: Determine if we are in a "compact" (mobile-like) environment
+    const isCompact = containerWidth > 0 && containerWidth < 640;
 
     // Handle Ctrl+K shortcut
     useEffect(() => {
@@ -82,7 +94,9 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
     ];
 
     return (
-        <div className={`h-full w-full flex flex-col items-center justify-center relative font-sans rounded-xl overflow-hidden ${isDark ? 'dark' : ''}`}
+        <div
+            ref={containerRef}
+            className={`h-full w-full flex flex-col items-center justify-center relative font-sans rounded-xl overflow-hidden ${isDark ? 'dark' : ''}`}
             style={{
                 backgroundImage: 'url(/back5.png)',
                 backgroundSize: 'cover',
@@ -90,18 +104,17 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
             }}
         >
             {/* Dark overlay for contrast */}
-            {/* Dark overlay for contrast - Only visible in dark mode, or very subtle in light mode */}
             <div className={`absolute inset-0 transition-colors duration-500 ${isDark ? 'bg-black/40 backdrop-blur-[2px]' : 'bg-transparent'}`} />
 
             {/* Content Container */}
-            <div className="z-10 flex flex-col items-center gap-8">
-                <h1 className="text-4xl font-light tracking-tight text-gray-800 dark:text-gray-100">
+            <div className="z-10 flex flex-col items-center gap-8 text-center px-4">
+                <h1 className="text-3xl md:text-4xl font-light tracking-tight text-gray-800 dark:text-gray-100">
                     Spotlight Search
                 </h1>
-                <div className="bg-white/30 dark:bg-black/30 backdrop-blur-md border border-white/20 dark:border-white/10 px-6 py-2.5 rounded-full shadow-sm">
-                    <p className="text-gray-800 dark:text-gray-200 font-medium flex items-center gap-2">
+                <div className="bg-white/30 dark:bg-black/30 backdrop-blur-md border border-white/20 dark:border-white/10 px-6 py-2.5 rounded-full shadow-sm max-w-full">
+                    <p className="text-gray-800 dark:text-gray-200 font-medium flex flex-wrap justify-center items-center gap-2 text-sm md:text-base">
                         Click the button below or
-                        <span className="font-mono text-xs bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded border border-black/5 dark:border-white/5">
+                        <span className="font-mono text-xs bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded border border-black/5 dark:border-white/5 whitespace-nowrap">
                             Ctrl + K
                         </span>
                     </p>
@@ -129,13 +142,15 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
                             exit="exit"
                             variants={containerVariants}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="relative z-10 flex items-center"
-                            style={{ height: '64px' }}
+                            className={`relative z-10 flex items-center justify-center p-2 ${isCompact || isMorphed ? 'flex-col gap-4' : 'flex-row'}`}
+                        // Constraint max width prevents valid width animation if we hardcode width logic below?
+                        // We handle size logic in children.
                         >
                             {/* Search Bar Input Area */}
                             <motion.div
+                                layout
                                 className={`
-                  relative flex items-center h-full overflow-hidden
+                  relative flex items-center overflow-hidden
                   backdrop-blur-xl border
                   shadow-[0_8px_32px_0_rgba(31,38,135,0.15)]
                   transition-colors duration-300
@@ -144,12 +159,20 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
                                         : 'bg-white/30 border-white/20'
                                     }
                 `}
-                                style={{ borderRadius: 32 }}
+                                style={{
+                                    borderRadius: 32,
+                                    height: '64px'
+                                }}
                                 animate={{
-                                    // Responsive width logic
-                                    width: isMorphed
-                                        ? Math.min(380, windowWidth ? windowWidth - 80 : 380)
-                                        : Math.min(config.searchWidth, windowWidth ? windowWidth - 32 : config.searchWidth),
+                                    // Robust width logic:
+                                    // 1. If compact (mobile), always full width minus margins
+                                    // 2. If morphed, shrink to 380 (or available space)
+                                    // 3. Otherwise default config width (or available space)
+                                    width: isCompact
+                                        ? Math.max(280, containerWidth - 32)
+                                        : isMorphed
+                                            ? Math.min(380, containerWidth - 80)
+                                            : Math.min(config.searchWidth, containerWidth - 48)
                                 }}
                                 transition={{
                                     type: "spring",
@@ -158,7 +181,7 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
                                     mass: 0.8
                                 }}
                             >
-                                <div className="pl-6 pr-4 text-gray-500 dark:text-gray-400">
+                                <div className="pl-6 pr-4 text-gray-500 dark:text-gray-400 shrink-0">
                                     <Search size={24} strokeWidth={2} />
                                 </div>
                                 <input
@@ -177,7 +200,7 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
                                             exit={{ opacity: 0 }}
                                             className="absolute right-6 flex items-center gap-2 text-sm text-gray-500/70 font-medium"
                                         >
-                                            <span className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-md border border-white/20">
+                                            <span className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-md border border-white/20 hidden sm:flex">
                                                 <Command size={14} /> K
                                             </span>
                                         </motion.div>
@@ -186,7 +209,11 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
                             </motion.div>
 
                             {/* Action Buttons (Morphing out) */}
-                            <div className="flex items-center gap-3 ml-3 h-full">
+                            {/* Layout Logic: If Compact, buttons are below. If not compact, to the right */}
+                            <motion.div
+                                layout
+                                className={`flex items-center gap-2 md:gap-3 ${isCompact || isMorphed ? 'mt-0 w-auto justify-center' : 'ml-3 h-full'}`}
+                            >
                                 <AnimatePresence mode='popLayout'>
                                     {isMorphed && actionButtons.map((btn, index) => (
                                         <motion.button
@@ -213,7 +240,7 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.95 }}
                                             className={`
-                        w-16 h-16 rounded-full flex items-center justify-center
+                        w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center
                         backdrop-blur-xl border transition-colors duration-300
                         shadow-lg
                         ${isDark
@@ -222,11 +249,11 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
                                                 }
                       `}
                                         >
-                                            <btn.icon size={24} strokeWidth={2} />
+                                            <btn.icon size={isCompact ? 20 : 24} strokeWidth={2} />
                                         </motion.button>
                                     ))}
                                 </AnimatePresence>
-                            </div>
+                            </motion.div>
 
                         </motion.div>
                     </div>
@@ -234,21 +261,21 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
             </AnimatePresence>
 
             {/* Trigger Button at Bottom */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-40">
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-40 w-full flex justify-center px-4">
                 <motion.button
                     onClick={toggleSearch}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="
+                    className={`
             flex items-center gap-3 px-6 py-3 rounded-full
             backdrop-blur-md border transition-colors duration-300
             shadow-lg hover:shadow-xl
             ${isDark
-              ? 'bg-black/30 border-white/10 text-white'
-              : 'bg-white/30 border-white/20 text-gray-800'
-            }
-            font-medium
-          "
+                            ? 'bg-black/30 border-white/10 text-white'
+                            : 'bg-white/30 border-white/20 text-gray-800'
+                        }
+            font-medium text-sm md:text-base whitespace-nowrap
+          `}
                 >
                     <Search size={20} />
                     <span>Open Spotlight</span>

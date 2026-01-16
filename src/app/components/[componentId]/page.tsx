@@ -22,6 +22,9 @@ import { TextPressure } from "@/components/ui/TextPressure";
 import FluidHeight from "@/components/ui/FluidHeight";
 import TextMirror from "@/components/ui/TextMirror";
 import StepMorph from "@/components/ui/StepMorph";
+import { ComponentNavigation } from "@/components/ui/ComponentNavigation";
+import { CenterMenu } from "@/components/ui/CenterMenu";
+import { Slider } from "@/components/ui/Slider";
 
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
@@ -78,6 +81,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'fluid-height': FluidHeight as React.ComponentType<{ config?: any }>,
     'text-mirror': TextMirror as React.ComponentType<{ config?: any }>,
     'step-morph': StepMorph as React.ComponentType<{ config?: any }>,
+    'center-menu': CenterMenu as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -267,9 +271,9 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                     <div className="space-y-3">
                                         <label className="text-sm font-medium text-foreground/60">Split Columns</label>
                                         <div className="grid grid-cols-3 gap-2">
-                                            <NumberControl label="Mobile" value={config.splitCount?.mobile || 5} min={2} max={10} onChange={(val) => onConfigChange('splitCount', { ...config.splitCount, mobile: val })} />
-                                            <NumberControl label="Tablet" value={config.splitCount?.tablet || 8} min={4} max={15} onChange={(val) => onConfigChange('splitCount', { ...config.splitCount, tablet: val })} />
-                                            <NumberControl label="Desktop" value={config.splitCount?.desktop || 12} min={6} max={20} onChange={(val) => onConfigChange('splitCount', { ...config.splitCount, desktop: val })} />
+                                            <NumberControl label="Mobile" value={config.splitCount?.mobile || 10} min={2} max={20} onChange={(val) => onConfigChange('splitCount', { ...config.splitCount, mobile: val })} />
+                                            <NumberControl label="Tablet" value={config.splitCount?.tablet || 15} min={4} max={30} onChange={(val) => onConfigChange('splitCount', { ...config.splitCount, tablet: val })} />
+                                            <NumberControl label="Desktop" value={config.splitCount?.desktop || 20} min={6} max={40} onChange={(val) => onConfigChange('splitCount', { ...config.splitCount, desktop: val })} />
                                         </div>
                                     </div>
                                     <div className="space-y-3">
@@ -351,14 +355,12 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         <label className="text-sm font-medium text-foreground/60">Animation</label>
                                         <div>
                                             <span className="text-xs text-foreground/40 mb-1 block">Speed ({config.animationSpeed || 1}x)</span>
-                                            <input
-                                                type="range"
-                                                min="0.5"
-                                                max="2"
-                                                step="0.1"
+                                            <Slider
+                                                min={0.5}
+                                                max={2}
+                                                step={0.1}
                                                 value={config.animationSpeed || 1}
-                                                onChange={(e) => onConfigChange('animationSpeed', parseFloat(e.target.value))}
-                                                className="w-full h-2 bg-foreground/10 rounded-lg appearance-none cursor-pointer accent-foreground"
+                                                onChange={(val) => onConfigChange('animationSpeed', val)}
                                             />
                                             <div className="flex justify-between text-[10px] text-foreground/30 mt-1">
                                                 <span>Slow</span>
@@ -859,7 +861,7 @@ function CodeDisplay({ config, fullCode, componentId }: CodeDisplayProps) {
             const defaultConfig = {
                 logoText: "MORPHYS",
                 logoFontSize: 80,
-                splitCount: { mobile: 5, tablet: 8, desktop: 12 },
+                splitCount: { mobile: 10, tablet: 15, desktop: 20 },
                 logoBlurDuration: 0.8,
                 logoHoldDuration: 0.5,
                 slitAnimationDuration: 0.6,
@@ -1037,7 +1039,6 @@ function CodeDisplay({ config, fullCode, componentId }: CodeDisplayProps) {
                 text: "MORPHYS",
                 idleTimeout: 5000,
                 spread: 30,
-                color: "#ffffff",
                 fontSize: 120,
             };
 
@@ -1047,7 +1048,7 @@ function CodeDisplay({ config, fullCode, componentId }: CodeDisplayProps) {
             const nestedConfig: string[] = [];
             if (config.idleTimeout !== defaultConfig.idleTimeout) nestedConfig.push(`        idleTimeout: ${config.idleTimeout}`);
             if (config.spread !== defaultConfig.spread) nestedConfig.push(`        spread: ${config.spread}`);
-            if (config.color !== defaultConfig.color) nestedConfig.push(`        color: '${config.color}'`);
+            if (config.color) nestedConfig.push(`        color: '${config.color}'`);
             if (config.fontSize !== defaultConfig.fontSize) nestedConfig.push(`        fontSize: ${config.fontSize}`);
 
             if (nestedConfig.length === 0 && configEntries.length === 0) {
@@ -1216,9 +1217,9 @@ export default function ComponentDetailPage() {
                 logoText: "MORPHYS",
                 logoFontSize: 80,
                 splitCount: {
-                    mobile: 5,
-                    tablet: 8,
-                    desktop: 12,
+                    mobile: 10,
+                    tablet: 15,
+                    desktop: 20,
                 },
                 logoBlurDuration: 0.8,
                 logoHoldDuration: 0.5,
@@ -1332,9 +1333,9 @@ export default function ComponentDetailPage() {
                 logoText: "MORPHYS",
                 logoFontSize: 80,
                 splitCount: {
-                    mobile: 5,
-                    tablet: 8,
-                    desktop: 12,
+                    mobile: 10,
+                    tablet: 15,
+                    desktop: 20,
                 },
                 logoBlurDuration: 0.8,
                 logoHoldDuration: 0.5,
@@ -1377,7 +1378,6 @@ export default function ComponentDetailPage() {
                 text: "MORPHYS",
                 idleTimeout: 5000,
                 spread: 30,
-                color: "#ffffff",
                 fontSize: 120,
             });
         }
@@ -2075,6 +2075,7 @@ export default function ComponentDetailPage() {
                     </div>
                 </div>
             </motion.section >
+            <ComponentNavigation currentId={componentId} />
         </div >
     );
 }

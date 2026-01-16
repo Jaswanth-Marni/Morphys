@@ -111,26 +111,27 @@ function FloatingScrollbar({
     totalCards,
     onScrollChange,
     isDarkCarousel,
+    gap,
 }: {
     dragY: MotionValue<number>;
     totalCards: number;
     onScrollChange: (newY: number) => void;
     isDarkCarousel: boolean;
+    gap: number;
 }) {
     const scrollTrackRef = useRef<HTMLDivElement>(null);
-    const GAP = 280;
     const THUMB_HEIGHT = 40;
     const TRACK_HEIGHT = 200;
 
     // Calculate scroll range
-    const MIN_DRAG_Y = 300 - (totalCards - 1) * GAP;
+    const MIN_DRAG_Y = 300 - (totalCards - 1) * gap;
     const MAX_DRAG_Y = 300;
     const DRAG_RANGE = MAX_DRAG_Y - MIN_DRAG_Y;
 
     // Transform dragY to thumb position
     const thumbY = useTransform(dragY, (val: number) => {
         const clampedVal = Math.min(MAX_DRAG_Y, Math.max(MIN_DRAG_Y, val));
-        const progress = (MAX_DRAG_Y - clampedVal) / DRAG_RANGE;
+        const progress = (MAX_DRAG_Y - clampedVal) / (DRAG_RANGE || 1);
         return progress * (TRACK_HEIGHT - THUMB_HEIGHT);
     });
 
@@ -139,7 +140,7 @@ function FloatingScrollbar({
         const rect = scrollTrackRef.current.getBoundingClientRect();
         const clickY = e.clientY - rect.top;
         const progress = clickY / TRACK_HEIGHT;
-        const newDragY = MAX_DRAG_Y - (progress * DRAG_RANGE);
+        const newDragY = MAX_DRAG_Y - (progress * (DRAG_RANGE || 1));
         onScrollChange(newDragY);
     };
 
@@ -188,22 +189,48 @@ export function NotificationStack({ className = "" }) {
     const isLightMode = useTheme();
     const [impactDirection, setImpactDirection] = useState<'top' | 'bottom' | null>(null);
 
+    // Responsive State stored in ref to avoid re-creating transforms
+    const [isMobile, setIsMobile] = useState(false);
+    const configRef = useRef({ gap: 280, center: 300 });
+
+    useEffect(() => {
+        const checkMobile = () => {
+            const mobile = window.innerWidth < 640;
+            setIsMobile(mobile);
+            configRef.current = {
+                gap: mobile ? 180 : 280,
+                center: mobile ? 220 : 300,
+            };
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     // Invert: light mode site = dark carousel, dark mode site = light carousel
     const isDarkCarousel = isLightMode;
 
-    // Scroll boundaries
-    const GAP = 280;
-    const CENTER = 300;
-    const MIN_DRAG_Y = CENTER - (cards.length - 1) * GAP; // Last card centered
-    const MAX_DRAG_Y = CENTER; // First card centered
+    // Scroll boundaries (Responsive)
+    const GAP = isMobile ? 180 : 280;
+    const CENTER = isMobile ? 220 : 300;
+    const MIN_DRAG_Y = CENTER - (cards.length - 1) * GAP;
+    const MAX_DRAG_Y = CENTER;
 
-    // Vertical drag/scroll value
-    const dragY = useMotionValue(MAX_DRAG_Y); // Start with first card centered
-    // Smooth spring physics for the scroll
-    const y = useSpring(dragY, { stiffness: 200, damping: 20, mass: 0.5 });
+    // Vertical drag/scroll value - use spring directly for smooth dragging
+    const dragY = useMotionValue(MAX_DRAG_Y);
+    // Smoother spring physics with higher damping for less oscillation
+    const y = useSpring(dragY, { stiffness: 300, damping: 35, mass: 0.8 });
+
+    // Boundary Clamp on Resize
+    useEffect(() => {
+        const current = dragY.get();
+        const clamped = Math.min(MAX_DRAG_Y, Math.max(MIN_DRAG_Y, current));
+        if (current !== clamped) {
+            dragY.set(clamped);
+        }
+    }, [isMobile]);
 
     const handleScrollChange = (newY: number) => {
-        // Clamp to boundaries
         const clampedY = Math.min(MAX_DRAG_Y, Math.max(MIN_DRAG_Y, newY));
         dragY.set(clampedY);
     };
@@ -309,16 +336,17 @@ export function NotificationStack({ className = "" }) {
                 }}
             />
 
-            {/* Cards Container - centered vertically */}
+            {/* Cards Container */}
             <div className="relative w-full h-full flex items-center justify-center pointer-events-none" style={{ zIndex: 1 }}>
                 {cards.map((card, index) => (
                     <StackCard
                         key={card.id}
                         card={card}
                         index={index}
-                        total={cards.length}
                         y={y}
                         isDarkCarousel={isDarkCarousel}
+                        gap={GAP}
+                        center={CENTER}
                     />
                 ))}
             </div>
@@ -329,62 +357,71 @@ export function NotificationStack({ className = "" }) {
                 totalCards={cards.length}
                 onScrollChange={handleScrollChange}
                 isDarkCarousel={isDarkCarousel}
+                gap={GAP}
             />
         </div>
     );
 }
 
-function StackCard({ card, index, total, y, isDarkCarousel }: {
+function StackCard({ card, index, y, isDarkCarousel, gap, center }: {
     card: NotificationCard;
     index: number;
-    total: number;
     y: any;
     isDarkCarousel: boolean;
+    gap: number;
+    center: number;
 }) {
-    const GAP = 280; // Gap between cards in the scroll
+    // Use refs for stable transform calculations
+    const configRef = useRef({ gap, center, index });
+    configRef.current = { gap, center, index };
 
-    // We offset each card by its index
-    const baseOffset = index * GAP;
+    const baseOffset = index * gap;
 
-    // Raw position based on scroll
-    const rawPos = useTransform(y, (currentY: number) => baseOffset + currentY);
+    // Single transform for raw position
+    const rawPos = useTransform(y, (currentY: number) => {
+        const { gap: g, index: i } = configRef.current;
+        return (i * g) + currentY;
+    });
 
-    // Center point of the visible area (where cards should be full size)
-    const CENTER = 300;
-    // Thresholds for curving
-    const BOTTOM_CURVE_START = 100; // Below this, start curving down
-    const TOP_CURVE_START = 500;    // Above this, start curving up
+    // Responsive thresholds
+    const BUFFER = 200;
+    const BOTTOM_CURVE_START = center - BUFFER;
+    const TOP_CURVE_START = center + BUFFER;
 
     // Position with symmetric compression at both ends
     const posTransform = useTransform(rawPos, (val: number) => {
-        if (val < BOTTOM_CURVE_START) {
-            // Compress towards bottom
-            const diff = BOTTOM_CURVE_START - val;
-            return BOTTOM_CURVE_START - (diff * 0.12);
-        } else if (val > TOP_CURVE_START) {
-            // Compress towards top
-            const diff = val - TOP_CURVE_START;
-            return TOP_CURVE_START + (diff * 0.12);
+        const { center: c } = configRef.current;
+        const bottom = c - 200;
+        const top = c + 200;
+        if (val < bottom) {
+            const diff = bottom - val;
+            return bottom - (diff * 0.12);
+        } else if (val > top) {
+            const diff = val - top;
+            return top + (diff * 0.12);
         }
         return val;
     });
 
     // Scale - symmetric at both ends
     const scale = useTransform(rawPos, (val: number) => {
-        const distFromCenter = Math.abs(val - CENTER);
-        if (distFromCenter < 150) return 1;
-        return Math.max(0.65, 1 - ((distFromCenter - 150) * 0.002));
+        const { center: c, gap: g } = configRef.current;
+        const distFromCenter = Math.abs(val - c);
+        const threshold = g * 0.6;
+        if (distFromCenter < threshold) return 1;
+        return Math.max(0.65, 1 - ((distFromCenter - threshold) * 0.002));
     });
 
     // RotateX - symmetric curve effect (wheel-like)
     const rotateX = useTransform(rawPos, (val: number) => {
-        if (val < BOTTOM_CURVE_START) {
-            // Cards below curve backwards (tilt away)
-            const depth = BOTTOM_CURVE_START - val;
+        const { center: c } = configRef.current;
+        const bottom = c - 200;
+        const top = c + 200;
+        if (val < bottom) {
+            const depth = bottom - val;
             return Math.min(60, depth * 0.25);
-        } else if (val > TOP_CURVE_START) {
-            // Cards above curve forwards (tilt towards viewer)
-            const depth = val - TOP_CURVE_START;
+        } else if (val > top) {
+            const depth = val - top;
             return Math.max(-60, -depth * 0.25);
         }
         return 0;
@@ -397,32 +434,17 @@ function StackCard({ card, index, total, y, isDarkCarousel }: {
         return 1;
     });
 
-    // Blur - symmetric at both ends
-    const blur = useTransform(rawPos, (val: number) => {
-        if (val < BOTTOM_CURVE_START) {
-            const depth = BOTTOM_CURVE_START - val;
-            return `blur(${Math.min(8, depth * 0.04)}px)`;
-        }
-        if (val > TOP_CURVE_START) {
-            const depth = val - TOP_CURVE_START;
-            return `blur(${Math.min(8, depth * 0.04)}px)`;
-        }
-        return "blur(0px)";
-    });
-
     // Z-index - items closest to center are on top
     const zIndex = useTransform(rawPos, (val: number) => {
-        const distFromCenter = Math.abs(val - CENTER);
+        const { center: c } = configRef.current;
+        const distFromCenter = Math.abs(val - c);
         return Math.max(1, 1000 - Math.round(distFromCenter));
     });
 
-    // Translate Y for vertical positioning (convert bottom-based to center-based)
+    // Translate Y for vertical positioning
     const translateY = useTransform(posTransform, (val: number) => {
-        // Convert from "bottom" coordinate to translateY from center
-        // val=300 should be center (translateY=0)
-        // val=0 should be below center (translateY=+300)
-        // val=600 should be above center (translateY=-300)
-        return CENTER - val;
+        const { center: c } = configRef.current;
+        return c - val;
     });
 
     return (
@@ -431,17 +453,19 @@ function StackCard({ card, index, total, y, isDarkCarousel }: {
                 y: translateY,
                 scale,
                 opacity,
-                filter: blur,
                 zIndex,
                 rotateX,
                 transformPerspective: 1200,
                 transformOrigin: "center center",
                 position: "absolute",
+                willChange: "transform, opacity",
             }}
             className="w-full flex justify-center pointer-events-none"
         >
             <div className={`
-                w-[98vw] max-w-[1000px] h-[480px] rounded-[30px] 
+                w-[90vw] md:w-[98vw] max-w-[1000px] 
+                h-[280px] md:h-[480px] 
+                rounded-[20px] md:rounded-[30px] 
                 overflow-hidden shadow-2xl
                 relative group
                 pointer-events-auto
@@ -462,17 +486,17 @@ function StackCard({ card, index, total, y, isDarkCarousel }: {
                 </div>
 
                 {/* Content */}
-                <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
                     <div className="transform transition-transform duration-500 group-hover:translate-y-[-10px]">
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className={`h-[1px] w-12 ${isDarkCarousel ? 'bg-white/50' : 'bg-black/50'}`} />
-                            <span className={`text-xs font-medium tracking-[0.2em] uppercase ${isDarkCarousel ? 'text-white/70' : 'text-black/70'
+                        <div className="flex items-center gap-4 mb-2 md:mb-4">
+                            <div className={`h-[1px] w-8 md:w-12 ${isDarkCarousel ? 'bg-white/50' : 'bg-black/50'}`} />
+                            <span className={`text-[10px] md:text-xs font-medium tracking-[0.2em] uppercase ${isDarkCarousel ? 'text-white/70' : 'text-black/70'
                                 }`}>
                                 Collection 0{card.id}
                             </span>
                         </div>
 
-                        <h3 className={`text-5xl md:text-6xl font-black tracking-tighter mb-2 ${isDarkCarousel ? 'text-white' : 'text-black'
+                        <h3 className={`text-3xl md:text-5xl lg:text-6xl font-black tracking-tighter mb-2 ${isDarkCarousel ? 'text-white' : 'text-black'
                             }`} style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
                             {card.title}
                         </h3>

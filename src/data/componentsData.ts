@@ -3681,6 +3681,199 @@ export default StepMorph;`,
             { name: 'text', type: 'string', default: 'MORPHYS', description: 'The text to display' },
             { name: 'stepSize', type: 'number', default: '40', description: 'Vertical offset per letter' },
         ]
+    },
+    {
+        id: 'center-menu',
+        name: 'Center Menu',
+        index: 18,
+        description: 'A floating navbar with a dot-triggered menu that expands seamlessly from the trigger button.',
+        tags: ['menu', 'navbar', 'interaction', 'floating', 'framer-motion'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { CenterMenu } from '@/components/ui/CenterMenu';
+
+// Usage
+<CenterMenu />`,
+        fullCode: `"use client";
+
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Moon, Sun, ArrowUpRight } from "lucide-react";
+
+export const CenterMenu = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== "undefined" && document.documentElement.classList.contains('dark')) {
+            setIsDarkMode(true);
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        const newMode = !isDarkMode;
+        setIsDarkMode(newMode);
+        if (newMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    };
+
+    const menuItems = [
+        { label: "Work", href: "#" },
+        { label: "Studio", href: "#" },
+        { label: "News", href: "#" },
+        { label: "Contact", href: "#" }
+    ];
+
+    const socialLinks = [
+        { label: "Instagram", href: "#" },
+        { label: "Twitter", href: "#" },
+        { label: "LinkedIn", href: "#" }
+    ];
+
+    return (
+        <div className={\`w-full min-h-[600px] flex flex-col items-center pt-10 overflow-hidden \${isDarkMode ? "dark" : ""}\`}>
+            {/* 
+                Top-Center Container.
+                Gap separates the Logo Capsule from the Trigger Button.
+            */}
+            <div className="relative flex items-start gap-4 z-50 font-sans">
+                
+                {/* 1. Logo Pill */}
+                <motion.div
+                    layout
+                    className="flex items-center justify-center px-8 bg-[#fafafa] dark:bg-[#1f1f1f] shadow-lg border border-white/20 dark:border-white/5"
+                    style={{
+                        height: 64,
+                        borderRadius: 32,
+                    }}
+                >
+                    <span className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white cursor-default">
+                        Morphys
+                    </span>
+                </motion.div>
+
+                {/* 2. Trigger Button / Expanding Menu */}
+                {/*Wrapper has fixed dimensions to prevent layout shift when menu expands.
+                   The Logo will stay perfectly centered relative to this fixed anchor. */}
+                <div className="relative w-[64px] h-[64px]">
+                    <motion.div
+                        layout
+                        className="absolute top-0 left-0 bg-[#fafafa] dark:bg-[#1f1f1f] shadow-lg border border-white/20 dark:border-white/5 overflow-hidden z-50"
+                        initial={false}
+                        animate={{
+                            width: isOpen ? 340 : 64,
+                            height: isOpen ? 420 : 64,
+                            borderRadius: isOpen ? 24 : 32,
+                        }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 260,
+                            damping: 20,
+                        }}
+                    >
+                        {/* The Trigger Button - Always at top-left of the expanding box */}
+                        <button 
+                            className="absolute top-0 left-0 z-20 flex items-center justify-center focus:outline-none"
+                            style={{ width: 64, height: 64 }}
+                            onClick={() => setIsOpen(!isOpen)}
+                        >
+                            <motion.div
+                                animate={{ scale: isOpen ? 0 : 1, opacity: isOpen ? 0 : 1 }}
+                                className="w-3 h-3 rounded-full bg-neutral-900 dark:bg-white"
+                            />
+                            {/* Close State Dot / Icon */}
+                            <motion.div 
+                                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                animate={{ scale: isOpen ? 1 : 0, opacity: isOpen ? 1 : 0 }}
+                                initial={{ scale: 0, opacity: 0 }}
+                            >
+                                <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center">
+                                     <div className="w-2 h-2 rounded-full bg-neutral-900 dark:bg-white" />
+                                </div>
+                            </motion.div>
+                        </button>
+
+                        {/* Expanded Menu Content */}
+                        <AnimatePresence>
+                            {isOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="flex flex-col w-full h-full p-8 pt-20"
+                                >
+                                    {/* Main Navigation */}
+                                    <nav className="flex flex-col gap-2">
+                                        {menuItems.map((item, idx) => (
+                                            <motion.a
+                                                key={item.label}
+                                                href={item.href}
+                                                className="group flex items-center justify-between text-3xl font-semibold text-neutral-900 dark:text-white"
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: 0.1 + idx * 0.05 }}
+                                            >
+                                                <span>{item.label}</span>
+                                                <motion.span 
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    whileHover={{ opacity: 1, x: 0 }}
+                                                    className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+                                                >
+                                                    <ArrowUpRight className="w-6 h-6 text-neutral-400 dark:text-neutral-500" />
+                                                </motion.span>
+                                            </motion.a>
+                                        ))}
+                                    </nav>
+                                    
+                                    {/* Footer: Socials & Theme */}
+                                    <div className="mt-auto pt-8 flex items-end justify-between border-t border-neutral-200 dark:border-neutral-800">
+                                        <div className="flex flex-col gap-2">
+                                            {socialLinks.map((social, idx) => (
+                                                <motion.a
+                                                    key={social.label}
+                                                    href={social.href}
+                                                    className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: 0.3 + idx * 0.05 }}
+                                                >
+                                                    {social.label}
+                                                </motion.a>
+                                            ))}
+                                        </div>
+
+                                        {/* Theme Toggle Button */}
+                                        <motion.button
+                                            onClick={toggleTheme}
+                                            className="group relative w-12 h-12 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+                                            initial={{ opacity: 0, scale: 0.5 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: 0.4 }}
+                                        >
+                                           <div className="relative">
+                                               {isDarkMode ? (
+                                                   <Sun className="w-5 h-5 text-white" />
+                                               ) : (
+                                                   <Moon className="w-5 h-5 text-neutral-900" />
+                                               )}
+                                           </div>
+                                        </motion.button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
+                </div>
+            </div>
+        </div>
+    );
+};`,
+        props: []
     }
 ];
 

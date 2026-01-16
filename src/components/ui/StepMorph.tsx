@@ -21,9 +21,19 @@ const StepMorph: React.FC<StepMorphProps> = ({
     showHint = true,
 }) => {
     const [isHovered, setIsHovered] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
-    // Config: Font Height (Base)
-    const fontHeight = 110;
+    // Detect mobile viewport
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 640);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Responsive config
+    const responsiveStepSize = isMobile ? Math.min(stepSize, 14) : stepSize;
+    const fontHeight = isMobile ? 50 : 110;
 
     return (
         <div
@@ -47,10 +57,11 @@ const StepMorph: React.FC<StepMorphProps> = ({
                         char={char}
                         index={index}
                         total={text.length}
-                        stepSize={stepSize}
+                        stepSize={responsiveStepSize}
                         isHovered={isHovered}
                         className={className}
                         fontHeight={fontHeight}
+                        isMobile={isMobile}
                     />
                 ))}
             </div>
@@ -72,6 +83,7 @@ interface LetterProps {
     isHovered: boolean;
     className?: string;
     fontHeight: number;
+    isMobile: boolean;
 }
 
 const Letter: React.FC<LetterProps> = ({
@@ -81,7 +93,8 @@ const Letter: React.FC<LetterProps> = ({
     stepSize,
     isHovered,
     className,
-    fontHeight
+    fontHeight,
+    isMobile
 }) => {
     // 1. Calculate Transform Origin (0% to 100%)
     const originYPercentage = (index / (total - 1)) * 100;
@@ -115,6 +128,9 @@ const Letter: React.FC<LetterProps> = ({
         weight.set(targetWeight);
     }, [targetScale, targetWeight, scaleY, weight]);
 
+    // Responsive font size class
+    const fontSizeClass = className || (isMobile ? 'text-[3.5rem]' : 'text-[8rem]');
+
     return (
         <div
             className="flex flex-col items-center mx-[-0.02em]"
@@ -123,7 +139,7 @@ const Letter: React.FC<LetterProps> = ({
             }}
         >
             <motion.span
-                className={`step-morph-font uppercase leading-[0.85] text-foreground block select-none ${className || 'text-[8rem]'}`}
+                className={`step-morph-font uppercase leading-[0.85] text-foreground block select-none ${fontSizeClass}`}
                 style={{
                     scaleY,
                     fontWeight: weight,

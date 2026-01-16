@@ -41,9 +41,9 @@ const defaultConfig: PageRevealConfig = {
     logoText: "MORPHYS",
     logoFontSize: 80,
     splitCount: {
-        mobile: 5,
-        tablet: 8,
-        desktop: 12,
+        mobile: 10,
+        tablet: 15,
+        desktop: 20,
     },
     logoBlurDuration: 0.8,
     logoHoldDuration: 0.5,

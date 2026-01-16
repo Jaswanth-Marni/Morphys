@@ -89,7 +89,7 @@ const FluidHeight: React.FC<FluidHeightProps> = ({ className = "", containerClas
             <motion.div
                 animate={impactTrigger ? { y: [0, 20, -10, 5, 0] } : { y: 0 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="relative z-10 flex"
+                className="relative z-10 flex -mt-[15%]"
             >
                 {text.split('').map((char, index) => (
                     <Letter
@@ -194,7 +194,7 @@ const Letter: React.FC<LetterProps> = ({
             onMouseLeave={() => setHoveredIndex(null)}
         >
             <motion.span
-                className={`fluid-font leading-[0.8] block text-foreground ${className || 'text-[5rem] md:text-[8rem] lg:text-[11rem]'}`}
+                className={`fluid-font leading-[0.8] block text-foreground ${className || 'text-[3rem] sm:text-[5rem] md:text-[8rem] lg:text-[11rem]'}`}
                 style={{
                     scaleY: scaleY,
                     transformOrigin: "50% 0%", // Top center
