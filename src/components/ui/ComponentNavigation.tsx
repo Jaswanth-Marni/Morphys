@@ -20,21 +20,20 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
         if (!containerRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
 
-        // Account for horizontal padding (px-4 = 16px on mobile, px-6 = 24px on desktop)
+        // Account for horizontal padding (px-3 = 12px on mobile, px-6 = 24px on desktop)
         const isMobile = window.innerWidth < 640;
-        const PADDING = isMobile ? 16 : 24;
+        const PADDING = isMobile ? 12 : 24;
         const effectiveWidth = rect.width - (PADDING * 2);
         const x = clientX - rect.left - PADDING;
 
-        // Clamp percentage between 0 and 1
-        const percent = Math.max(0, Math.min(1, x / effectiveWidth));
+        // Map to index based on uniform slots
+        const totalItems = sortedComponents.length;
+        const slotWidth = effectiveWidth / totalItems;
+        const index = Math.floor(x / slotWidth);
+        const clampedIndex = Math.max(0, Math.min(totalItems - 1, index));
 
-        // Map to closest index
-        const index = Math.round(percent * (sortedComponents.length - 1));
-
-        // Safety check
-        if (sortedComponents[index]) {
-            const targetId = sortedComponents[index].id;
+        if (sortedComponents[clampedIndex]) {
+            const targetId = sortedComponents[clampedIndex].id;
             setHoveredId(targetId);
         }
     };
@@ -75,7 +74,7 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
 
     // Helper to render minor decorative ticks
     const MinorTicks = () => (
-        <div className="flex gap-[3px] sm:gap-[6px] items-center px-[3px] sm:px-[6px]">
+        <div className="hidden sm:flex gap-[3px] sm:gap-[6px] items-center px-[3px] sm:px-[6px]">
             {/* Always show 1 tick */}
             <div className="w-[1px] h-2 bg-black/40 dark:bg-white/10 rounded-full" />
             {/* Show more on desktop */}
@@ -114,7 +113,7 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
                     const isHovered = component.id === hoveredId;
 
                     return (
-                        <div key={component.id} className="flex items-center pointer-events-none">
+                        <div key={component.id} className="flex-1 flex items-center justify-center pointer-events-none min-w-0">
                             {/* Component Tick */}
                             <div
                                 className="relative flex flex-col items-center group"
