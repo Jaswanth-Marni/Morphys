@@ -2,29 +2,122 @@
 
 import { useParams, notFound } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { createPortal } from "react-dom";
+import dynamic from "next/dynamic";
 import { getComponentById, ComponentData } from "@/data/componentsData";
-import { FlipGrid, FlipGridConfig, GridPattern, EasingType, SpeedType } from "@/components/ui/FlipGrid";
-import { AsciiSimulation, AsciiSimulationConfig, AsciiShape } from "@/components/ui/AsciiSimulation";
-import { LiquidMorph, LiquidMorphConfig } from "@/components/ui/LiquidMorph";
-import { PageReveal, PageRevealConfig } from "@/components/ui/PageReveal";
-import { NavbarMenu } from "@/components/ui/NavbarMenu";
-import { NavbarMenu2 } from "@/components/ui/NavbarMenu2";
-import SpotlightSearch from "@/components/ui/SpotlightSearch";
-import ImageTrailCursor, { ImageTrailCursorConfig } from "@/components/ui/ImageTrailCursor";
-import { RealityLens } from "@/components/ui/RealityLens";
-import { ScrollToReveal, ScrollToRevealSandbox } from "@/components/ui/ScrollToReveal";
-import { DiffuseText } from "@/components/ui/DiffuseText";
-import { DiagonalFocus } from "@/components/ui/DiagonalFocus";
-import { NotificationStack } from "@/components/ui/NotificationStack";
-import { TextPressure } from "@/components/ui/TextPressure";
-import FluidHeight from "@/components/ui/FluidHeight";
-import TextMirror from "@/components/ui/TextMirror";
-import StepMorph from "@/components/ui/StepMorph";
-import { ComponentNavigation } from "@/components/ui/ComponentNavigation";
-import { CenterMenu } from "@/components/ui/CenterMenu";
+
+// Type imports only (no runtime cost)
+import type { FlipGridConfig, GridPattern, EasingType, SpeedType } from "@/components/ui/FlipGrid";
+import type { AsciiSimulationConfig, AsciiShape } from "@/components/ui/AsciiSimulation";
+import type { LiquidMorphConfig } from "@/components/ui/LiquidMorph";
+import type { PageRevealConfig } from "@/components/ui/PageReveal";
+import type { ImageTrailCursorConfig } from "@/components/ui/ImageTrailCursor";
+
+// Lightweight components - keep static
 import { Slider } from "@/components/ui/Slider";
+import { ComponentNavigation } from "@/components/ui/ComponentNavigation";
+
+// Loading placeholder for dynamic components
+const ComponentLoader = () => (
+    <div className="w-full h-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-foreground/20 border-t-foreground/60 rounded-full animate-spin" />
+            <span className="text-sm text-foreground/50">Loading component...</span>
+        </div>
+    </div>
+);
+
+// Dynamic imports with code splitting - each component loads ONLY when needed
+const FlipGrid = dynamic(() => import("@/components/ui/FlipGrid").then(mod => ({ default: mod.FlipGrid })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const AsciiSimulation = dynamic(() => import("@/components/ui/AsciiSimulation").then(mod => ({ default: mod.AsciiSimulation })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const LiquidMorph = dynamic(() => import("@/components/ui/LiquidMorph").then(mod => ({ default: mod.LiquidMorph })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const PageReveal = dynamic(() => import("@/components/ui/PageReveal").then(mod => ({ default: mod.PageReveal })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const NavbarMenu = dynamic(() => import("@/components/ui/NavbarMenu").then(mod => ({ default: mod.NavbarMenu })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const NavbarMenu2 = dynamic(() => import("@/components/ui/NavbarMenu2").then(mod => ({ default: mod.NavbarMenu2 })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const SpotlightSearch = dynamic(() => import("@/components/ui/SpotlightSearch"), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const ImageTrailCursor = dynamic(() => import("@/components/ui/ImageTrailCursor"), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const RealityLens = dynamic(() => import("@/components/ui/RealityLens").then(mod => ({ default: mod.RealityLens })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const ScrollToRevealSandbox = dynamic(() => import("@/components/ui/ScrollToReveal").then(mod => ({ default: mod.ScrollToRevealSandbox })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const DiffuseText = dynamic(() => import("@/components/ui/DiffuseText").then(mod => ({ default: mod.DiffuseText })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const DiagonalFocus = dynamic(() => import("@/components/ui/DiagonalFocus").then(mod => ({ default: mod.DiagonalFocus })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const NotificationStack = dynamic(() => import("@/components/ui/NotificationStack").then(mod => ({ default: mod.NotificationStack })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const TextPressure = dynamic(() => import("@/components/ui/TextPressure").then(mod => ({ default: mod.TextPressure })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const FluidHeight = dynamic(() => import("@/components/ui/FluidHeight"), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const TextMirror = dynamic(() => import("@/components/ui/TextMirror"), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const StepMorph = dynamic(() => import("@/components/ui/StepMorph"), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const CenterMenu = dynamic(() => import("@/components/ui/CenterMenu").then(mod => ({ default: mod.CenterMenu })), {
+    loading: ComponentLoader,
+    ssr: false
+});
 
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
@@ -759,14 +852,46 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
 
 interface CodeDisplayProps {
     config: any;
-    fullCode: string;
     componentId: string;
+    initialFullCode?: string; // Optional - will lazy load if not provided
 }
 
-function CodeDisplay({ config, fullCode, componentId }: CodeDisplayProps) {
+function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps) {
     const [activeTab, setActiveTab] = useState<'usage' | 'full'>('usage');
     const [copied, setCopied] = useState(false);
+    const [fullCode, setFullCode] = useState<string | null>(initialFullCode || null);
+    const [isLoadingCode, setIsLoadingCode] = useState(false);
     const codeContainerRef = useRef<HTMLPreElement>(null);
+
+    // Lazy load full code when tab is clicked
+    const loadFullCode = async () => {
+        if (fullCode || isLoadingCode) return;
+
+        setIsLoadingCode(true);
+        try {
+            // Dynamically import the components data only for fullCode
+            const { getComponentById } = await import("@/data/componentsData");
+            const data = getComponentById(componentId);
+            if (data?.fullCode) {
+                setFullCode(data.fullCode);
+            } else {
+                setFullCode('// Code not found');
+            }
+        } catch (error) {
+            console.error('Failed to load full code:', error);
+            setFullCode('// Failed to load code');
+        } finally {
+            setIsLoadingCode(false);
+        }
+    };
+
+    // Handle tab change with lazy loading
+    const handleTabChange = async (tab: 'usage' | 'full') => {
+        setActiveTab(tab);
+        if (tab === 'full' && !fullCode) {
+            await loadFullCode();
+        }
+    };
 
     // Handle wheel events to prevent parent scroll when scrolling inside code section
     const handleWheel = (e: React.WheelEvent<HTMLPreElement>) => {
@@ -1114,7 +1239,7 @@ ${configEntries.join('\n')}
 
 
     const handleCopy = async () => {
-        const code = activeTab === 'usage' ? dynamicUsage : fullCode;
+        const code = activeTab === 'usage' ? dynamicUsage : (fullCode || '');
         const success = await copyToClipboard(code);
         if (success) {
             setCopied(true);
@@ -1122,12 +1247,32 @@ ${configEntries.join('\n')}
         }
     };
 
+    // Render code content with loading state
+    const renderCodeContent = () => {
+        if (activeTab === 'usage') {
+            return dynamicUsage;
+        }
+
+        if (isLoadingCode) {
+            return (
+                <div className="flex items-center justify-center py-12">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="w-6 h-6 border-2 border-foreground/20 border-t-foreground/60 rounded-full animate-spin" />
+                        <span className="text-sm text-foreground/50">Loading full code...</span>
+                    </div>
+                </div>
+            );
+        }
+
+        return fullCode || 'Click to load full code...';
+    };
+
     return (
         <div className="w-full">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex gap-2">
                     <button
-                        onClick={() => setActiveTab('usage')}
+                        onClick={() => handleTabChange('usage')}
                         className={`
                             px-4 py-2 rounded-lg text-sm font-medium transition-colors
                             ${activeTab === 'usage'
@@ -1139,7 +1284,7 @@ ${configEntries.join('\n')}
                         Usage
                     </button>
                     <button
-                        onClick={() => setActiveTab('full')}
+                        onClick={() => handleTabChange('full')}
                         className={`
                             px-4 py-2 rounded-lg text-sm font-medium transition-colors
                             ${activeTab === 'full'
@@ -1153,7 +1298,8 @@ ${configEntries.join('\n')}
                 </div>
                 <button
                     onClick={handleCopy}
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-foreground/5 hover:bg-foreground/10 transition-colors"
+                    disabled={activeTab === 'full' && isLoadingCode}
+                    className="px-4 py-2 rounded-lg text-sm font-medium bg-foreground/5 hover:bg-foreground/10 transition-colors disabled:opacity-50"
                 >
                     {copied ? '✓ Copied!' : 'Copy'}
                 </button>
@@ -1169,8 +1315,9 @@ ${configEntries.join('\n')}
                     className="p-6 overflow-auto text-sm max-h-[500px] scrollbar-thin scrollbar-thumb-foreground/20 scrollbar-track-transparent overscroll-contain"
                 >
                     <code className="text-foreground/80 font-mono">
-                        {activeTab === 'usage' ? dynamicUsage : fullCode}
+                        {typeof renderCodeContent() === 'string' ? renderCodeContent() : null}
                     </code>
+                    {typeof renderCodeContent() !== 'string' && renderCodeContent()}
                 </pre>
             </div>
         </div>
@@ -2028,7 +2175,6 @@ export default function ComponentDetailPage() {
                     <h2 className="text-xl font-semibold mb-4">Code</h2>
                     <CodeDisplay
                         config={config}
-                        fullCode={componentData.fullCode}
                         componentId={componentId}
                     />
                 </div>
