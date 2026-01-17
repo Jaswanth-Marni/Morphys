@@ -5,6 +5,7 @@ import Navbar from "@/components/ui/Navbar";
 import { GlassPill, Menu, ScrollToTop, GlobalEdgeBlur } from "@/components/ui";
 import { MenuProvider } from "@/context/MenuContext";
 import { ShowcaseProvider } from "@/context/ShowcaseContext";
+import { NavigationLoadingProvider } from "@/context/NavigationLoadingContext";
 import SmoothScrollProvider from "@/components/ui/SmoothScrollProvider";
 import TransitionProvider from "@/components/ui/TransitionProvider";
 import CanvasOverlay from "@/components/ui/CanvasOverlay";
@@ -55,19 +56,21 @@ export default function RootLayout({
       >
         <MenuProvider>
           <ShowcaseProvider>
-            <SmoothScrollProvider>
-              <TransitionProvider>
-                <ScrollToTop />
-                <Navbar />
-                <GlassPill />
-                <Menu />
-                {children}
-                {/* Infinite Canvas Overlay - rendered as fixed overlay */}
-                <CanvasOverlay />
-                {/* Global Edge Blur - permanent blur on all viewport edges */}
-                <GlobalEdgeBlur />
-              </TransitionProvider>
-            </SmoothScrollProvider>
+            <NavigationLoadingProvider>
+              <SmoothScrollProvider>
+                <TransitionProvider>
+                  <ScrollToTop />
+                  <Navbar />
+                  <GlassPill />
+                  <Menu />
+                  {children}
+                  {/* Infinite Canvas Overlay - rendered as fixed overlay */}
+                  <CanvasOverlay />
+                  {/* Global Edge Blur - permanent blur on all viewport edges */}
+                  <GlobalEdgeBlur />
+                </TransitionProvider>
+              </SmoothScrollProvider>
+            </NavigationLoadingProvider>
           </ShowcaseProvider>
         </MenuProvider>
       </body>

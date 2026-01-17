@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, Suspense, lazy } from "react";
 import dynamic from "next/dynamic";
 import { componentsDataLite } from "@/data/componentsDataLite";
+import { useNavigationLoading } from "@/context/NavigationLoadingContext";
 
 // Component module mapping for prefetching
 const componentModuleMap: Record<string, string> = {
@@ -204,6 +205,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
 
 export function NormalComponents() {
     const router = useRouter();
+    const { startLoading } = useNavigationLoading();
 
     // Prefetch component on hover for faster navigation
     const handleMouseEnter = useCallback((componentId: string) => {
@@ -223,6 +225,11 @@ export function NormalComponents() {
         router.prefetch(`/components/${componentId}`);
     }, [router]);
 
+    // Handle card click - show loading immediately
+    const handleCardClick = useCallback(() => {
+        startLoading();
+    }, [startLoading]);
+
     return (
         <div className="w-full h-full flex flex-col items-center justify-start px-4 md:px-8 pb-12 mt-8 md:mt-20">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full max-w-7xl">
@@ -235,6 +242,7 @@ export function NormalComponents() {
                             href={`/components/${component.id}`}
                             prefetch={true}
                             onMouseEnter={() => handleMouseEnter(component.id)}
+                            onClick={handleCardClick}
                             className="block"
                         >
                             <motion.div

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { componentMetadata } from "@/data/componentMetadata";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
+import { useNavigationLoading } from "@/context/NavigationLoadingContext";
 
 // Component ID to module path mapping for prefetching
 const componentModuleMap: Record<string, string> = {
@@ -35,6 +36,7 @@ const ITEM_WIDTH = 44; // Fixed width for each component slot in pixels
 
 export function ComponentNavigation({ currentId }: { currentId: string }) {
     const router = useRouter();
+    const { startLoading } = useNavigationLoading();
     const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isScrolling, setIsScrolling] = useState(false);
@@ -152,6 +154,7 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
         // Navigate if we have a valid hovered ID on release (Drag Selection)
         // We allow this even if scrolled, restoring the "scrubbing" behavior
         if (hoveredId && hoveredId !== currentId) {
+            startLoading();
             router.push(`/components/${hoveredId}`);
         }
 

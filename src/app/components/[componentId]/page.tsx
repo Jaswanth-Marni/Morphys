@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { getComponentByIdLite, ComponentDataLite as ComponentData } from "@/data/componentsDataLite";
+import { useNavigationLoading } from "@/context/NavigationLoadingContext";
 
 // Type imports only (no runtime cost)
 import type { FlipGridConfig, GridPattern, EasingType, SpeedType } from "@/components/ui/FlipGrid";
@@ -1328,9 +1329,17 @@ ${configEntries.join('\n')}
 // MAIN PAGE COMPONENT
 // ============================================
 
+
+
 export default function ComponentDetailPage() {
     const params = useParams();
     const componentId = params.componentId as string;
+    const { stopLoading } = useNavigationLoading();
+
+    // Stop the loading overlay as soon as we mount
+    useEffect(() => {
+        stopLoading();
+    }, [stopLoading]);
 
     const componentData = useMemo(() => getComponentByIdLite(componentId), [componentId]);
 
