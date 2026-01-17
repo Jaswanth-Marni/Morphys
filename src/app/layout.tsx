@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import Navbar from "@/components/ui/Navbar";
@@ -31,6 +31,14 @@ const victoryStriker = localFont({
 export const metadata: Metadata = {
   title: "Morphys - Curated Chaos",
   description: "The art of organized chaos in UI. Discover unique and uncommon components.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  minimumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
