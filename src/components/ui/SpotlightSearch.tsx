@@ -142,7 +142,7 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
                             exit="exit"
                             variants={containerVariants}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className={`relative z-10 flex items-center justify-center p-2 ${isCompact || isMorphed ? 'flex-col gap-4' : 'flex-row'}`}
+                            className={`relative z-10 flex items-center justify-center p-2 ${isCompact ? 'flex-col gap-4' : 'flex-row'}`}
                         // Constraint max width prevents valid width animation if we hardcode width logic below?
                         // We handle size logic in children.
                         >
@@ -212,7 +212,7 @@ export default function SpotlightSearch({ config: userConfig }: SpotlightSearchP
                             {/* Layout Logic: If Compact, buttons are below. If not compact, to the right */}
                             <motion.div
                                 layout
-                                className={`flex items-center gap-2 md:gap-3 ${isCompact || isMorphed ? 'mt-0 w-auto justify-center' : 'ml-3 h-full'}`}
+                                className={`flex items-center gap-2 md:gap-3 ${isCompact ? 'mt-0 w-auto justify-center' : 'ml-3 h-full'}`}
                             >
                                 <AnimatePresence mode='popLayout'>
                                     {isMorphed && actionButtons.map((btn, index) => (

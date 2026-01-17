@@ -447,16 +447,27 @@ export const componentsDataLite: ComponentDataLite[] = [
         id: 'layered-image-showcase',
         name: 'Layered Image Showcase',
         index: 20,
-        description: 'A sophisticated image gallery with slope-based text animations.',
-        tags: ['image', 'gallery', 'hover', 'slope', 'animation', 'reveal'],
+        description: 'A sophisticated image gallery with staggered letter animations on hover. Features smooth background transitions and customizable accent colors.',
+        tags: ['image', 'gallery', 'hover', 'animation', 'reveal', 'text-animation'],
         category: 'interaction',
         previewConfig: {},
         dependencies: ['framer-motion', 'react'],
         usage: `import { LayeredImageShowcase } from '@/components/ui';
 
-<LayeredImageShowcase />`,
+// Basic usage
+<LayeredImageShowcase />
+
+// With custom configuration
+<LayeredImageShowcase 
+    config={{
+        title: "MORPHYS",
+        accentColor: "#FF3333",
+        textColor: "#ffffff"
+    }}
+/>`,
         props: [
-            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+            { name: 'className', type: 'string', default: "'h-screen'", description: 'Additional CSS classes for height/styling' },
+            { name: 'config', type: 'object', default: '{}', description: 'Configuration object with title, accentColor, and textColor' },
         ]
     },
 ];
