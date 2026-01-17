@@ -443,7 +443,24 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'children', type: 'ReactNode', default: 'undefined', description: 'Content to apply the refraction effect to' },
         ]
     },
+    {
+        id: 'layered-image-showcase',
+        name: 'Layered Image Showcase',
+        index: 20,
+        description: 'A sophisticated image gallery with slope-based text animations.',
+        tags: ['image', 'gallery', 'hover', 'slope', 'animation', 'reveal'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { LayeredImageShowcase } from '@/components/ui';
+
+<LayeredImageShowcase />`,
+        props: [
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
+    },
 ];
+
 
 // Fast lookup by ID
 const dataMap = new Map(componentsDataLite.map(c => [c.id, c]));

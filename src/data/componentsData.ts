@@ -4027,6 +4027,155 @@ export default GlassSurge;`,
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
             { name: 'children', type: 'ReactNode', default: 'undefined', description: 'Content to apply the refraction effect to' },
         ]
+    },
+    {
+        id: 'layered-image-showcase',
+        name: 'Layered Image Showcase',
+        index: 20,
+        description: 'A sophisticated image gallery with slope-based text animations.',
+        tags: ['image', 'gallery', 'hover', 'slope', 'animation', 'reveal'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { LayeredImageShowcase } from '@/components/ui';
+
+<LayeredImageShowcase />`,
+        fullCode: `"use client";
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const directors = [
+    { name: "BRIAN BILLOW", image: "/carousel1.png" },
+    { name: "JESS COULTER", image: "/carousel2.jpg" },
+    { name: "MIRANDA HAYMON", image: "/carousel3.jpg" },
+    { name: "KENNY HERZOG", image: "/carousel4.jpg" },
+    { name: "JIM JENKINS", image: "/carousel5.jpg" },
+    { name: "THADDEUS MCCANTS", image: "/carousel6.jpg" },
+    { name: "SPENCER RIVIERA", image: "/carousel7.jpg" },
+    { name: "DAVID SHANE", image: "/carousel8.jpg" },
+];
+
+export const LayeredImageShowcase = ({ className = "h-screen" }: { className?: string }) => {
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+    return (
+        <div className={\`relative w-full bg-black overflow-hidden font-sans \${className}\`}>
+            {/* Background Images */}
+            <AnimatePresence mode="popLayout">
+                {hoveredIndex !== null && (
+                    <motion.div
+                        key={hoveredIndex}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5, ease: "easeInOut" }}
+                        className="absolute inset-0 z-0"
+                    >
+                        <img 
+                            src={directors[hoveredIndex].image} 
+                            alt={directors[hoveredIndex].name}
+                            className="w-full h-full object-cover opacity-80" 
+                        />
+                        <div className="absolute inset-0 bg-black/20" />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Content Container */}
+            <div className="relative z-10 w-full h-full flex flex-col justify-between p-8 md:p-16">
+                
+                {/* Top Right List */}
+                <div className="flex flex-col items-end gap-1 mt-10">
+                    {directors.map((director, index) => (
+                        <DirectorLink 
+                            key={index}
+                            name={director.name}
+                            index={index}
+                            isHovered={hoveredIndex === index}
+                            isAnyHovered={hoveredIndex !== null}
+                            onHover={() => setHoveredIndex(index)}
+                            onLeave={() => setHoveredIndex(null)}
+                        />
+                    ))}
+                </div>
+
+                {/* Bottom Left Title ("DIRECTORS") */}
+                <div className="mb-0">
+                    <motion.h1 
+                        className="text-[12vw] leading-[0.8] font-bold text-[#FF3333] tracking-tighter uppercase"
+                        variants={{
+                            visible: { 
+                                x: 0, 
+                                y: 0, 
+                                opacity: 1,
+                                transition: { duration: 0.6, ease: [0.33, 1, 0.68, 1] }
+                            },
+                            hidden: { 
+                                x: "-10%", 
+                                y: "20%",
+                                opacity: 0,
+                                transition: { duration: 0.6, ease: [0.33, 1, 0.68, 1] }
+                            }
+                        }}
+                        animate={hoveredIndex !== null ? "hidden" : "visible"}
+                    >
+                        DIRECTORS
+                    </motion.h1>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+interface DirectorLinkProps {
+    name: string;
+    index: number;
+    isHovered: boolean;
+    isAnyHovered: boolean;
+    onHover: () => void;
+    onLeave: () => void;
+}
+
+const DirectorLink = ({ name, isHovered, isAnyHovered, onHover, onLeave }: DirectorLinkProps) => {
+    return (
+        <div 
+            className="relative cursor-pointer overflow-hidden group"
+            onMouseEnter={onHover}
+            onMouseLeave={onLeave}
+        >
+            <div className="relative">
+                <motion.div
+                    className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white/50 group-hover:text-white"
+                    animate={{
+                        x: isHovered ? -20 : 0,
+                        y: isHovered ? 20 : 0,
+                        opacity: isHovered ? 0 : (isAnyHovered ? 0.3 : 1), 
+                    }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                >
+                    {name}
+                </motion.div>
+
+                <motion.div
+                    className="absolute inset-0 text-4xl md:text-6xl font-black uppercase tracking-tighter text-[#FF3333] pointer-events-none"
+                    initial={{ x: 20, y: -20, opacity: 0 }} 
+                    animate={{
+                        x: isHovered ? 0 : 20,
+                        y: isHovered ? 0 : -20,
+                        opacity: isHovered ? 1 : 0,
+                    }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                >
+                    {name}
+                </motion.div>
+            </div>
+        </div>
+    );
+};`,
+        props: [
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
     }
 ];
 

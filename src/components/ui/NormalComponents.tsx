@@ -29,6 +29,7 @@ const componentModuleMap: Record<string, string> = {
     'step-morph': 'StepMorph',
     'center-menu': 'CenterMenu',
     'glass-surge': 'GlassSurge',
+    'layered-image-showcase': 'LayeredImageShowcase',
 };
 
 // Prefetch cache
@@ -208,6 +209,18 @@ const GlassSurgePreview = dynamic(
     { loading: PreviewLoader, ssr: false }
 );
 
+const LayeredImageShowcasePreview = dynamic(
+    () => import("./LayeredImageShowcase").then(mod => {
+        const LayeredImageShowcase = mod.LayeredImageShowcase;
+        return {
+            default: () => (
+                <LayeredImageShowcase className="!h-full text-[0.5rem]" />
+            )
+        };
+    }),
+    { loading: PreviewLoader, ssr: false }
+);
+
 // Component previews mapping - all are now dynamically loaded
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -229,6 +242,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'step-morph': StepMorphInteractive,
     'center-menu': CenterMenuPreview,
     'glass-surge': GlassSurgePreview,
+    'layered-image-showcase': LayeredImageShowcasePreview,
 };
 
 export function NormalComponents() {

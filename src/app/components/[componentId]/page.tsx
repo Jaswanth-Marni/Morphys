@@ -125,6 +125,11 @@ const GlassSurge = dynamic(() => import("@/components/ui/GlassSurge"), {
     ssr: false
 });
 
+const LayeredImageShowcase = dynamic(() => import("@/components/ui/LayeredImageShowcase").then(mod => ({ default: mod.LayeredImageShowcase })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -189,6 +194,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
             />
         </div>
     ),
+    'layered-image-showcase': LayeredImageShowcase as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -279,6 +285,21 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
     const easings: EasingType[] = ['smooth', 'spring', 'bounce', 'elastic'];
     const speeds: SpeedType[] = ['slow', 'normal', 'fast', 'instant'];
 
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    const panelVariants = {
+        hidden: isMobile ? { y: "100%", opacity: 0 } : { x: "100%", opacity: 0 },
+        visible: isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 },
+        exit: isMobile ? { y: "100%", opacity: 0 } : { x: "100%", opacity: 0 }
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -288,25 +309,25 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+                        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[65] md:hidden"
                         onClick={onClose}
                     />
 
-                    {/* Panel - Mobile: Fixed, Desktop: Absolute inside sandbox */}
+                    {/* Panel - Mobile: Bottom sheet, Desktop: Floating sidebar */}
                     <motion.div
-                        initial={{ x: '100%', opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: '100%', opacity: 0 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                        variants={panelVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
                         className="
-                            fixed right-0 top-0 bottom-0 w-[320px]
-                            md:absolute md:right-[15px] md:top-[15px] md:bottom-[15px]
-                            md:w-[340px] md:rounded-2xl
+                            fixed left-0 right-0 bottom-0 w-full h-[50vh] rounded-t-2xl border-t
+                            md:absolute md:top-[15px] md:bottom-[15px] md:right-[15px] md:left-auto md:w-[340px] md:h-auto md:rounded-2xl md:border
                             bg-background/95 backdrop-blur-xl
-                            border-l md:border border-foreground/10
-                            z-50 overflow-y-auto overscroll-contain scrollbar-thin
+                            border-foreground/10
+                            z-[70] overflow-y-auto overscroll-contain scrollbar-thin
                             p-6
-                            md:shadow-2xl
+                            shadow-[0_-8px_30px_rgba(0,0,0,0.12)] md:shadow-2xl
                         "
                     >
                         <div className="flex items-center justify-between mb-8">
@@ -429,6 +450,45 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         <div className="grid grid-cols-2 gap-3">
                                             <NumberControl label="Intensity" value={Math.round(config.intensity * 10)} min={0} max={50} onChange={(val) => onConfigChange('intensity', val / 10)} />
                                             <NumberControl label="Radius" value={Math.round(config.radius * 10)} min={1} max={30} onChange={(val) => onConfigChange('radius', val / 10)} />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'layered-image-showcase' ? (
+                                // LAYERED IMAGE SHOWCASE CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Title</span>
+                                            <input
+                                                type="text"
+                                                value={config.title || "MORPHYS"}
+                                                onChange={(e) => onConfigChange('title', e.target.value)}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Accent Color</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.accentColor || '#FF3333'}
+                                                    onChange={(e) => onConfigChange('accentColor', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Text Color</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.textColor || '#ffffff'}
+                                                    onChange={(e) => onConfigChange('textColor', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </>
@@ -1230,6 +1290,18 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
 />`;
         }
 
+        if (componentId === 'layered-image-showcase') {
+            return `import { LayeredImageShowcase } from '@/components/ui';
+
+<LayeredImageShowcase 
+    config={{
+        title: "${config.title || 'MORPHYS'}",
+        accentColor: "${config.accentColor || '#FF3333'}",
+        textColor: "${config.textColor || '#ffffff'}"
+    }}
+/>`;
+        }
+
         // FLIP GRID (Default)
         const defaultConfig: FlipGridConfig = {
             cols: 10,
@@ -1463,6 +1535,13 @@ export default function ComponentDetailPage() {
         if (componentId === 'glass-surge') {
             return {
                 text: "MORPHYS",
+            };
+        }
+        if (componentId === 'layered-image-showcase') {
+            return {
+                title: "MORPHYS",
+                accentColor: "#FF3333",
+                textColor: "#ffffff"
             };
         }
         return {
@@ -1967,7 +2046,7 @@ export default function ComponentDetailPage() {
                                                     backdrop-blur-lg
                                                     flex items-center justify-center
                                                     transition-colors
-                                                    ${componentId === 'scroll-to-reveal'
+                                                    ${['scroll-to-reveal', 'layered-image-showcase'].includes(componentId)
                                                         ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
                                                         : componentId === 'notification-stack'
                                                             ? 'bg-background/20 border border-background/20 text-background hover:bg-background/30'
@@ -1998,7 +2077,7 @@ export default function ComponentDetailPage() {
                                                     backdrop-blur-lg
                                                     flex items-center justify-center
                                                     transition-colors
-                                                    ${componentId === 'scroll-to-reveal'
+                                                    ${['scroll-to-reveal', 'layered-image-showcase'].includes(componentId)
                                                         ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
                                                         : componentId === 'notification-stack'
                                                             ? 'bg-background/20 border border-background/20 text-background hover:bg-background/30'
@@ -2022,8 +2101,8 @@ export default function ComponentDetailPage() {
                                     </>
                                 )}
 
-                                {/* Reload Button for NavbarMenu2 */}
-                                {componentId === 'navbar-menu-2' && (
+                                {/* Reload Button for NavbarMenu2 & LayeredImageShowcase */}
+                                {['navbar-menu-2', 'layered-image-showcase'].includes(componentId) && (
                                     <>
                                         {/* Desktop Reload Button */}
                                         <motion.div
@@ -2037,13 +2116,16 @@ export default function ComponentDetailPage() {
                                             <button
                                                 onClick={() => setComponentKey(prev => prev + 1)}
                                                 title="Reload Component"
-                                                className="
+                                                className={`
                                                     w-12 h-12 rounded-full
-                                                    bg-foreground/10 backdrop-blur-lg
-                                                    border border-foreground/10
+                                                    backdrop-blur-lg
                                                     flex items-center justify-center
-                                                    hover:bg-foreground/20 transition-colors
-                                                "
+                                                    transition-colors
+                                                    ${['navbar-menu-2', 'layered-image-showcase'].includes(componentId)
+                                                        ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
+                                                        : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'
+                                                    }
+                                                `}
                                             >
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="M23 4v6h-6" />
@@ -2058,13 +2140,16 @@ export default function ComponentDetailPage() {
                                             <button
                                                 onClick={() => setComponentKey(prev => prev + 1)}
                                                 title="Reload Component"
-                                                className="
+                                                className={`
                                                     w-12 h-12 rounded-full
-                                                    bg-foreground/10 backdrop-blur-lg
-                                                    border border-foreground/10
+                                                    backdrop-blur-lg
                                                     flex items-center justify-center
-                                                    hover:bg-foreground/20 transition-colors
-                                                "
+                                                    transition-colors
+                                                    ${['navbar-menu-2', 'layered-image-showcase'].includes(componentId)
+                                                        ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
+                                                        : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'
+                                                    }
+                                                `}
                                             >
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="M23 4v6h-6" />
@@ -2093,7 +2178,7 @@ export default function ComponentDetailPage() {
                                         z-[60]
                                         hidden md:flex
                                         transition-colors
-                                        ${componentId === 'scroll-to-reveal'
+                                        ${['scroll-to-reveal', 'layered-image-showcase'].includes(componentId)
                                             ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
                                             : componentId === 'notification-stack'
                                                 ? 'bg-background/20 border border-background/20 text-background hover:bg-background/30'
@@ -2128,7 +2213,7 @@ export default function ComponentDetailPage() {
                                         transition-colors
                                         z-[60]
                                         md:hidden
-                                        ${componentId === 'scroll-to-reveal'
+                                        ${['scroll-to-reveal', 'layered-image-showcase'].includes(componentId)
                                             ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
                                             : componentId === 'notification-stack'
                                                 ? 'bg-background/20 border border-background/20 text-background hover:bg-background/30'

@@ -42,7 +42,7 @@ export default function Loading() {
             </div>
 
             {/* Bottom Navigation Skeleton */}
-            <div className="fixed bottom-4 left-0 right-0 flex justify-center z-50 pointer-events-none px-4">
+            <div className="fixed bottom-4 left-0 right-0 flex justify-center z-[60] pointer-events-none px-4">
                 <div className="h-14 w-64 md:w-96 rounded-2xl bg-foreground/5 animate-pulse" />
             </div>
         </div>

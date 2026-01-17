@@ -175,6 +175,15 @@ export const componentMetadata: ComponentMetadata[] = [
         category: 'layout',
         dependencies: ['framer-motion', 'react', 'lucide-react'],
     },
+    {
+        id: 'layered-image-showcase',
+        name: 'Layered Image Showcase',
+        index: 20,
+        description: 'A sophisticated image gallery with slope-based text animations.',
+        tags: ['image', 'gallery', 'hover', 'slope', 'animation', 'reveal'],
+        category: 'interaction',
+        dependencies: ['framer-motion', 'react'],
+    },
 ];
 
 // Fast lookup by ID
