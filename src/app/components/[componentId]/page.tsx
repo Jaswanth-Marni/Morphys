@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
-import { getComponentById, ComponentData } from "@/data/componentsData";
+import { getComponentByIdLite, ComponentDataLite as ComponentData } from "@/data/componentsDataLite";
 
 // Type imports only (no runtime cost)
 import type { FlipGridConfig, GridPattern, EasingType, SpeedType } from "@/components/ui/FlipGrid";
@@ -1332,7 +1332,7 @@ export default function ComponentDetailPage() {
     const params = useParams();
     const componentId = params.componentId as string;
 
-    const componentData = useMemo(() => getComponentById(componentId), [componentId]);
+    const componentData = useMemo(() => getComponentByIdLite(componentId), [componentId]);
 
     const [config, setConfig] = useState<any>(() => {
         if (componentId === 'ascii-simulation') {
