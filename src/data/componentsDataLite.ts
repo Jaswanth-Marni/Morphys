@@ -310,7 +310,7 @@ export const componentsDataLite: ComponentDataLite[] = [
     },
     {
         id: 'notification-stack',
-        name: 'Notification Stack',
+        name: 'Stack Carousel',
         index: 13,
         description: 'A draggable vertical stack of notification cards with smooth spring animations. Features depth-based scaling, draggable scrolling, and a floating scrollbar indicator.',
         tags: ['notification', 'stack', 'toast', 'cards', 'animation', 'draggable'],
