@@ -3,28 +3,9 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, Suspense, lazy } from "react";
+import dynamic from "next/dynamic";
 import { componentsDataLite } from "@/data/componentsDataLite";
-import { FlipGridPreview } from "./FlipGrid";
-import { AsciiSimulationPreview } from "./AsciiSimulation";
-import { LiquidMorphPreview } from "./LiquidMorph";
-import { PageRevealPreview } from "./PageReveal";
-import { NavbarMenuPreview } from "./NavbarMenu";
-import { SpotlightSearchPreview } from "./SpotlightSearch";
-import { ImageTrailCursorPreview } from "./ImageTrailCursor";
-import { RealityLensPreview } from "./RealityLens";
-import { NavbarMenu2Preview } from "./NavbarMenu2";
-import { ScrollToRevealPreview } from "./ScrollToReveal";
-import { DiffuseTextPreview } from "./DiffuseText";
-import { DiagonalFocusPreview } from "./DiagonalFocus";
-import { NotificationStackPreview } from "./NotificationStack";
-import { TextPressure } from "./TextPressure";
-import { FluidHeightPreview } from "./FluidHeight";
-import FluidHeight from "./FluidHeight";
-import TextMirror from "./TextMirror";
-import { StepMorphPreview } from "./StepMorph";
-import StepMorph from "./StepMorph";
-import { CenterMenu } from "./CenterMenu";
 
 // Component module mapping for prefetching
 const componentModuleMap: Record<string, string> = {
@@ -51,44 +32,155 @@ const componentModuleMap: Record<string, string> = {
 // Prefetch cache
 const prefetchedComponents = new Set<string>();
 
-// Wrapper for interactive previews
-const FluidHeightInteractive = () => (
-    <FluidHeight
-        className="text-[3rem]"
-        containerClassName="pb-12"
-        showHint={false}
-    />
-);
-
-const TextMirrorInteractive = () => (
-    <TextMirror
-        text="MORPHYS"
-        hasTrigger={false}
-        config={{
-            fontSize: 40,
-            spread: 15,
-            idleTimeout: 3000
-        }}
-    />
-);
-
-const StepMorphInteractive = () => (
-    <StepMorph
-        className="text-[2.5rem]"
-        containerClassName=""
-        innerClassName=""
-        stepSize={14}
-        showHint={false}
-    />
-);
-
-const CenterMenuPreview = () => (
+// Simple loading placeholder for preview cards
+const PreviewLoader = () => (
     <div className="w-full h-full flex items-center justify-center">
-        <CenterMenu className="pointer-events-none transform-gpu scale-[0.7] !min-h-0 !h-auto !pt-0 !overflow-visible" />
+        <div className="w-6 h-6 border-2 border-foreground/10 border-t-foreground/30 rounded-full animate-spin" />
     </div>
 );
 
-// Component previews mapping
+// Dynamic imports for ALL preview components - NO synchronous imports!
+// This prevents Three.js and other heavy libraries from blocking initial page load
+const FlipGridPreview = dynamic(
+    () => import("./FlipGrid").then(mod => ({ default: mod.FlipGridPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const AsciiSimulationPreview = dynamic(
+    () => import("./AsciiSimulation").then(mod => ({ default: mod.AsciiSimulationPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const LiquidMorphPreview = dynamic(
+    () => import("./LiquidMorph").then(mod => ({ default: mod.LiquidMorphPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const PageRevealPreview = dynamic(
+    () => import("./PageReveal").then(mod => ({ default: mod.PageRevealPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const NavbarMenuPreview = dynamic(
+    () => import("./NavbarMenu").then(mod => ({ default: mod.NavbarMenuPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const NavbarMenu2Preview = dynamic(
+    () => import("./NavbarMenu2").then(mod => ({ default: mod.NavbarMenu2Preview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const SpotlightSearchPreview = dynamic(
+    () => import("./SpotlightSearch").then(mod => ({ default: mod.SpotlightSearchPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const ImageTrailCursorPreview = dynamic(
+    () => import("./ImageTrailCursor").then(mod => ({ default: mod.ImageTrailCursorPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const RealityLensPreview = dynamic(
+    () => import("./RealityLens").then(mod => ({ default: mod.RealityLensPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const ScrollToRevealPreview = dynamic(
+    () => import("./ScrollToReveal").then(mod => ({ default: mod.ScrollToRevealPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const DiffuseTextPreview = dynamic(
+    () => import("./DiffuseText").then(mod => ({ default: mod.DiffuseTextPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const DiagonalFocusPreview = dynamic(
+    () => import("./DiagonalFocus").then(mod => ({ default: mod.DiagonalFocusPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const NotificationStackPreview = dynamic(
+    () => import("./NotificationStack").then(mod => ({ default: mod.NotificationStackPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const TextPressure = dynamic(
+    () => import("./TextPressure").then(mod => ({ default: mod.TextPressure })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+// Wrapper components with inline definitions to avoid additional imports
+const FluidHeightInteractive = dynamic(
+    () => import("./FluidHeight").then(mod => {
+        const FluidHeight = mod.default;
+        return {
+            default: () => (
+                <FluidHeight
+                    className="text-[3rem]"
+                    containerClassName="pb-12"
+                    showHint={false}
+                />
+            )
+        };
+    }),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const TextMirrorInteractive = dynamic(
+    () => import("./TextMirror").then(mod => {
+        const TextMirror = mod.default;
+        return {
+            default: () => (
+                <TextMirror
+                    text="MORPHYS"
+                    hasTrigger={false}
+                    config={{
+                        fontSize: 40,
+                        spread: 15,
+                        idleTimeout: 3000
+                    }}
+                />
+            )
+        };
+    }),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const StepMorphInteractive = dynamic(
+    () => import("./StepMorph").then(mod => {
+        const StepMorph = mod.default;
+        return {
+            default: () => (
+                <StepMorph
+                    className="text-[2.5rem]"
+                    containerClassName=""
+                    innerClassName=""
+                    stepSize={14}
+                    showHint={false}
+                />
+            )
+        };
+    }),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const CenterMenuPreview = dynamic(
+    () => import("./CenterMenu").then(mod => {
+        const CenterMenu = mod.CenterMenu;
+        return {
+            default: () => (
+                <div className="w-full h-full flex items-center justify-center">
+                    <CenterMenu className="pointer-events-none transform-gpu scale-[0.7] !min-h-0 !h-auto !pt-0 !overflow-visible" />
+                </div>
+            )
+        };
+    }),
+    { loading: PreviewLoader, ssr: false }
+);
+
+// Component previews mapping - all are now dynamically loaded
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
     'ascii-simulation': AsciiSimulationPreview,
@@ -151,8 +243,8 @@ export function NormalComponents() {
                                 viewport={{ once: true, margin: "-50px" }}
                                 transition={{
                                     duration: 0.8,
-                                    delay: (i % 3) * 0.1, // Stagger based on column (assuming ~3 cols)
-                                    ease: [0.2, 0.8, 0.2, 1], // Smooth custom bezier
+                                    delay: (i % 3) * 0.1,
+                                    ease: [0.2, 0.8, 0.2, 1],
                                 }}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
@@ -230,4 +322,3 @@ export function NormalComponents() {
         </div>
     );
 }
-
