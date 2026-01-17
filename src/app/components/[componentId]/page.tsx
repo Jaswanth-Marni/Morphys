@@ -1673,10 +1673,14 @@ export default function ComponentDetailPage() {
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [isClientMounted, setIsClientMounted] = useState(false);
     const [componentKey, setComponentKey] = useState(0); // For reloading components
+    const [isPreviewReady, setIsPreviewReady] = useState(false);
     const sandboxRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setIsClientMounted(true);
+        // Delay component rendering to allow text animations to run smoothly
+        const timer = setTimeout(() => setIsPreviewReady(true), 1000);
+        return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
@@ -1980,7 +1984,9 @@ export default function ComponentDetailPage() {
                             >
                                 {/* Sandbox Content */}
                                 <div ref={sandboxRef} className="absolute inset-0">
-                                    {PreviewComponent && componentId === 'page-reveal' ? (
+                                    {!isPreviewReady ? (
+                                        <ComponentLoader />
+                                    ) : PreviewComponent && componentId === 'page-reveal' ? (
                                         <PageReveal
                                             key={config._replay || 'initial'}
                                             config={config}
