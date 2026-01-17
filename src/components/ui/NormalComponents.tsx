@@ -2,7 +2,9 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { componentsData } from "@/data/componentsData";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
+import { componentsDataLite } from "@/data/componentsDataLite";
 import { FlipGridPreview } from "./FlipGrid";
 import { AsciiSimulationPreview } from "./AsciiSimulation";
 import { LiquidMorphPreview } from "./LiquidMorph";
@@ -23,6 +25,31 @@ import TextMirror from "./TextMirror";
 import { StepMorphPreview } from "./StepMorph";
 import StepMorph from "./StepMorph";
 import { CenterMenu } from "./CenterMenu";
+
+// Component module mapping for prefetching
+const componentModuleMap: Record<string, string> = {
+    'flip-grid': 'FlipGrid',
+    'ascii-simulation': 'AsciiSimulation',
+    'liquid-morph': 'LiquidMorph',
+    'page-reveal': 'PageReveal',
+    'navbar-menu': 'NavbarMenu',
+    'navbar-menu-2': 'NavbarMenu2',
+    'spotlight-search': 'SpotlightSearch',
+    'image-trail-cursor': 'ImageTrailCursor',
+    'reality-lens': 'RealityLens',
+    'scroll-to-reveal': 'ScrollToReveal',
+    'diffuse-text': 'DiffuseText',
+    'diagonal-focus': 'DiagonalFocus',
+    'notification-stack': 'NotificationStack',
+    'text-pressure': 'TextPressure',
+    'fluid-height': 'FluidHeight',
+    'text-mirror': 'TextMirror',
+    'step-morph': 'StepMorph',
+    'center-menu': 'CenterMenu',
+};
+
+// Prefetch cache
+const prefetchedComponents = new Set<string>();
 
 // Wrapper for interactive previews
 const FluidHeightInteractive = () => (
@@ -84,16 +111,38 @@ const componentPreviews: Record<string, React.ComponentType> = {
 };
 
 export function NormalComponents() {
+    const router = useRouter();
+
+    // Prefetch component on hover for faster navigation
+    const handleMouseEnter = useCallback((componentId: string) => {
+        if (prefetchedComponents.has(componentId)) return;
+
+        const moduleName = componentModuleMap[componentId];
+        if (!moduleName) return;
+
+        prefetchedComponents.add(componentId);
+
+        // Prefetch the component module
+        import(`@/components/ui/${moduleName}`).catch(() => {
+            prefetchedComponents.delete(componentId);
+        });
+
+        // Prefetch the route
+        router.prefetch(`/components/${componentId}`);
+    }, [router]);
+
     return (
         <div className="w-full h-full flex flex-col items-center justify-start px-4 md:px-8 pb-12 mt-8 md:mt-20">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full max-w-7xl">
-                {componentsData.map((component, i) => {
+                {componentsDataLite.map((component, i) => {
                     const PreviewComponent = componentPreviews[component.id];
 
                     return (
                         <Link
                             key={component.id}
                             href={`/components/${component.id}`}
+                            prefetch={true}
+                            onMouseEnter={() => handleMouseEnter(component.id)}
                             className="block"
                         >
                             <motion.div
