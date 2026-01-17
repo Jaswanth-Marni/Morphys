@@ -839,8 +839,44 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         </div>
                                     </div>
                                 </>
-                            ) : componentId === 'notification-stack' || componentId === 'diagonal-focus' || componentId === 'text-pressure' || componentId === 'fluid-height' || componentId === 'step-morph' ? (
-                                // NOTIFICATION STACK / DIAGONAL FOCUS / TEXT PRESSURE / STEP MORPH - No adjustable settings
+                            ) : componentId === 'text-pressure' ? (
+                                // TEXT PRESSURE CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.text || 'MORPHYS'}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Text Color</span>
+                                            <input
+                                                type="color"
+                                                value={config.textColor === 'var(--foreground)' ? '#000000' : config.textColor || '#000000'}
+                                                onChange={(e) => onConfigChange('textColor', e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer"
+                                            />
+                                        </div>
+                                        <NumberControl
+                                            label="Min Font Size"
+                                            value={config.minFontSize || 36}
+                                            min={20}
+                                            max={100}
+                                            suffix="px"
+                                            onChange={(val) => onConfigChange('minFontSize', val)}
+                                        />
+                                    </div>
+                                </>
+                            ) : componentId === 'notification-stack' || componentId === 'diagonal-focus' || componentId === 'fluid-height' || componentId === 'step-morph' || componentId === 'center-menu' ? (
+                                // NOTIFICATION STACK / DIAGONAL FOCUS / FLUID HEIGHT / STEP MORPH / CENTER MENU - No adjustable settings
                                 <div className="text-center py-8">
                                     <div className="w-12 h-12 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground/40">
@@ -1231,22 +1267,82 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
             if (configEntries.length === 0) {
                 return `import { DiffuseText } from '@/components/ui';\n\n// Basic usage\n<DiffuseText />`;
             }
-            return `import { DiffuseText } from '@/components/ui';\n\n<DiffuseText\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
+            return `import { DiffuseText } from '@/components/ui/DiffuseText';\n\n<DiffuseText\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
+        }
+
+        if (componentId === 'diagonal-focus') {
+            return `import { DiagonalFocus } from '@/components/ui/DiagonalFocus';
+
+// Basic usage - renders a draggable diagonal carousel
+<DiagonalFocus />
+
+// With custom className
+<DiagonalFocus className="h-screen" />`;
         }
 
         if (componentId === 'notification-stack') {
-            return `import { NotificationStack } from '@/components/ui';\n\n// Basic usage\n<NotificationStack />`;
+            return `import { NotificationStack } from '@/components/ui/NotificationStack';
+
+// Basic usage - renders a draggable notification stack
+<NotificationStack />
+
+// With custom className
+<NotificationStack className="h-screen" />`;
         }
 
         if (componentId === 'text-pressure') {
-            return `import { TextPressure } from '@/components/ui';\n\n// Basic usage\n<TextPressure text="TEXT FORCE" />`;
+            const defaultConfig = {
+                text: "MORPHYS",
+                textColor: "var(--foreground)",
+                minFontSize: 36,
+            };
+
+            const configEntries: string[] = [];
+            if (config.text !== defaultConfig.text) configEntries.push(`        text: '${config.text}',`);
+            if (config.textColor !== defaultConfig.textColor) configEntries.push(`        textColor: '${config.textColor}',`);
+            if (config.minFontSize !== defaultConfig.minFontSize) configEntries.push(`        minFontSize: ${config.minFontSize},`);
+
+            if (configEntries.length === 0) {
+                return `import { TextPressure } from '@/components/ui';\n\n// Basic usage\n<TextPressure text="MORPHYS" />`;
+            }
+            return `import { TextPressure } from '@/components/ui';\n\n<TextPressure\n    text="${config.text || 'MORPHYS'}"\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
         }
 
         if (componentId === 'fluid-height') {
-            return `import { FluidHeight } from '@/components/ui';
+            return `import FluidHeight from '@/components/ui/FluidHeight';
+
+// Basic usage - displays "MORPHYS" with fluid height animation
+<FluidHeight />
+
+// With custom styling
+<FluidHeight 
+    className="text-[5rem]"
+    showHint={false}
+/>`;
+        }
+
+        if (componentId === 'step-morph') {
+            return `import StepMorph from '@/components/ui/StepMorph';
+
+// Basic usage - displays "MORPHYS" in stair-step pattern
+<StepMorph />
+
+// With custom text and step size
+<StepMorph 
+    text="HELLO"
+    stepSize={20}
+    showHint={false}
+/>`;
+        }
+
+        if (componentId === 'center-menu') {
+            return `import { CenterMenu } from '@/components/ui/CenterMenu';
 
 // Basic usage
-<FluidHeight />`;
+<CenterMenu />
+
+// With custom positioning
+<CenterMenu className="absolute bottom-8" />`;
         }
 
         if (componentId === 'text-mirror') {
@@ -1302,42 +1398,43 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
 />`;
         }
 
-        // FLIP GRID (Default)
-        const defaultConfig: FlipGridConfig = {
-            cols: 10,
-            rows: 8,
-            pattern: 'wave',
-            easing: 'spring',
-            speed: 'normal',
-            colorFront: 'var(--foreground)',
-            colorBack: 'var(--background)',
-            interactive: true,
-            gap: 2,
-            borderRadius: 2,
-        };
+        // FLIP GRID - specific handler
+        if (componentId === 'flip-grid') {
+            const defaultConfig: FlipGridConfig = {
+                cols: 10,
+                rows: 8,
+                pattern: 'wave',
+                easing: 'spring',
+                speed: 'normal',
+                colorFront: 'var(--foreground)',
+                colorBack: 'var(--background)',
+                interactive: true,
+                gap: 2,
+                borderRadius: 2,
+            };
 
-        // Only include non-default values
-        const configEntries: string[] = [];
+            // Only include non-default values
+            const configEntries: string[] = [];
 
-        if (config.cols !== defaultConfig.cols) configEntries.push(`        cols: ${config.cols},`);
-        if (config.rows !== defaultConfig.rows) configEntries.push(`        rows: ${config.rows},`);
-        if (config.pattern !== defaultConfig.pattern) configEntries.push(`        pattern: '${config.pattern}',`);
-        if (config.easing !== defaultConfig.easing) configEntries.push(`        easing: '${config.easing}',`);
-        if (config.speed !== defaultConfig.speed) configEntries.push(`        speed: '${config.speed}',`);
-        if (config.colorFront !== defaultConfig.colorFront) configEntries.push(`        colorFront: '${config.colorFront}',`);
-        if (config.colorBack !== defaultConfig.colorBack) configEntries.push(`        colorBack: '${config.colorBack}',`);
-        if (config.interactive !== defaultConfig.interactive) configEntries.push(`        interactive: ${config.interactive},`);
-        if (config.gap !== defaultConfig.gap) configEntries.push(`        gap: ${config.gap},`);
-        if (config.borderRadius !== defaultConfig.borderRadius) configEntries.push(`        borderRadius: ${config.borderRadius},`);
+            if (config.cols !== defaultConfig.cols) configEntries.push(`        cols: ${config.cols},`);
+            if (config.rows !== defaultConfig.rows) configEntries.push(`        rows: ${config.rows},`);
+            if (config.pattern !== defaultConfig.pattern) configEntries.push(`        pattern: '${config.pattern}',`);
+            if (config.easing !== defaultConfig.easing) configEntries.push(`        easing: '${config.easing}',`);
+            if (config.speed !== defaultConfig.speed) configEntries.push(`        speed: '${config.speed}',`);
+            if (config.colorFront !== defaultConfig.colorFront) configEntries.push(`        colorFront: '${config.colorFront}',`);
+            if (config.colorBack !== defaultConfig.colorBack) configEntries.push(`        colorBack: '${config.colorBack}',`);
+            if (config.interactive !== defaultConfig.interactive) configEntries.push(`        interactive: ${config.interactive},`);
+            if (config.gap !== defaultConfig.gap) configEntries.push(`        gap: ${config.gap},`);
+            if (config.borderRadius !== defaultConfig.borderRadius) configEntries.push(`        borderRadius: ${config.borderRadius},`);
 
-        if (configEntries.length === 0) {
-            return `import { FlipGrid } from '@/components/ui';
+            if (configEntries.length === 0) {
+                return `import { FlipGrid } from '@/components/ui/FlipGrid';
 
 // Basic usage with default config
 <FlipGrid />`;
-        }
+            }
 
-        return `import { FlipGrid } from '@/components/ui';
+            return `import { FlipGrid } from '@/components/ui/FlipGrid';
 
 // With your custom configuration
 <FlipGrid
@@ -1345,6 +1442,18 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
 ${configEntries.join('\n')}
     }}
 />`;
+        }
+
+        // DEFAULT FALLBACK - Use the usage from componentsDataLite
+        // This ensures every component shows its correct usage code
+        const componentDataForUsage = getComponentByIdLite(componentId);
+        if (componentDataForUsage?.usage) {
+            return componentDataForUsage.usage;
+        }
+
+        // If no usage data found at all
+        return `// This component uses pre-configured settings.
+// See the "Full Code" tab for the complete implementation.`;
     }, [config, componentId]);
 
 
@@ -1661,6 +1770,36 @@ export default function ComponentDetailPage() {
         } else if (componentId === 'glass-surge') {
             setConfig({
                 text: "MORPHYS",
+            });
+        } else if (componentId === 'scroll-to-reveal') {
+            setConfig({
+                text: "Morphys is a curated collection of high-performance, aesthetically pleasing UI components designed to elevate your web applications. Built with React, Tailwind CSS, and Framer Motion, it offers seamless integration for developers seeking valid, modern design. Our library features a diverse range of animations, interactions, and layout utilities that are fully customizable and responsive. Whether you're building stunning landing pages or complex applications, Morphys provides the essential building blocks to create immersive user experiences that captivate and engage your audience.",
+                minOpacity: 0.15,
+            });
+        } else if (componentId === 'image-trail-cursor') {
+            setConfig({
+                size: 150,
+                rotation: true,
+                fadeDuration: 0.6,
+                distanceThreshold: 40,
+            });
+        } else if (componentId === 'navbar-menu-2') {
+            setConfig({
+                logoText: "Morphys",
+                backgroundColor: "#ffffff",
+                textColor: "#000000",
+            });
+        } else if (componentId === 'layered-image-showcase') {
+            setConfig({
+                title: "MORPHYS",
+                accentColor: "#FF3333",
+                textColor: "#ffffff",
+            });
+        } else if (componentId === 'text-pressure') {
+            setConfig({
+                text: "MORPHYS",
+                textColor: "var(--foreground)",
+                minFontSize: 36,
             });
         }
     }, [componentId]);

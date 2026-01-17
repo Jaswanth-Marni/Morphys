@@ -292,126 +292,174 @@ export const componentsDataLite: ComponentDataLite[] = [
         id: 'diagonal-focus',
         name: 'Diagonal Carousel',
         index: 12,
-        description: 'A diagonal infinite carousel with focus effects.',
-        tags: ['carousel', 'diagonal', 'infinite', 'cards', 'animation'],
+        description: 'A draggable diagonal carousel with infinite scroll and focus depth effects. Cards are arranged at an angle with dynamic scaling and opacity based on position.',
+        tags: ['carousel', 'diagonal', 'infinite', 'cards', 'animation', 'draggable'],
         category: 'animation',
         previewConfig: {},
         dependencies: ['framer-motion', 'react'],
-        usage: `import { DiagonalFocus } from '@/components/ui';
+        usage: `import { DiagonalFocus } from '@/components/ui/DiagonalFocus';
 
-<DiagonalFocus />`,
+// Basic usage
+<DiagonalFocus />
+
+// With custom className
+<DiagonalFocus className="h-screen" />`,
         props: [
-            { name: 'config', type: 'object', default: '{}', description: 'Configuration for the carousel' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes for container' },
         ]
     },
     {
         id: 'notification-stack',
         name: 'Notification Stack',
         index: 13,
-        description: 'Stacked notifications with smooth animations.',
-        tags: ['notification', 'stack', 'toast', 'alert', 'animation'],
+        description: 'A draggable vertical stack of notification cards with smooth spring animations. Features depth-based scaling, draggable scrolling, and a floating scrollbar indicator.',
+        tags: ['notification', 'stack', 'toast', 'cards', 'animation', 'draggable'],
         category: 'interaction',
         previewConfig: {},
         dependencies: ['framer-motion', 'react'],
-        usage: `import { NotificationStack } from '@/components/ui';
+        usage: `import { NotificationStack } from '@/components/ui/NotificationStack';
 
-<NotificationStack />`,
+// Basic usage
+<NotificationStack />
+
+// With custom className
+<NotificationStack className="h-screen" />`,
         props: [
-            { name: 'config', type: 'object', default: '{}', description: 'Configuration for the notifications' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes for container' },
         ]
     },
     {
         id: 'text-pressure',
         name: 'Text Pressure',
         index: 14,
-        description: 'Variable font weight that responds to cursor pressure.',
+        description: 'Variable font weight that responds to cursor pressure. Text characters dynamically adjust their weight based on cursor proximity.',
         tags: ['text', 'variable-font', 'interactive', 'weight', 'effect'],
         category: 'effect',
-        previewConfig: { text: 'Morphys', minWeight: 100, maxWeight: 900 },
+        previewConfig: { text: 'MORPHYS' },
         dependencies: ['react'],
-        usage: `import { TextPressure } from '@/components/ui';
+        usage: `import { TextPressure } from '@/components/ui/TextPressure';
 
+// Basic usage
+<TextPressure text="MORPHYS" />
+
+// With custom configuration
 <TextPressure
-    text="Morphys"
+    text="MORPHYS"
     config={{
-        minWeight: 100,
-        maxWeight: 900,
-        textColor: '#000000',
+        textColor: '#ff0000',
+        minFontSize: 48,
     }}
 />`,
         props: [
-            { name: 'text', type: 'string', default: "'Morphys'", description: 'Text to display' },
-            { name: 'config', type: 'object', default: '{}', description: 'Configuration for the effect' },
+            { name: 'text', type: 'string', default: "'MORPHYS'", description: 'Text to display' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+            { name: 'textColor', type: 'string', default: "'var(--foreground)'", description: 'Color of the text' },
+            { name: 'minFontSize', type: 'number', default: '36', description: 'Minimum font size in pixels' },
+            { name: 'config', type: 'object', default: '{}', description: 'Configuration object with text, textColor, minFontSize' },
         ]
     },
     {
         id: 'fluid-height',
         name: 'Fluid Height',
         index: 15,
-        description: 'Text with fluid height animation on hover.',
+        description: 'Text with fluid height animation that grows on load and retracts on hover with a smooth neighbor effect.',
         tags: ['text', 'height', 'animation', 'hover', 'fluid'],
         category: 'animation',
-        previewConfig: { text: 'MORPHYS' },
-        dependencies: ['react'],
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
         usage: `import FluidHeight from '@/components/ui/FluidHeight';
 
-<FluidHeight text="MORPHYS" />`,
+// Basic usage (displays "MORPHYS" by default)
+<FluidHeight />
+
+// With custom styling
+<FluidHeight 
+    className="text-[5rem]"
+    showHint={false}
+/>`,
         props: [
-            { name: 'text', type: 'string', default: "'MORPHYS'", description: 'Text to display' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes for text styling' },
+            { name: 'containerClassName', type: 'string', default: "''", description: 'CSS classes for container' },
+            { name: 'showHint', type: 'boolean', default: 'true', description: 'Show "Hover to retract" hint' },
         ]
     },
     {
         id: 'text-mirror',
         name: 'Text Mirror',
         index: 16,
-        description: 'Text that mirrors and spreads based on cursor position.',
-        tags: ['text', 'mirror', 'cursor', 'interactive', 'effect'],
+        description: 'Interactive mirrored text that spreads vertically based on cursor position. Features smooth animations that respond to mouse movement and auto-reset on idle.',
+        tags: ['text', 'mirror', 'cursor', 'interactive', 'effect', 'responsive'],
         category: 'effect',
         previewConfig: { text: 'MORPHYS' },
         dependencies: ['react'],
         usage: `import TextMirror from '@/components/ui/TextMirror';
 
+// Basic usage
+<TextMirror />
+
+// With custom configuration
 <TextMirror
     config={{
         text: 'MORPHYS',
         spread: 30,
         fontSize: 120,
+        color: '#ff0000',
+        idleTimeout: 5000,
     }}
 />`,
         props: [
-            { name: 'config', type: 'object', default: '{}', description: 'Configuration for the mirror effect' },
+            { name: 'config.text', type: 'string', default: "'MORPHYS'", description: 'Text to display and mirror' },
+            { name: 'config.spread', type: 'number', default: '30', description: 'Maximum vertical spread in pixels' },
+            { name: 'config.fontSize', type: 'number', default: '120', description: 'Font size in pixels' },
+            { name: 'config.color', type: 'string', default: 'theme-based', description: 'Text color' },
+            { name: 'config.idleTimeout', type: 'number', default: '5000', description: 'Auto-reset timeout in milliseconds' },
         ]
     },
     {
         id: 'step-morph',
         name: 'Step Morph',
         index: 17,
-        description: 'Morphing step counter with smooth transitions.',
-        tags: ['morph', 'counter', 'steps', 'animation', 'interactive'],
+        description: 'Stair-stepped text that expands with smooth weight transitions on hover. Letters are arranged in a diagonal staircase pattern.',
+        tags: ['morph', 'text', 'steps', 'animation', 'interactive'],
         category: 'interaction',
         previewConfig: {},
         dependencies: ['framer-motion', 'react'],
         usage: `import StepMorph from '@/components/ui/StepMorph';
 
-<StepMorph />`,
+// Basic usage (displays "MORPHYS" by default)
+<StepMorph />
+
+// With custom text and step size
+<StepMorph 
+    text="HELLO"
+    stepSize={20}
+    showHint={false}
+/>`,
         props: [
-            { name: 'config', type: 'object', default: '{}', description: 'Configuration for the step morph' },
+            { name: 'text', type: 'string', default: "'MORPHYS'", description: 'Text to display' },
+            { name: 'stepSize', type: 'number', default: '28', description: 'Vertical step size between letters in pixels' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes for text' },
+            { name: 'showHint', type: 'boolean', default: 'true', description: 'Show "Hover to expand" hint' },
         ]
     },
     {
         id: 'center-menu',
         name: 'Center Menu',
         index: 18,
-        description: 'A centered menu that expands with smooth animations.',
-        tags: ['menu', 'center', 'expand', 'animation', 'navigation'],
+        description: 'A centered navigation menu that expands smoothly from a compact icon. Features theme toggle, navigation links, and responsive design that adapts between mobile and desktop layouts.',
+        tags: ['menu', 'center', 'expand', 'animation', 'navigation', 'responsive'],
         category: 'layout',
         previewConfig: {},
         dependencies: ['framer-motion', 'react', 'lucide-react'],
-        usage: `import { CenterMenu } from '@/components/ui';
+        usage: `import { CenterMenu } from '@/components/ui/CenterMenu';
 
-<CenterMenu />`,
+// Basic usage
+<CenterMenu />
+
+// With custom className
+<CenterMenu className="absolute bottom-8" />`,
         props: [
-            { name: 'config', type: 'object', default: '{}', description: 'Configuration for the menu' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes for positioning' },
         ]
     },
     {
