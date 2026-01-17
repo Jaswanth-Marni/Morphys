@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, Suspense, lazy } from "react";
+import { useCallback, Suspense, lazy, useRef } from "react";
 import dynamic from "next/dynamic";
 import { componentsDataLite } from "@/data/componentsDataLite";
 import { useNavigationLoading } from "@/context/NavigationLoadingContext";
@@ -28,10 +28,23 @@ const componentModuleMap: Record<string, string> = {
     'text-mirror': 'TextMirror',
     'step-morph': 'StepMorph',
     'center-menu': 'CenterMenu',
+    'glass-surge': 'GlassSurge',
 };
 
 // Prefetch cache
 const prefetchedComponents = new Set<string>();
+
+// Helper to only render heavy previews when in viewport
+const VisiblePreview = ({ children }: { children: React.ReactNode }) => {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { margin: "200px" });
+
+    return (
+        <div ref={ref} className="w-full h-full flex items-center justify-center">
+            {isInView ? children : null}
+        </div>
+    );
+};
 
 // Simple loading placeholder for preview cards
 const PreviewLoader = () => (
@@ -181,6 +194,20 @@ const CenterMenuPreview = dynamic(
     { loading: PreviewLoader, ssr: false }
 );
 
+const GlassSurgePreview = dynamic(
+    () => import("./GlassSurge").then(mod => {
+        const GlassSurge = mod.default;
+        return {
+            default: () => (
+                <div className="w-full h-full flex items-center justify-center">
+                    <GlassSurge className="text-5xl font-bold tracking-widest font-logo" text="MORPHYS" />
+                </div>
+            )
+        };
+    }),
+    { loading: PreviewLoader, ssr: false }
+);
+
 // Component previews mapping - all are now dynamically loaded
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -201,6 +228,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'text-mirror': TextMirrorInteractive,
     'step-morph': StepMorphInteractive,
     'center-menu': CenterMenuPreview,
+    'glass-surge': GlassSurgePreview,
 };
 
 export function NormalComponents() {
@@ -231,7 +259,7 @@ export function NormalComponents() {
     }, [startLoading]);
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-start px-4 md:px-8 pb-12 mt-8 md:mt-20">
+        <div className="w-full h-full flex flex-col items-center justify-start px-4 md:px-8 pb-12 mt-0 md:mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full max-w-7xl">
                 {componentsDataLite.map((component, i) => {
                     const PreviewComponent = componentPreviews[component.id];
@@ -314,7 +342,9 @@ export function NormalComponents() {
                                         component-sandbox-border
                                     ">
                                         {PreviewComponent ? (
-                                            <PreviewComponent />
+                                            <VisiblePreview>
+                                                <PreviewComponent />
+                                            </VisiblePreview>
                                         ) : (
                                             <span className="text-foreground/30 text-sm">
                                                 Preview coming soon

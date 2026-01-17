@@ -120,6 +120,11 @@ const CenterMenu = dynamic(() => import("@/components/ui/CenterMenu").then(mod =
     ssr: false
 });
 
+const GlassSurge = dynamic(() => import("@/components/ui/GlassSurge"), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -176,6 +181,14 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'text-mirror': TextMirror as React.ComponentType<{ config?: any }>,
     'step-morph': StepMorph as React.ComponentType<{ config?: any }>,
     'center-menu': CenterMenu as React.ComponentType<{ config?: any }>,
+    'glass-surge': ({ config = {} }: { config?: any }) => (
+        <div className="flex items-center justify-center w-full h-full">
+            <GlassSurge
+                text={config.text || "MORPHYS"}
+                className="text-[5rem] md:text-[9rem] font-bold tracking-widest font-logo"
+            />
+        </div>
+    ),
 };
 
 
@@ -750,6 +763,22 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         </div>
                                     </div>
                                 </>
+                            ) : componentId === 'glass-surge' ? (
+                                // GLASS SURGE CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.text}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20 font-logo"
+                                            />
+                                        </div>
+                                    </div>
+                                </>
                             ) : componentId === 'notification-stack' || componentId === 'diagonal-focus' || componentId === 'text-pressure' || componentId === 'fluid-height' || componentId === 'step-morph' ? (
                                 // NOTIFICATION STACK / DIAGONAL FOCUS / TEXT PRESSURE / STEP MORPH - No adjustable settings
                                 <div className="text-center py-8">
@@ -1192,6 +1221,15 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
             return `import { TextMirror } from '@/components/ui';\n\n<TextMirror${props}${configProp}\n/>`;
         }
 
+        if (componentId === 'glass-surge') {
+            return `import { GlassSurge } from '@/components/ui';
+
+<GlassSurge 
+    text="${config.text || 'MORPHYS'}"
+    className="text-[5rem] md:text-[9rem] font-bold tracking-widest font-logo"
+/>`;
+        }
+
         // FLIP GRID (Default)
         const defaultConfig: FlipGridConfig = {
             cols: 10,
@@ -1422,6 +1460,11 @@ export default function ComponentDetailPage() {
                 lensSize: 200,
             };
         }
+        if (componentId === 'glass-surge') {
+            return {
+                text: "MORPHYS",
+            };
+        }
         return {
             cols: 10,
             rows: 8,
@@ -1535,6 +1578,10 @@ export default function ComponentDetailPage() {
                 idleTimeout: 5000,
                 spread: 30,
                 fontSize: 120,
+            });
+        } else if (componentId === 'glass-surge') {
+            setConfig({
+                text: "MORPHYS",
             });
         }
     }, [componentId]);

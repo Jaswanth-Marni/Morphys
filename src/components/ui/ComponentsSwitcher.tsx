@@ -56,7 +56,7 @@ export function ComponentsSwitcher({ activeTab, onTabChange }: ComponentsSwitche
                     style={{
                         WebkitTapHighlightColor: "transparent",
                     }}
-                    className={`relative z-20 rounded-full px-4 py-1.5 md:px-6 md:py-2 text-xs md:text-sm font-medium transition-colors duration-300 focus:outline-none 
+                    className={`relative z-20 rounded-full px-6 py-2 md:px-8 md:py-2.5 text-sm md:text-base font-medium transition-colors duration-300 focus:outline-none 
                         ${activeTab === tab.id
                             ? "text-black"
                             : isLight

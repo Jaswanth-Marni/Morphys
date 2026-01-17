@@ -40,10 +40,10 @@ export default function ComponentsPage() {
             <ProgressiveBlur className="hidden md:block" position="top" height="150px" blurAmount="8px" />
 
             {/* Content Container */}
-            <div className="relative z-10 flex flex-col items-center gap-8 w-full min-h-[calc(100vh-200px)]">
+            <div className="relative z-10 flex flex-col items-center gap-4 w-full min-h-[calc(100vh-200px)]">
 
                 {/* Switcher */}
-                <div className="sticky top-20 md:top-20 z-50">
+                <div className="sticky top-20 md:top-20 z-50 flex items-center justify-center h-16 md:h-20">
                     <ComponentsSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
                 </div>
 

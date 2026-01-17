@@ -414,6 +414,35 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'config', type: 'object', default: '{}', description: 'Configuration for the menu' },
         ]
     },
+    {
+        id: 'glass-surge',
+        name: 'Glass Surge',
+        index: 19,
+        description: 'An optical distortion effect that applies a smooth, liquid-like surge to text or content on hover. Uses SVG turbulence and displacement maps to create organic bending.',
+        tags: ['text', 'glass', 'distortion', 'hover', 'animation', 'svg', 'liquid'],
+        category: 'effect',
+        previewConfig: { text: 'MORPHYS' },
+        dependencies: ['react'],
+        usage: `import { GlassSurge } from '@/components/ui';
+
+// Basic Usage
+<GlassSurge 
+    text="SURGE"
+    className="text-6xl font-bold"
+/>
+
+// Wrapping Custom Content
+<GlassSurge>
+    <div className="bg-blue-500 text-white p-4 rounded-lg">
+        Hover Me
+    </div>
+</GlassSurge>`,
+        props: [
+            { name: 'text', type: 'string', default: "'MORPHYS'", description: 'Text to display (optional if children provided)' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+            { name: 'children', type: 'ReactNode', default: 'undefined', description: 'Content to apply the refraction effect to' },
+        ]
+    },
 ];
 
 // Fast lookup by ID
