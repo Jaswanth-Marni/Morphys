@@ -518,6 +518,38 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'config', type: 'object', default: '{}', description: 'Configuration object with title, accentColor, and textColor' },
         ]
     },
+    {
+        id: 'impact-text',
+        name: 'Impact Text',
+        index: 21,
+        description: 'A dynamic loading animation where letters crash into place with a satisfying squish impact, followed by a continuous morphing wave sequence.',
+        tags: ['text', 'loading', 'impact', 'animation', 'squash', 'stretch'],
+        category: 'animation',
+        previewConfig: {
+            text: 'LOADING',
+            fontSize: 80
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { ImpactText } from '@/components/ui';
+
+// Basic usage
+<ImpactText />
+
+// Custom configuration
+<ImpactText
+    text="STARTING"
+    config={{
+        fontSize: 120,
+        color: '#ff0000',
+        kerning: 2
+    }}
+/>`,
+        props: [
+            { name: 'text', type: 'string', default: "'MORPHYS'", description: 'Text to animate' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+            { name: 'config', type: 'object', default: '{}', description: 'Configuration object' },
+        ]
+    }
 ];
 
 

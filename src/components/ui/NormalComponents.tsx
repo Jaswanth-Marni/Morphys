@@ -30,6 +30,7 @@ const componentModuleMap: Record<string, string> = {
     'center-menu': 'CenterMenu',
     'glass-surge': 'GlassSurge',
     'layered-image-showcase': 'LayeredImageShowcase',
+    'impact-text': 'ImpactText',
 };
 
 // Prefetch cache
@@ -221,6 +222,11 @@ const LayeredImageShowcasePreview = dynamic(
     { loading: PreviewLoader, ssr: false }
 );
 
+const ImpactTextPreview = dynamic(
+    () => import("./ImpactText").then(mod => ({ default: mod.ImpactTextPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
 // Component previews mapping - all are now dynamically loaded
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -243,6 +249,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'center-menu': CenterMenuPreview,
     'glass-surge': GlassSurgePreview,
     'layered-image-showcase': LayeredImageShowcasePreview,
+    'impact-text': ImpactTextPreview,
 };
 
 export function NormalComponents() {

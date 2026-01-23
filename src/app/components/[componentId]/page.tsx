@@ -130,6 +130,11 @@ const LayeredImageShowcase = dynamic(() => import("@/components/ui/LayeredImageS
     ssr: false
 });
 
+const ImpactText = dynamic(() => import("@/components/ui/ImpactText").then(mod => ({ default: mod.ImpactText })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -195,6 +200,16 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
         </div>
     ),
     'layered-image-showcase': LayeredImageShowcase as React.ComponentType<{ config?: any }>,
+    'impact-text': ({ config = {} }: { config?: any }) => (
+        <ImpactText
+            text={config.text || "LOADING"}
+            config={{
+                fontSize: config.fontSize || 100,
+                color: config.color || "var(--foreground)",
+                kerning: config.kerning || 0
+            }}
+        />
+    ),
 };
 
 
@@ -875,8 +890,8 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         />
                                     </div>
                                 </>
-                            ) : componentId === 'notification-stack' || componentId === 'diagonal-focus' || componentId === 'fluid-height' || componentId === 'step-morph' || componentId === 'center-menu' ? (
-                                // NOTIFICATION STACK / DIAGONAL FOCUS / FLUID HEIGHT / STEP MORPH / CENTER MENU - No adjustable settings
+                            ) : componentId === 'notification-stack' || componentId === 'diagonal-focus' || componentId === 'fluid-height' || componentId === 'step-morph' || componentId === 'center-menu' || componentId === 'impact-text' ? (
+                                // NOTIFICATION STACK / DIAGONAL FOCUS / FLUID HEIGHT / STEP MORPH / CENTER MENU / IMPACT TEXT - No adjustable settings
                                 <div className="text-center py-8">
                                     <div className="w-12 h-12 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground/40">
@@ -1805,6 +1820,13 @@ export default function ComponentDetailPage() {
                 textColor: "var(--foreground)",
                 minFontSize: 36,
             });
+        } else if (componentId === 'impact-text') {
+            setConfig({
+                text: "LOADING",
+                fontSize: 100,
+                color: "var(--foreground)",
+                kerning: 0,
+            });
         }
     }, [componentId]);
 
@@ -1967,19 +1989,20 @@ export default function ComponentDetailPage() {
                     {(() => {
                         const sandbox = (
                             <motion.div
-                                layout
+                                initial={false}
+                                animate={{
+                                    opacity: 1,
+                                }}
                                 transition={{
-                                    layout: {
-                                        type: "spring",
-                                        stiffness: 200,
-                                        damping: 30,
-                                    },
+                                    duration: 0.3,
+                                    ease: [0.32, 0.72, 0, 1],
                                 }}
                                 className={`
                                     ${isFullScreen
                                         ? 'fixed inset-0 z-[9990] bg-background'
                                         : 'relative w-full aspect-[16/10] md:aspect-[16/9] rounded-3xl bg-foreground/5 border border-foreground/10'}
                                     overflow-hidden
+                                    transition-[border-radius] duration-300 ease-out
                                 `}
                             >
                                 {/* Sandbox Content */}

@@ -18,3 +18,5 @@ export { ComponentsSwitcher } from './ComponentsSwitcher';
 export { StyleSpecificComponents } from './StyleSpecificComponents';
 export { NormalComponents } from './NormalComponents';
 
+
+export { ImpactText } from './ImpactText';
