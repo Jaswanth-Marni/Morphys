@@ -20,3 +20,4 @@ export { NormalComponents } from './NormalComponents';
 
 
 export { ImpactText } from './ImpactText';
+export { ClothTicker } from './ClothTicker';

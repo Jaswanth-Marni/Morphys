@@ -26,6 +26,11 @@ const componentModuleMap: Record<string, string> = {
     'text-mirror': 'TextMirror',
     'step-morph': 'StepMorph',
     'center-menu': 'CenterMenu',
+    'glass-surge': 'GlassSurge',
+    'layered-image-showcase': 'LayeredImageShowcase',
+    'impact-text': 'ImpactText',
+    'reveal-marquee': 'ClothTicker',
+    'wave-marquee': 'WaveMarquee',
 };
 
 // Prefetch cache to avoid duplicate prefetches
@@ -34,6 +39,9 @@ const prefetchedComponents = new Set<string>();
 // Fixed dimensions
 const ITEM_WIDTH = 40; // Width for each component slot
 const PADDING = 16; // Padding on each side
+const MAX_NAV_WIDTH = 500; // Maximum width of the navigation bar on desktop
+const EDGE_THRESHOLD = 60; // Pixels from edge to trigger scrolling
+const MAX_SCROLL_SPEED = 8; // Maximum scroll speed per frame
 
 // Store scroll position globally to persist across remounts
 let lastScrollPosition = 0;
@@ -45,6 +53,9 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
     const [isDragging, setIsDragging] = useState(false);
     const [theme, setTheme] = useState<"light" | "dark">("dark");
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const scrollAnimationRef = useRef<number | null>(null);
+    const scrollDirectionRef = useRef<'left' | 'right' | null>(null);
+    const scrollSpeedRef = useRef(0);
     const lastClientX = useRef(0);
 
     // Sort components by index
@@ -110,6 +121,59 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
         return () => observer.disconnect();
     }, []);
 
+    // Smooth scroll animation loop
+    const smoothScrollLoop = useCallback(() => {
+        if (!scrollContainerRef.current || !scrollDirectionRef.current) {
+            scrollAnimationRef.current = null;
+            return;
+        }
+
+        const container = scrollContainerRef.current;
+        const maxScroll = Math.max(0, totalContentWidth - container.clientWidth - 1);
+        const speed = scrollSpeedRef.current;
+
+        if (scrollDirectionRef.current === 'left') {
+            const newScroll = Math.max(0, container.scrollLeft - speed);
+            container.scrollLeft = newScroll;
+        } else if (scrollDirectionRef.current === 'right') {
+            const newScroll = Math.min(maxScroll, container.scrollLeft + speed);
+            container.scrollLeft = newScroll;
+        }
+
+        // Continue the animation loop
+        scrollAnimationRef.current = requestAnimationFrame(smoothScrollLoop);
+    }, [totalContentWidth]);
+
+    // Start smooth scrolling
+    const startSmoothScroll = useCallback((direction: 'left' | 'right', speed: number) => {
+        scrollDirectionRef.current = direction;
+        scrollSpeedRef.current = speed;
+
+        // Only start the loop if it's not already running
+        if (scrollAnimationRef.current === null) {
+            scrollAnimationRef.current = requestAnimationFrame(smoothScrollLoop);
+        }
+    }, [smoothScrollLoop]);
+
+    // Stop smooth scrolling
+    const stopSmoothScroll = useCallback(() => {
+        scrollDirectionRef.current = null;
+        scrollSpeedRef.current = 0;
+        if (scrollAnimationRef.current !== null) {
+            cancelAnimationFrame(scrollAnimationRef.current);
+            scrollAnimationRef.current = null;
+        }
+    }, []);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (scrollAnimationRef.current !== null) {
+                cancelAnimationFrame(scrollAnimationRef.current);
+            }
+        };
+    }, []);
+
     // Prefetch component on hover
     const prefetchComponent = useCallback((componentId: string) => {
         if (prefetchedComponents.has(componentId) || componentId === currentId) return;
@@ -167,40 +231,46 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
         const container = scrollContainerRef.current;
         const rect = container.getBoundingClientRect();
 
-        // Calculate the exact maximum scroll based on known content width using high precision rect.width
-        const maxScroll = Math.max(0, totalContentWidth - rect.width - 1); // -1 buffer
-
         // Update hovered component based on cursor position
         const componentId = getComponentAtPosition(e.clientX);
         if (componentId) {
             setHoveredId(componentId);
             prefetchComponent(componentId);
+        }
 
-            // Find index of hovered component
-            const hoveredIndex = sortedComponents.findIndex(c => c.id === componentId);
-            const isFirstComponent = hoveredIndex === 0;
-            const isLastComponent = hoveredIndex === sortedComponents.length - 1;
+        // Calculate cursor position relative to container
+        const cursorX = e.clientX - rect.left;
+        const containerWidth = rect.width;
 
-            // Auto-scroll when near edges, but only if not at first/last component
-            const edgeThreshold = 40;
-            const scrollSpeed = 3;
-            const cursorX = e.clientX - rect.left;
-
-            if (cursorX < edgeThreshold && container.scrollLeft > 0 && !isFirstComponent) {
-                // Near left edge and not at first component - scroll left
-                const newScroll = Math.max(0, container.scrollLeft - scrollSpeed);
-                container.scrollLeft = newScroll;
-            } else if (cursorX > rect.width - edgeThreshold && !isLastComponent) {
-                // Near right edge and not at last component - scroll right
-                // Clamp to maxScroll to prevent gap growth
-                const newScroll = Math.min(maxScroll, container.scrollLeft + scrollSpeed);
-                container.scrollLeft = newScroll;
+        // Check if near edges and calculate scroll speed based on distance from edge
+        if (cursorX < EDGE_THRESHOLD && container.scrollLeft > 0) {
+            // Near left edge - calculate speed based on how close to edge
+            const distanceFromEdge = cursorX;
+            const normalizedDistance = 1 - (distanceFromEdge / EDGE_THRESHOLD); // 0 at threshold, 1 at edge
+            const speed = normalizedDistance * MAX_SCROLL_SPEED;
+            startSmoothScroll('left', Math.max(1, speed));
+        } else if (cursorX > containerWidth - EDGE_THRESHOLD) {
+            // Near right edge - calculate speed based on how close to edge
+            const maxScroll = Math.max(0, totalContentWidth - containerWidth - 1);
+            if (container.scrollLeft < maxScroll) {
+                const distanceFromEdge = containerWidth - cursorX;
+                const normalizedDistance = 1 - (distanceFromEdge / EDGE_THRESHOLD); // 0 at threshold, 1 at edge
+                const speed = normalizedDistance * MAX_SCROLL_SPEED;
+                startSmoothScroll('right', Math.max(1, speed));
+            } else {
+                stopSmoothScroll();
             }
+        } else {
+            // Not near edges - stop scrolling
+            stopSmoothScroll();
         }
     };
 
     const handlePointerUp = (e: React.PointerEvent) => {
         if (!isDragging) return;
+
+        // Stop any ongoing scroll animation
+        stopSmoothScroll();
 
         // Navigate to hovered component on release
         if (hoveredId && hoveredId !== currentId) {
@@ -217,6 +287,7 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
         if (!isDragging) {
             setHoveredId(null);
         }
+        stopSmoothScroll();
     };
 
     const handleScroll = () => {
@@ -276,10 +347,12 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
             </AnimatePresence>
 
             <div
-                className="pointer-events-auto backdrop-blur-xl rounded-xl md:rounded-2xl shadow-2xl overflow-hidden max-w-[calc(100vw-32px)] md:max-w-none"
+                className="pointer-events-auto backdrop-blur-xl rounded-xl md:rounded-2xl shadow-2xl overflow-hidden"
                 style={{
                     backgroundColor: isLight ? 'transparent' : 'rgba(0,0,0,0.6)',
                     border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.2)',
+                    maxWidth: `min(${MAX_NAV_WIDTH}px, calc(100vw - 32px))`,
+                    width: '100%',
                 }}
             >
                 <div
@@ -293,7 +366,6 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
                     style={{
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none',
-                        scrollBehavior: 'smooth',
                         overscrollBehaviorX: 'contain',
                     }}
                 >

@@ -1,8 +1,38 @@
 "use client";
 
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+
+// Hook to detect mobile screen size
+function useResponsiveSize(baseFontSize: number) {
+    const [fontSize, setFontSize] = useState(baseFontSize);
+
+    useEffect(() => {
+        const updateSize = () => {
+            const width = window.innerWidth;
+            if (width < 480) {
+                // Mobile small
+                setFontSize(Math.min(baseFontSize, Math.max(32, baseFontSize * 0.35)));
+            } else if (width < 768) {
+                // Mobile
+                setFontSize(Math.min(baseFontSize, Math.max(48, baseFontSize * 0.5)));
+            } else if (width < 1024) {
+                // Tablet
+                setFontSize(Math.min(baseFontSize, baseFontSize * 0.75));
+            } else {
+                // Desktop
+                setFontSize(baseFontSize);
+            }
+        };
+
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        return () => window.removeEventListener('resize', updateSize);
+    }, [baseFontSize]);
+
+    return fontSize;
+}
 
 interface ImpactTextProps {
     className?: string;
@@ -14,95 +44,98 @@ interface ImpactTextProps {
     };
 }
 
+// 0: Initial (All Thin, Normal)
+// 1: Sequence 1 (Gradient Thin->Bold, Italic)
+// 2: Sequence 2 (Gradient Bold->Thin, Normal)
+type LetterState = 0 | 1 | 2;
+
 export function ImpactText({
     className,
     text = "MORPHYS",
     config = {},
 }: ImpactTextProps) {
     const letters = text.split("");
-    const [hasEntered, setHasEntered] = useState(false);
+    const [phase, setPhase] = useState<"entering" | "wave">("entering");
+    const [letterStates, setLetterStates] = useState<LetterState[]>(
+        new Array(letters.length).fill(0)
+    );
+    const [isAnimating, setIsAnimating] = useState(false);
 
-    const {
-        fontSize = 100,
-        color = "var(--foreground)",
-        kerning = -20
-    } = config;
+    const baseFontSize = config.fontSize ?? 100;
+    const color = config.color ?? "var(--foreground)";
+    const baseKerning = config.kerning ?? -20;
 
-    // Entrance Animation (Impact)
+    // Use responsive font size
+    const responsiveFontSize = useResponsiveSize(baseFontSize);
+
+    // Scale kerning proportionally with font size
+    const responsiveKerning = useMemo(() => {
+        const scale = responsiveFontSize / baseFontSize;
+        return baseKerning * scale;
+    }, [responsiveFontSize, baseFontSize, baseKerning]);
+
+    // Blur reveal container animation
     const containerVariants = {
         hidden: { opacity: 1 },
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.05,
-                delayChildren: 0.2,
+                staggerChildren: 0.08,
+                delayChildren: 0.1,
             },
         },
     };
 
-    const letterVariants: Variants = {
-        hidden: {
-            y: "150%",
-            scaleY: 1,
-            scaleX: 1,
-            opacity: 0
-        },
-        visible: {
-            y: "0%",
-            opacity: 1,
-            transition: {
-                type: "spring",
-                damping: 12,
-                stiffness: 200,
-                // The "squish" is simulated by the spring overshoot if we mapped scale to velocity,
-                // but Framer Motion springs don't auto-squash.
-                // We'll use keyframes for a custom squash effect on impact.
+    // Wave animation logic
+    const runWaveAnimation = useCallback(async () => {
+        if (isAnimating) return;
+        setIsAnimating(true);
+
+        const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+        const stepDelay = 120; // Delay between each letter
+
+        // Initial Start: We are at State 0.
+        // We want to enter the loop of 1 -> 2 -> 1 -> 2
+
+        // On first run, we define the "next" state targets
+        let nextState: LetterState = 1;
+
+        while (true) {
+            if (nextState === 1) {
+                // Sequence 1: Forward Wave (0/2 -> 1)
+                for (let i = 0; i < letters.length; i++) {
+                    setLetterStates(prev => {
+                        const newStates = [...prev];
+                        newStates[i] = 1;
+                        return newStates;
+                    });
+                    await delay(stepDelay);
+                }
+                nextState = 2; // Next target is Sequence 2
+            } else {
+                // Sequence 2: Backward Wave (1 -> 2)
+                for (let i = letters.length - 1; i >= 0; i--) {
+                    setLetterStates(prev => {
+                        const newStates = [...prev];
+                        newStates[i] = 2;
+                        return newStates;
+                    });
+                    await delay(stepDelay);
+                }
+                nextState = 1; // Next target is Sequence 1
             }
+
+            // Pause between sequences
+            await delay(2000);
         }
-    };
+    }, [letters.length, isAnimating]);
 
-    // We can simulate the squash by chaining animations or using a keyframe sequence in the 'animate' prop.
-    // However, to keep it clean with stagger, we'll use a custom variant that includes the squash.
-
-    const impactVariants: Variants = {
-        hidden: {
-            y: "120%",
-            scaleY: 2.5, // Stretched while moving up
-            scaleX: 0.7,
-            opacity: 0,
-            filter: "blur(10px)"
-        },
-        visible: {
-            y: "0%",
-            scaleY: 1,
-            scaleX: 1,
-            opacity: 1,
-            filter: "blur(0px)",
-            transition: {
-                // Keyframes for Y: Go up, hit "wall", settle.
-                y: {
-                    type: "spring",
-                    damping: 15,
-                    stiffness: 300,
-                },
-                // Keyframes for Scale: Stretch -> Squash (impact) -> Settle
-                scaleY: {
-                    duration: 0.6,
-                    times: [0, 0.6, 0.8, 1],
-                    keyframes: [2.5, 0.5, 1.1, 1] // Start stretched, Squash hard, Bounce, Normal
-                },
-                scaleX: {
-                    duration: 0.6,
-                    times: [0, 0.6, 0.8, 1],
-                    keyframes: [0.7, 1.5, 0.9, 1] // Start thin, Widen (squash), Bounce, Normal
-                },
-                filter: { duration: 0.3 }
-            }
+    // Start wave animation after entrance
+    useEffect(() => {
+        if (phase === "wave" && !isAnimating) {
+            runWaveAnimation();
         }
-    };
-
-    // Wave Sequence (Normal -> Italic -> Normal)
-    // We'll use a separate state or control for this after entrance.
+    }, [phase, isAnimating, runWaveAnimation]);
 
     return (
         <div
@@ -110,21 +143,15 @@ export function ImpactText({
                 "relative flex items-center justify-center w-full h-full overflow-hidden bg-transparent",
                 className
             )}
-            style={{ perspective: "1000px" }}
         >
             <motion.div
-                className="flex"
-                style={{ gap: kerning }}
+                className="flex flex-wrap justify-center"
+                style={{ gap: responsiveKerning }}
                 initial="hidden"
-                animate={hasEntered ? "loop" : "visible"}
+                animate="visible"
                 variants={containerVariants}
                 onAnimationComplete={() => {
-                    // Start the loop after entrance
-                    // We need a slight delay to ensure all letters settled? 
-                    // onAnimationComplete on the container fires when children potentially finish?
-                    // Actually, stagger makes container finish 'start' immediately, but we should wait.
-                    // Let's use a timeout or just let the sequence loop start.
-                    setTimeout(() => setHasEntered(true), 1500);
+                    setTimeout(() => setPhase("wave"), 800);
                 }}
             >
                 {letters.map((char, index) => (
@@ -132,9 +159,11 @@ export function ImpactText({
                         key={index}
                         char={char}
                         index={index}
-                        fontSize={fontSize}
+                        fontSize={responsiveFontSize}
                         color={color}
-                        hasEntered={hasEntered}
+                        state={letterStates[index]}
+                        phase={phase}
+                        totalLetters={letters.length}
                     />
                 ))}
             </motion.div>
@@ -147,63 +176,106 @@ function Letter({
     index,
     fontSize,
     color,
-    hasEntered
+    state,
+    phase,
+    totalLetters
 }: {
     char: string,
     index: number,
     fontSize: number,
     color: string,
-    hasEntered: boolean
+    state: LetterState,
+    phase: "entering" | "wave",
+    totalLetters: number
 }) {
-    // Entrance: Impact
-    const impactParams = {
-        y: {
-            type: "spring",
-            damping: 12,
-            stiffness: 200,
+    // Calculate weights for different states
+    const minWeight = 200;
+    const maxWeight = 700;
+
+    // Avoid division by zero
+    const progress = totalLetters > 1 ? index / (totalLetters - 1) : 1;
+
+    // State 1: Gradient Thin -> Bold (Left to Right)
+    // Index 0 = Min, Index N = Max
+    const weightSeq1 = minWeight + (progress * (maxWeight - minWeight));
+
+    // State 2: Gradient Bold -> Thin (Left to Right)
+    // Index 0 = Max, Index N = Min
+    // This is effectively reversing the gradient
+    const weightSeq2 = maxWeight - (progress * (maxWeight - minWeight));
+
+    // Determine current target properties based on state
+    let currentWeight = minWeight;
+    let currentSkew = 0;
+
+    if (phase === "wave") {
+        switch (state) {
+            case 0: // Initial Flat
+                currentWeight = minWeight;
+                currentSkew = 0;
+                break;
+            case 1: // Seq 1 (Italic, Gradient A)
+                currentWeight = weightSeq1;
+                currentSkew = -12;
+                break;
+            case 2: // Seq 2 (Normal, Gradient B)
+                currentWeight = weightSeq2;
+                currentSkew = 0;
+                break;
         }
-    };
+    }
+
+    const animateValue = phase === "wave"
+        ? {
+            filter: "blur(0px)",
+            opacity: 1,
+            skewX: currentSkew,
+            fontVariationSettings: `'wght' ${currentWeight}`,
+        }
+        : "visible";
 
     return (
         <motion.span
-            className="inline-block relative font-black uppercase tracking-tighter"
+            className="inline-block uppercase"
             style={{
                 fontSize: fontSize,
                 color: color,
-                transformOrigin: "bottom center", // Squash from bottom
+                fontFamily: "'Clash Display Variable', sans-serif",
+                transformOrigin: "bottom center",
+                letterSpacing: 0,
+                textDecoration: "none",
+                WebkitTextStroke: "0px transparent",
+                overflow: "hidden",
+                border: "none",
+                outline: "none",
+                boxShadow: "none",
+                textShadow: "none",
+                WebkitFontSmoothing: "antialiased",
+                MozOsxFontSmoothing: "grayscale",
             }}
+            initial="hidden"
+            animate={animateValue}
             variants={{
                 hidden: {
-                    y: "150%",
-                    scaleY: 2,
-                    scaleX: 0.8,
+                    filter: "blur(20px)",
                     opacity: 0,
+                    skewX: 0,
+                    fontVariationSettings: "'wght' 200",
                 },
                 visible: {
-                    y: "0%",
-                    scaleY: [2, 0.6, 1.1, 0.95, 1], // Stretch -> Squash -> Bounce -> Settle
-                    scaleX: [0.8, 1.4, 0.9, 1.05, 1],
+                    filter: "blur(0px)",
                     opacity: 1,
+                    skewX: 0,
+                    fontVariationSettings: "'wght' 200",
                     transition: {
                         duration: 0.8,
-                        ease: "circOut",
-                        times: [0, 0.6, 0.75, 0.9, 1], // Time keyframes
+                        ease: [0.25, 0.1, 0.25, 1],
                     }
                 },
-                loop: {
-                    skewX: [0, -20, 0],
-                    scaleY: [1, 0.95, 1],
-                    x: [0, 2, 0],
-                    y: "0%", // Ensure text stays in place
-                    opacity: 1, // Ensure text stays visible
-                    transition: {
-                        duration: 0.8,
-                        repeat: Infinity,
-                        repeatDelay: 1.5,
-                        delay: index * 0.1, // Wave effect
-                        ease: "easeInOut"
-                    }
-                }
+            }}
+            transition={{
+                duration: 0.6,
+                ease: "easeInOut",
             }}
         >
             {char === " " ? "\u00A0" : char}
@@ -217,9 +289,9 @@ export function ImpactTextPreview() {
         <ImpactText
             text="LOADING"
             config={{
-                fontSize: 32,
+                fontSize: 56,
                 color: "var(--foreground)",
-                kerning: -2
+                kerning: -4
             }}
         />
     );

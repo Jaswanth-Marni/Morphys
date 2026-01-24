@@ -193,6 +193,33 @@ export const componentMetadata: ComponentMetadata[] = [
         category: 'interaction',
         dependencies: ['framer-motion', 'react'],
     },
+    {
+        id: 'impact-text',
+        name: 'Impact Text',
+        index: 21,
+        description: 'A dramatic text animation with variable font weight waves and blur-to-reveal effects. Features continuous italic and weight transitions.',
+        tags: ['text', 'animation', 'variable-font', 'blur', 'reveal', 'loading'],
+        category: 'animation',
+        dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'reveal-marquee',
+        name: 'Reveal Marquee',
+        index: 22,
+        description: 'An infinite horizontal text ticker with parallax image reveals on hover. Features velocity-based edge scrolling and 3D image transformations.',
+        tags: ['ticker', 'marquee', 'text', 'parallax', 'hover', 'infinite-scroll'],
+        category: 'animation',
+        dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'wave-marquee',
+        name: 'Wave Marquee',
+        index: 23,
+        description: 'A physics-based wave animation with floating brand logos. Features sinusoidal motion, proximity interactions, and smooth hover effects.',
+        tags: ['marquee', 'logos', 'wave', 'physics', 'animation', 'brands'],
+        category: 'animation',
+        dependencies: ['framer-motion', 'react'],
+    },
 ];
 
 // Fast lookup by ID

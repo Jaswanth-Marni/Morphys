@@ -4487,6 +4487,550 @@ function Letter({
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
             { name: 'config', type: 'object', default: '{}', description: 'Configuration object' },
         ]
+    },
+    {
+        id: 'reveal-marquee',
+        name: 'Reveal Marquee',
+        index: 22,
+        description: 'An infinite scrolling marquee where words reveal images on hover with smooth parallax effects and weight animations.',
+        tags: ['ticker', 'marquee', 'scroll', 'parallax', 'hover', 'reveal', '3d'],
+        category: 'animation',
+        previewConfig: {
+            speed: 1,
+            parallaxStrength: 30
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { ClothTicker } from '@/components/ui';
+
+// Basic usage
+<ClothTicker />
+
+// With custom configuration
+<ClothTicker
+    config={{
+        speed: 2,
+        fontSize: '4rem',
+        parallaxStrength: 50
+    }}
+/>`,
+        fullCode: `"use client";
+
+import React, { useRef, useState, useEffect } from 'react';
+import {
+    motion,
+    useScroll,
+    useTransform,
+    useSpring,
+    useMotionValue,
+    useVelocity,
+    useAnimationFrame,
+    useMotionTemplate,
+    AnimatePresence,
+} from 'framer-motion';
+
+// ============================================
+// TYPES & INTERFACES
+// ============================================
+
+export interface ClothTickerConfig {
+    speed: number;
+    imageSize: { width: number; height: number };
+    fontSize: string;
+    textColor: string;
+    gap: number;
+    parallaxStrength: number;
+    hoverSlowdownFactor: number;
+    rotationStrength: number;
+}
+
+export interface ClothTickerProps {
+    words?: string[];
+    images?: string[];
+    config?: Partial<ClothTickerConfig>;
+    className?: string;
+}
+
+// ============================================
+// DEFAULT CONFIG
+// ============================================
+
+const defaultConfig: ClothTickerConfig = {
+    speed: 1,
+    imageSize: { width: 220, height: 280 }, // Small scale pictures
+    fontSize: '6rem',
+    textColor: 'var(--foreground)',
+    gap: 40,
+    parallaxStrength: 30, // How much the image moves with mouse
+    hoverSlowdownFactor: 0.1, // Slow down to 10% speed on hover
+    rotationStrength: 15, // Max rotation in degrees based on velocity
+};
+
+const defaultWords = [
+    "AESTHETIC", "DEPTH", "PARALLAX", "MOTION", "CLOTH", "FLUID",
+    "DESIGN", "FUTURE", "SPACE", "REVEAL", "ORGANIC", "KINETIC"
+];
+
+// Use varied images for the demo
+const defaultImages = [
+    "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400&q=80", // Abstract gradient
+    "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400&q=80", // Abstract fluid
+    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&q=80", // Abstract wave
+    "https://images.unsplash.com/photo-1614850523296-6313d42f9e80?w=400&q=80", // Blue swirl
+    "https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?w=400&q=80", // Neon
+    "https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?w=400&q=80", // Dark gradient
+];
+
+// ============================================
+// COMPONENT
+// ============================================
+
+export function ClothTicker({
+    words = defaultWords,
+    images = defaultImages,
+    config: userConfig,
+    className = "",
+}: ClothTickerProps) {
+    const config = { ...defaultConfig, ...userConfig };
+    
+    // Looping logic: duplicate words to ensure seamless scroll
+    const displayWords = [...words, ...words, ...words, ...words];
+    
+    // Ticker State
+    const [isHovering, setIsHovering] = useState(false);
+    const baseX = useMotionValue(0);
+    const { scrollY } = useScroll();
+    const scrollVelocity = useVelocity(scrollY);
+    const smoothVelocity = useSpring(scrollVelocity, {
+        damping: 50,
+        stiffness: 400
+    });
+    
+    const velocityFactor = useTransform(smoothVelocity, [0, 1000], [0, 5], {
+        clamp: false
+    });
+
+    // Handle Infinite Loop
+    const x = useTransform(baseX, (v) => \`\${v}%\`);
+    const directionFactor = useRef<number>(-1); // -1 for Right to Left
+    
+    useAnimationFrame((t, delta) => {
+        // Slow down if hovering
+        const currentSpeed = isHovering 
+            ? config.speed * config.hoverSlowdownFactor 
+            : config.speed;
+
+        let moveBy = directionFactor.current * currentSpeed * (delta / 16);
+        
+        // Add scroll velocity influence (optional, but nice)
+        if (velocityFactor.get() !== 0) {
+           moveBy += velocityFactor.get() * moveBy;
+        }
+
+        baseX.set(baseX.get() + moveBy);
+        
+        // Reset loop when we've scrolled far enough
+        // Assuming 4 sets of words, reset after 25% (one full set)
+        // Adjust based on content width logic, simplified here:
+        if (baseX.get() <= -33.33) {
+            baseX.set(0);
+        }
+    });
+
+    return (
+        <div 
+            className={\`relative w-full overflow-hidden py-16 flex items-center bg-transparent \${className}\`}
+            style={{ 
+                perspective: '1000px',
+                cursor: 'none' // We might want a custom cursor, but standard 'none' + custom element is complex. Let's stick to default or text for now unless we add a cursor component.
+            }}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+        >
+             {/* Custom Cursor Hint (Optional) */}
+             {/* <div className="pointer-events-none fixed z-50 mix-blend-difference text-white text-xs uppercase tracking-widest" style={{ left: mouseX, top: mouseY }}>View</div> */}
+
+            <motion.div 
+                className="flex whitespace-nowrap"
+                style={{ x }}
+            >
+                {displayWords.map((word, i) => (
+                    <TickerItem 
+                        key={i} 
+                        word={word} 
+                        image={images[i % images.length]} 
+                        config={config} 
+                    />
+                ))}
+            </motion.div>
+        </div>
+    );
+}
+
+// Valid CSS position types
+type PositionType = 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky';
+
+function TickerItem({ word, image, config }: { word: string; image: string; config: ClothTickerConfig }) {
+    const [isItemHovering, setIsItemHovering] = useState(false);
+    
+    // Mouse tracking for parallax
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    
+    // Smooth mouse falloff for the parallax
+    const springConfig = { damping: 25, stiffness: 150 };
+    const springX = useSpring(mouseX, springConfig);
+    const springY = useSpring(mouseY, springConfig);
+
+    // Calculate parallax
+    const rotateX = useTransform(springY, [-0.5, 0.5], [config.rotationStrength, -config.rotationStrength]);
+    const rotateY = useTransform(springX, [-0.5, 0.5], [-config.rotationStrength, config.rotationStrength]);
+    
+    // Velocity-based tilt (Mouse velocity)
+    const mouseVelocityX = useVelocity(springX);
+    const tilt = useTransform(mouseVelocityX, [-2, 2], [-5, 5]);
+
+    function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        // Normalized coordinates -0.5 to 0.5 relative to the word center
+        const xPct = (e.clientX - rect.left) / rect.width - 0.5;
+        const yPct = (e.clientY - rect.top) / rect.height - 0.5;
+        
+        mouseX.set(xPct);
+        mouseY.set(yPct);
+    }
+
+    return (
+        <motion.div
+            className="relative flex items-center justify-center cursor-default group"
+            style={{ 
+                marginRight: \`\${config.gap}px\`,
+            }}
+            onMouseEnter={() => setIsItemHovering(true)}
+            onMouseLeave={() => {
+                setIsItemHovering(false);
+                mouseX.set(0);
+                mouseY.set(0);
+            }}
+            onMouseMove={handleMouseMove}
+        >
+            {/* The Text */}
+            <h2 
+                className="font-bold tracking-tighter transition-colors duration-300 pointer-events-auto"
+                style={{ 
+                    fontSize: config.fontSize,
+                    color: isItemHovering ? 'rgba(255,255,255,0.1)' : config.textColor, // Fade text on hover
+                    WebkitTextStroke: isItemHovering ? \`1px \${config.textColor}\` : 'none', // Outline effect
+                }}
+            >
+                {word}
+            </h2>
+
+            {/* The Cloth Reveal Image */}
+            <AnimatePresence>
+                {isItemHovering && (
+                    <motion.div
+                        className="absolute z-20 pointer-events-none"
+                        style={{
+                            width: config.imageSize.width,
+                            height: config.imageSize.height,
+                            position: 'absolute' as PositionType, // Explicit casting
+                            left: '50%',
+                            top: '50%',
+                            perspective: '1000px',
+                            x: '-50%', // Centering
+                            y: '-50%',
+                        }}
+                        initial={{ 
+                            opacity: 0, 
+                            scale: 0, 
+                            clipPath: 'polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)', // Start as a dot
+                            rotateZ: -10,
+                        }}
+                        animate={{ 
+                            opacity: 1, 
+                            scale: 1, 
+                            clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', // Unfold to full rect
+                            rotateZ: 0,
+                            transition: { 
+                                type: 'spring', 
+                                mass: 0.5, 
+                                stiffness: 100, 
+                                damping: 15 
+                            }
+                        }}
+                        exit={{ 
+                            opacity: 0, 
+                            scale: 0.5, 
+                            clipPath: 'polygon(50% 0%, 50% 0%, 50% 100%, 50% 100%)', // Close like a book or curtain
+                            transition: { duration: 0.2 } 
+                        }}
+                    >
+                        {/* Parallax Container */}
+                         <motion.div
+                            style={{
+                                rotateX,
+                                rotateY,
+                                rotateZ: tilt, // Add velocity tilt
+                                width: '100%',
+                                height: '100%',
+                                transformStyle: 'preserve-3d',
+                            }}
+                        >
+                            <img 
+                                src={image} 
+                                alt={word}
+                                className="w-full h-full object-cover rounded-xl shadow-2xl"
+                                style={{
+                                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                                }}
+                            />
+                            
+                            {/* Glass overlay for that premium feel */}
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-white/10 to-transparent mix-blend-overlay pointer-events-none" />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+}
+`,
+        props: [
+            { name: 'words', type: 'string[]', default: 'defaultWords', description: 'Array of words to display' },
+            { name: 'images', type: 'string[]', default: 'defaultImages', description: 'Array of images to reveal' },
+            { name: 'config', type: 'Partial<ClothTickerConfig>', default: '{}', description: 'Configuration object' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
+    },
+    {
+        id: 'wave-marquee',
+        name: 'Wave Marquee',
+        index: 23,
+        description: 'A smooth sine-wave marquee of company logos that swing up and down. Features magnetic hover effects, pause-on-hover, and grayscale-to-color transitions.',
+        tags: ['marquee', 'wave', 'logos', 'partners', 'animation', 'scroll'],
+        category: 'animation',
+        previewConfig: { speed: 2, amplitude: 60 },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { WaveMarquee } from '@/components/ui';
+
+// Basic usage
+<WaveMarquee />
+
+// Custom configuration
+<WaveMarquee
+    config={{
+        speed: 2,
+        amplitude: 80,
+        wavelength: 200,
+        grayscale: true
+    }}
+/>`,
+        fullCode: `"use client";
+
+import React, { useRef, useState, useEffect, useMemo } from "react";
+import { motion, useSpring, useMotionValue, useAnimationFrame, useTransform } from "framer-motion";
+
+interface WaveMarqueeConfig {
+    speed?: number;
+    amplitude?: number;
+    wavelength?: number;
+    logoScale?: number;
+    blurAmount?: number;
+    grayscale?: boolean;
+}
+
+interface WaveMarqueeProps {
+    config?: WaveMarqueeConfig;
+    className?: string;
+}
+
+// Sample logos (SVGs)
+const LOGOS = [
+    { name: "Next.js", path: "M306.36 128H288l-12.28-12.55-52.48 53.69v-53.69H177.6v256h45.64V257.2l84.66-86.53-27-27.67 71.18 72.84zM128 384H81.08V128H128z" },
+    { name: "Vercel", path: "M256,48,496,464H16Z" },
+    { name: "React", path: "M256,120.44c68.08,0,123.56,23.32,123.56,52s-55.48,52-123.56,52S132.44,201.12,132.44,172.44,187.92,120.44,256,120.44Zm0,111c71.36,0,130.56-25,130.56-59S327.36,113.44,256,113.44s-130.56,25-130.56,59S184.64,231.44,256,231.44Zm0-156c-63.56,0-120.56,19.2-156.44,50.2l12,12.2c32.76-28.76,82.76-46.4,144.44-46.4s111.68,17.64,144.44,46.4l12-12.2C376.56,94.64,319.56,75.44,256,75.44Zm0,192c63.56,0,120.56-19.2,156.44-50.2l-12-12.2c-32.76,28.76-82.76,46.4-144.44,46.4s-111.68-17.64-144.44-46.4l-12,12.2C135.44,248.24,192.44,267.44,256,267.44ZM232,172.44A24,24,0,1,0,256,148.44,24,24,0,0,0,232,172.44Z" },
+    { name: "Framer", path: "M106.67,106.67V10.67h213.33L106.67,213.33h106.66l-106.66,213.34V320H320V106.67Z" },
+    { name: "Tailwind", path: "M128.5,185.5c27.5,0,55,14,55,41.5s-27.5,41.5-55,41.5-55-14-55-41.5S101,185.5,128.5,185.5Zm129,0c27.5,0,55,14,55,41.5s-27.5,41.5-55,41.5-55-14-55-41.5S230,185.5,257.5,185.5ZM128.5,37.5c34.5,0,69,18,69,54s-34.5,54-69,54-69-18-69-54S94,37.5,128.5,37.5Zm129,0c34.5,0,69,18,69,54s-34.5,54-69,54-69-18-69-54S223,37.5,257.5,37.5Z" },
+    { name: "GitHub", path: "M256,32C132.3,32,32,134.9,32,261.7c0,101.5,64.2,187.5,153.2,217.9a17.56,17.56,0,0,0,3.8.4c8.3,0,11.5-6.1,11.5-11.4,0-5.5-.2-19.9-.3-39.1a102.4,102.4,0,0,1-22.6,2.7c-43.1,0-52.9-33.5-52.9-33.5-10.2-26.5-24.9-33.6-24.9-33.6-19.5-13.7-.1-14.1,1.4-14.1h.1c22.5,2,34.3,23.8,34.3,23.8,11.2,19.6,26.2,25.1,39.6,25.1a63,63,0,0,0,25.6-6c2.3-14.8,7.8-24.9,14.2-30.7-49.7-5.8-102-25.5-102-113.5,0-25.1,8.7-45.6,23-61.6-2.3-5.8-10-29.2,2.2-60.8a18.64,18.64,0,0,1,5-.5c8.1,0,26.4,3.1,56.6,24.1a208.21,208.21,0,0,1,112.2,0c30.2-21,48.5-24.1,56.6-24.1a18.64,18.64,0,0,1,5,.5c12.2,31.6,4.5,55,2.2,60.8,14.3,16.1,23,36.6,23,61.6,0,88.2-52.4,107.6-102.3,113.3,8,7.1,15.2,21.1,15.2,42.5,0,30.7-.3,55.5-.3,63,0,5.4,3.1,11.5,11.4,11.5a19.35,19.35,0,0,0,4-.4C415.9,449.2,480,363.1,480,261.7,480,134.9,379.7,32,256,32Z" },
+];
+
+const WaveMarquee: React.FC<WaveMarqueeProps> = ({ config = {}, className = "" }) => {
+    // Configuration defaults
+    const defaultConfig: WaveMarqueeConfig = {
+        speed: 1,
+        amplitude: 80,
+        wavelength: 200,
+        logoScale: 1.2,
+        blurAmount: 0,
+        grayscale: true,
+    };
+
+    const finalConfig = { ...defaultConfig, ...config };
+    
+    // Create a duplicated list of logos for infinite scroll
+    // We need enough to cover the screen width plus some buffer
+    const items = useMemo(() => {
+        // Simple heuristic: duplicate enough times.
+        // In a real robust scenario we'd measure width, but for this demo a fixed multiplier is safe provided container isn't huge.
+        const baseItems = LOGOS;
+        const multiplier = 6; 
+        let combined = [];
+        for (let i = 0; i < multiplier; i++) {
+            combined.push(...baseItems.map(item => ({ ...item, id: \`\${i}-\${item.name}\` })));
+        }
+        return combined;
+    }, []);
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const time = useMotionValue(0);
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    
+    // Mouse interaction springs
+    const mouseInfluence = useSpring(0, { stiffness: 50, damping: 20 });
+    const waveAmplitude = useSpring(finalConfig.amplitude!, { stiffness: 40, damping: 15 });
+    
+    // Manage animation frame
+    useAnimationFrame((t, delta) => {
+        // Move time forward
+        const currentSpeed = finalConfig.speed! * (1 - mouseInfluence.get());
+        time.set(time.get() + (delta * 0.05 * currentSpeed));
+    });
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (rect) {
+            mouseX.set(e.clientX - rect.left);
+            mouseY.set(e.clientY - rect.top);
+            
+            // Calculate normalized Y position (0 to 1)
+            const normalizedY = (e.clientY - rect.top) / rect.height;
+            
+            // Interaction logic
+            waveAmplitude.set(finalConfig.amplitude! * 0.5);
+            mouseInfluence.set(0.8); // Slow down significantly on hover
+        }
+    };
+
+    const handleMouseLeave = () => {
+        waveAmplitude.set(finalConfig.amplitude!);
+        mouseInfluence.set(0);
+        mouseY.set(0);
+    };
+
+    return (
+        <div 
+            ref={containerRef}
+            className={\`relative w-full h-[500px] overflow-hidden bg-background flex items-center justify-center \${className}\`}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+        >
+            <div className="absolute inset-0 flex items-center">
+                {items.map((item, index) => (
+                    <WaveItem
+                        key={item.id}
+                        item={item}
+                        index={index}
+                        time={time}
+                        config={finalConfig}
+                        amplitude={waveAmplitude}
+                        mouseX={mouseX}
+                        totalItems={items.length}
+                    />
+                ))}
+            </div>
+            
+            {/* Ambient gradients */}
+            <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+        </div>
+    );
+};
+
+// Start spacing between items
+const ITEM_SPACING = 180;
+
+const WaveItem = ({ item, index, time, config, amplitude, mouseX, totalItems }: any) => {
+    // Dimensions
+    const itemWidth = 100; // Approximate width of logo container
+    const totalWidth = totalItems * ITEM_SPACING;
+    
+    const x = useTransform(time, (t) => {
+        // Calculate position based on index and time
+        const basePos = (index * ITEM_SPACING) - t;
+        // Wrap around
+        const wrappedPos = ((basePos % totalWidth) + totalWidth) % totalWidth;
+        // Center the coordinate system roughly
+        return wrappedPos - ITEM_SPACING; 
+    });
+
+    const y = useTransform([x, amplitude], ([currentX, currentAmp]: any) => {
+        const phase = currentX / config.wavelength; 
+        return Math.sin(phase) * currentAmp;
+    });
+
+    const rotateZ = useTransform([x, amplitude], ([currentX, currentAmp]: any) => {
+        const phase = currentX / config.wavelength;
+        const slope = Math.cos(phase);
+        return slope * (currentAmp / 10); 
+    });
+
+    const scale = useTransform([x, mouseX], ([currentX, mX]: any) => {
+        const dist = Math.abs(currentX - mX + (itemWidth/2));
+        if (dist < 150) {
+            return config.logoScale + (1 - dist/150) * 0.5;
+        }
+        return 1;
+    });
+
+    const opacity = useTransform([x, mouseX], ([currentX, mX]: any) => {
+        const dist = Math.abs(currentX - mX + (itemWidth/2));
+        if (dist < 150) {
+            return 1;
+        }
+        return mX > 0 ? 0.6 : 1;
+    });
+
+    const grayscale = useTransform([x, mouseX], ([currentX, mX]: any) => {
+         const dist = Math.abs(currentX - mX + (itemWidth/2));
+         if (dist < 150) {
+             return 0; // Color
+         }
+         return config.grayscale ? 1 : 0;
+    });
+    
+    return (
+        <motion.div
+            style={{
+                x,
+                y,
+                rotateZ,
+                scale,
+                opacity,
+                filter: useTransform(grayscale, (v) => \`grayscale(\${v * 100}%)\`),
+                position: "absolute",
+                left: 0 
+            }}
+            className="flex flex-col items-center justify-center w-[100px] h-[100px] cursor-pointer"
+        >
+            <div className="w-[80px] h-[80px] bg-foreground/5 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-foreground/10 shadow-sm p-4 hover:bg-foreground/10 transition-colors duration-300">
+                <svg 
+                    viewBox="0 0 512 512" 
+                    className="w-full h-full fill-foreground"
+                    style={{ overflow: 'visible' }}
+                >
+                    <path d={item.path} />
+                </svg>
+            </div>
+        </motion.div>
+    );
+};
+
+export default WaveMarquee;`,
+        props: [
+            { name: 'config', type: 'Partial<WaveMarqueeConfig>', default: '{}', description: 'Configuration object' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
     }
 ];
 

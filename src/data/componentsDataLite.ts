@@ -520,10 +520,10 @@ export const componentsDataLite: ComponentDataLite[] = [
     },
     {
         id: 'impact-text',
-        name: 'Impact Text',
+        name: 'Loading 1',
         index: 21,
-        description: 'A dynamic loading animation where letters crash into place with a satisfying squish impact, followed by a continuous morphing wave sequence.',
-        tags: ['text', 'loading', 'impact', 'animation', 'squash', 'stretch'],
+        description: 'A dynamic loading animation with smooth wave-like font weight transitions. Letters morph between thin and bold weights with italic effects in a continuous loop.',
+        tags: ['text', 'loading', 'wave', 'animation', 'variable-font', 'weight'],
         category: 'animation',
         previewConfig: {
             text: 'LOADING',
@@ -548,6 +548,63 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'text', type: 'string', default: "'MORPHYS'", description: 'Text to animate' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
             { name: 'config', type: 'object', default: '{}', description: 'Configuration object' },
+        ]
+    },
+    {
+        id: 'reveal-marquee',
+        name: 'Reveal Marquee',
+        index: 22,
+        description: 'An infinite scrolling marquee where words reveal images on hover with smooth parallax effects and weight animations.',
+        tags: ['ticker', 'marquee', 'scroll', 'parallax', 'hover', 'reveal', '3d'],
+        category: 'animation',
+        previewConfig: { speed: 1, parallaxStrength: 30 },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { ClothTicker } from '@/components/ui';
+
+// Basic usage
+<ClothTicker />
+
+// With custom configuration
+<ClothTicker
+    config={{
+        speed: 2,
+        fontSize: '4rem',
+        parallaxStrength: 50
+    }}
+/>`,
+        props: [
+            { name: 'words', type: 'string[]', default: 'defaultWords', description: 'Array of words to display' },
+            { name: 'images', type: 'string[]', default: 'defaultImages', description: 'Array of images to reveal' },
+            { name: 'config', type: 'Partial<ClothTickerConfig>', default: '{}', description: 'Configuration object' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
+    },
+    {
+        id: 'wave-marquee',
+        name: 'Wave Marquee',
+        index: 23,
+        description: 'A smooth sine-wave marquee of company logos that swing up and down. Features magnetic hover effects, pause-on-hover, and grayscale-to-color transitions.',
+        tags: ['marquee', 'wave', 'logos', 'partners', 'animation', 'scroll'],
+        category: 'animation',
+        previewConfig: { speed: 2, amplitude: 60 },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { WaveMarquee } from '@/components/ui';
+
+// Basic usage
+<WaveMarquee />
+
+// Custom configuration
+<WaveMarquee
+    config={{
+        speed: 2,
+        amplitude: 80,
+        wavelength: 200,
+        grayscale: true
+    }}
+/>`,
+        props: [
+            { name: 'config', type: 'Partial<WaveMarqueeConfig>', default: '{}', description: 'Configuration object' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
     }
 ];

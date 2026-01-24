@@ -31,6 +31,8 @@ const componentModuleMap: Record<string, string> = {
     'glass-surge': 'GlassSurge',
     'layered-image-showcase': 'LayeredImageShowcase',
     'impact-text': 'ImpactText',
+    'reveal-marquee': 'ClothTicker',
+    'wave-marquee': 'WaveMarquee',
 };
 
 // Prefetch cache
@@ -227,6 +229,16 @@ const ImpactTextPreview = dynamic(
     { loading: PreviewLoader, ssr: false }
 );
 
+const ClothTickerPreview = dynamic(
+    () => import("./ClothTicker").then(mod => ({ default: mod.ClothTickerPreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
+const WaveMarqueePreview = dynamic(
+    () => import("./WaveMarquee").then(mod => ({ default: mod.WaveMarqueePreview })),
+    { loading: PreviewLoader, ssr: false }
+);
+
 // Component previews mapping - all are now dynamically loaded
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -250,6 +262,8 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'glass-surge': GlassSurgePreview,
     'layered-image-showcase': LayeredImageShowcasePreview,
     'impact-text': ImpactTextPreview,
+    'reveal-marquee': ClothTickerPreview,
+    'wave-marquee': WaveMarqueePreview,
 };
 
 export function NormalComponents() {

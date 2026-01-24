@@ -135,6 +135,16 @@ const ImpactText = dynamic(() => import("@/components/ui/ImpactText").then(mod =
     ssr: false
 });
 
+const ClothTicker = dynamic(() => import("@/components/ui/ClothTicker").then(mod => ({ default: mod.ClothTicker })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const WaveMarquee = dynamic(() => import("@/components/ui/WaveMarquee").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -210,6 +220,8 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
             }}
         />
     ),
+    'reveal-marquee': ClothTicker as React.ComponentType<{ config?: any }>,
+    'wave-marquee': WaveMarquee as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -792,49 +804,40 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                                 label="Font Size"
                                                 value={config.fontSize || 120}
                                                 min={60}
-                                                max={300}
-                                                suffix="px"
+                                                max={200}
                                                 onChange={(val) => onConfigChange('fontSize', val)}
                                             />
                                             <NumberControl
                                                 label="Spread"
                                                 value={config.spread || 30}
-                                                min={10}
+                                                min={0}
                                                 max={100}
                                                 onChange={(val) => onConfigChange('spread', val)}
                                             />
                                         </div>
-                                        <div>
-                                            <span className="text-xs text-foreground/40 mb-1 block">Color</span>
-                                            <input
-                                                type="color"
-                                                value={config.color || '#ffffff'}
-                                                onChange={(e) => onConfigChange('color', e.target.value)}
-                                                className="w-full h-10 rounded-lg cursor-pointer"
-                                            />
+                                    </div>
+                                </>
+                            ) : componentId === 'wave-marquee' ? (
+                                // WAVE MARQUEE CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Animation</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl label="Speed" value={config.speed} min={0} max={10} onChange={(val) => onConfigChange('speed', val)} />
+                                            <NumberControl label="Amplitude" value={config.amplitude} min={0} max={200} onChange={(val) => onConfigChange('amplitude', val)} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl label="Wavelength" value={config.wavelength} min={50} max={500} onChange={(val) => onConfigChange('wavelength', val)} />
+                                            <NumberControl label="Logo Scale" value={Math.round(config.logoScale * 10)} min={5} max={30} onChange={(val) => onConfigChange('logoScale', val / 10)} />
                                         </div>
                                     </div>
                                     <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Behavior</label>
-                                        <NumberControl
-                                            label="Idle Timeout"
-                                            value={config.idleTimeout || 5000}
-                                            min={500}
-                                            max={10000}
-                                            suffix="ms"
-                                            onChange={(val) => onConfigChange('idleTimeout', val)}
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Content</label>
-                                        <div>
-                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
-                                            <input
-                                                type="text"
-                                                value={config.text || 'MORPHYS'}
-                                                onChange={(e) => onConfigChange('text', e.target.value)}
-                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
-                                            />
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-foreground/60">Grayscale</span>
+                                            <button onClick={() => onConfigChange('grayscale', !config.grayscale)} className={`w-12 h-6 rounded-full relative transition-colors ${config.grayscale ? 'bg-foreground' : 'bg-foreground/20'}`}>
+                                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${config.grayscale ? 'left-7' : 'left-1'}`} />
+                                            </button>
                                         </div>
                                     </div>
                                 </>
@@ -890,8 +893,8 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         />
                                     </div>
                                 </>
-                            ) : componentId === 'notification-stack' || componentId === 'diagonal-focus' || componentId === 'fluid-height' || componentId === 'step-morph' || componentId === 'center-menu' || componentId === 'impact-text' ? (
-                                // NOTIFICATION STACK / DIAGONAL FOCUS / FLUID HEIGHT / STEP MORPH / CENTER MENU / IMPACT TEXT - No adjustable settings
+                            ) : componentId === 'notification-stack' || componentId === 'diagonal-focus' || componentId === 'fluid-height' || componentId === 'step-morph' || componentId === 'center-menu' || componentId === 'impact-text' || componentId === 'reveal-marquee' ? (
+                                // NOTIFICATION STACK / DIAGONAL FOCUS / FLUID HEIGHT / STEP MORPH / CENTER MENU / IMPACT TEXT / REVEAL MARQUEE - No adjustable settings
                                 <div className="text-center py-8">
                                     <div className="w-12 h-12 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground/40">
@@ -980,10 +983,11 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                 </>
                             )}
                         </div>
-                    </motion.div>
+                    </motion.div >
                 </>
-            )}
-        </AnimatePresence>
+            )
+            }
+        </AnimatePresence >
     );
 }
 
@@ -1668,6 +1672,18 @@ export default function ComponentDetailPage() {
                 textColor: "#ffffff"
             };
         }
+        if (componentId === 'reveal-marquee') {
+            return {}; // Use component defaults
+        }
+        if (componentId === 'wave-marquee') {
+            return {
+                speed: 2,
+                amplitude: 80,
+                wavelength: 200,
+                grayscale: true,
+                logoScale: 1.2
+            };
+        }
         return {
             cols: 10,
             rows: 8,
@@ -1826,6 +1842,16 @@ export default function ComponentDetailPage() {
                 fontSize: 100,
                 color: "var(--foreground)",
                 kerning: 0,
+            });
+        } else if (componentId === 'reveal-marquee') {
+            setConfig({}); // Use component defaults
+        } else if (componentId === 'wave-marquee') {
+            setConfig({
+                speed: 2,
+                amplitude: 80,
+                wavelength: 200,
+                grayscale: true,
+                logoScale: 1.2
             });
         }
     }, [componentId]);
