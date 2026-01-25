@@ -308,13 +308,13 @@ const WaveItem = ({ item, index, time, config, amplitude, mouseX, totalItems, re
                     <img
                         src={item.imageUrl}
                         alt={item.name}
-                        className="w-full h-full object-contain"
+                        className="w-3/5 h-3/5 object-contain"
                         style={{ filter: 'brightness(0)' }}
                     />
                 ) : (
                     <svg
                         viewBox={item.viewBox || "0 0 50 50"}
-                        className="w-full h-full fill-foreground"
+                        className="w-3/5 h-3/5 fill-foreground"
                         style={{ overflow: 'visible' }}
                     >
                         <path d={item.path} />
@@ -327,6 +327,7 @@ const WaveItem = ({ item, index, time, config, amplitude, mouseX, totalItems, re
     );
 };
 
+export { WaveMarquee };
 export default WaveMarquee;
 
 export const WaveMarqueePreview = () => {

@@ -145,6 +145,11 @@ const WaveMarquee = dynamic(() => import("@/components/ui/WaveMarquee").then(mod
     ssr: false
 });
 
+const ExpandableStrips = dynamic(() => import("@/components/ui/ExpandableStrips").then(mod => ({ default: mod.ExpandableStrips })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -222,6 +227,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     ),
     'reveal-marquee': ClothTicker as React.ComponentType<{ config?: any }>,
     'wave-marquee': WaveMarquee as React.ComponentType<{ config?: any }>,
+    'expandable-strips': ExpandableStrips as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -2295,8 +2301,8 @@ export default function ComponentDetailPage() {
                                     </>
                                 )}
 
-                                {/* Reload Button for NavbarMenu2 & LayeredImageShowcase */}
-                                {['navbar-menu-2', 'layered-image-showcase'].includes(componentId) && (
+                                {/* Reload Button for All Components (except page-reveal which has its own) */}
+                                {componentId !== 'page-reveal' && (
                                     <>
                                         {/* Desktop Reload Button */}
                                         <motion.div
@@ -2315,9 +2321,11 @@ export default function ComponentDetailPage() {
                                                     backdrop-blur-lg
                                                     flex items-center justify-center
                                                     transition-colors
-                                                    ${['navbar-menu-2', 'layered-image-showcase'].includes(componentId)
+                                                    ${['navbar-menu-2', 'layered-image-showcase', 'scroll-to-reveal'].includes(componentId)
                                                         ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
-                                                        : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'
+                                                        : componentId === 'notification-stack'
+                                                            ? 'bg-background/20 border border-background/20 text-background hover:bg-background/30'
+                                                            : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'
                                                     }
                                                 `}
                                             >
@@ -2339,9 +2347,11 @@ export default function ComponentDetailPage() {
                                                     backdrop-blur-lg
                                                     flex items-center justify-center
                                                     transition-colors
-                                                    ${['navbar-menu-2', 'layered-image-showcase'].includes(componentId)
+                                                    ${['navbar-menu-2', 'layered-image-showcase', 'scroll-to-reveal'].includes(componentId)
                                                         ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
-                                                        : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'
+                                                        : componentId === 'notification-stack'
+                                                            ? 'bg-background/20 border border-background/20 text-background hover:bg-background/30'
+                                                            : 'bg-foreground/10 border border-foreground/10 hover:bg-foreground/20'
                                                     }
                                                 `}
                                             >

@@ -107,7 +107,7 @@ export const uiStyles: StyleCard[] = [
             "Elements appear attached to the background",
             "Subtle visual hierarchy"
         ],
-        gradient: "linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%)",
+        gradient: "linear-gradient(135deg, #d9d9d9 0%, #e7e5df 100%)",
         accentColor: "#a0a0a0",
         image: "/neumorphism.jpg",
     },
@@ -127,7 +127,7 @@ export const uiStyles: StyleCard[] = [
             "Clean typography and limited color palette",
             "Extensive use of whitespace"
         ],
-        gradient: "linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%)",
+        gradient: "linear-gradient(135deg, #e7e5df 0%, #dcdad4 100%)",
         accentColor: "#333333",
         image: "/minimalism.jpg",
     },

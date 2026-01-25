@@ -31,6 +31,7 @@ const componentModuleMap: Record<string, string> = {
     'impact-text': 'ImpactText',
     'reveal-marquee': 'ClothTicker',
     'wave-marquee': 'WaveMarquee',
+    'expandable-strips': 'ExpandableStrips',
 };
 
 // Prefetch cache to avoid duplicate prefetches
@@ -241,6 +242,14 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
         // Calculate cursor position relative to container
         const cursorX = e.clientX - rect.left;
         const containerWidth = rect.width;
+
+        // Implement drag-to-scroll: Move content with the mouse
+        // Use a multiplier to make the drag feel more responsive if needed, but 1:1 is standard
+        const deltaX = lastClientX.current - e.clientX;
+        if (Math.abs(deltaX) > 0) {
+            container.scrollLeft += deltaX;
+            lastClientX.current = e.clientX;
+        }
 
         // Check if near edges and calculate scroll speed based on distance from edge
         if (cursorX < EDGE_THRESHOLD && container.scrollLeft > 0) {

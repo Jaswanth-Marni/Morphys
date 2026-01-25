@@ -68,7 +68,7 @@ export function ComponentsSwitcher({ activeTab, onTabChange }: ComponentsSwitche
                     {activeTab === tab.id && (
                         <motion.div
                             layoutId="active-pill"
-                            className="absolute inset-0 z-10 rounded-full bg-white mix-blend-normal shadow-sm"
+                            className="absolute inset-0 z-10 rounded-full bg-[#e7e5df] mix-blend-normal shadow-sm"
                             transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                         />
                     )}

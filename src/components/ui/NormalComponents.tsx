@@ -1,321 +1,122 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, Suspense, lazy, useRef } from "react";
-import dynamic from "next/dynamic";
-import { componentsDataLite } from "@/data/componentsDataLite";
-import { useNavigationLoading } from "@/context/NavigationLoadingContext";
+import { componentsData } from "@/data/componentsData";
+import { FlipGridPreview } from "./FlipGrid";
+import { AsciiSimulationPreview } from "./AsciiSimulation";
+import { LiquidMorphPreview } from "./LiquidMorph";
+import { PageRevealPreview } from "./PageReveal";
+import { WaveMarqueePreview } from "./WaveMarquee";
+import { StepMorphPreview } from "./StepMorph";
+import { ScrollToRevealPreview } from "./ScrollToReveal";
+import { SpotlightSearchPreview } from "./SpotlightSearch";
+import { RealityLensPreview } from "./RealityLens";
+import { NotificationStackPreview } from "./NotificationStack";
+import { NavbarMenuPreview } from "./NavbarMenu";
+import { NavbarMenu2Preview } from "./NavbarMenu2";
+import { ImpactTextPreview } from "./ImpactText";
+import { ImageTrailCursorPreview } from "./ImageTrailCursor";
+import { FluidHeightPreview } from "./FluidHeight";
+import { DiagonalFocusPreview } from "./DiagonalFocus";
+import { DiffuseTextPreview } from "./DiffuseText";
+import { ClothTickerPreview } from "./ClothTicker";
+import { TextPressure } from "./TextPressure";
+import TextMirror from "./TextMirror";
+import { CenterMenu } from "./CenterMenu";
+import { GlassSurge } from "./GlassSurge";
+import { LayeredImageShowcase } from "./LayeredImageShowcase";
+import { ExpandableStrips } from "./ExpandableStrips";
 
-// Component module mapping for prefetching
-const componentModuleMap: Record<string, string> = {
-    'flip-grid': 'FlipGrid',
-    'ascii-simulation': 'AsciiSimulation',
-    'liquid-morph': 'LiquidMorph',
-    'page-reveal': 'PageReveal',
-    'navbar-menu': 'NavbarMenu',
-    'navbar-menu-2': 'NavbarMenu2',
-    'spotlight-search': 'SpotlightSearch',
-    'image-trail-cursor': 'ImageTrailCursor',
-    'reality-lens': 'RealityLens',
-    'scroll-to-reveal': 'ScrollToReveal',
-    'diffuse-text': 'DiffuseText',
-    'diagonal-focus': 'DiagonalFocus',
-    'notification-stack': 'NotificationStack',
-    'text-pressure': 'TextPressure',
-    'fluid-height': 'FluidHeight',
-    'text-mirror': 'TextMirror',
-    'step-morph': 'StepMorph',
-    'center-menu': 'CenterMenu',
-    'glass-surge': 'GlassSurge',
-    'layered-image-showcase': 'LayeredImageShowcase',
-    'impact-text': 'ImpactText',
-    'reveal-marquee': 'ClothTicker',
-    'wave-marquee': 'WaveMarquee',
-};
-
-// Prefetch cache
-const prefetchedComponents = new Set<string>();
-
-// Helper to only render heavy previews when in viewport
-const VisiblePreview = ({ children }: { children: React.ReactNode }) => {
-    const ref = useRef(null);
-    const isInView = useInView(ref, { margin: "200px" });
-
-    return (
-        <div ref={ref} className="w-full h-full flex items-center justify-center">
-            {isInView ? children : null}
-        </div>
-    );
-};
-
-// Simple loading placeholder for preview cards
-const PreviewLoader = () => (
-    <div className="w-full h-full flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-foreground/10 border-t-foreground/30 rounded-full animate-spin" />
+// Preview Wrappers
+const TextPressurePreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
+        <TextPressure text="MORPHYS" config={{ minFontSize: 24 }} />
     </div>
 );
 
-// Dynamic imports for ALL preview components - NO synchronous imports!
-// This prevents Three.js and other heavy libraries from blocking initial page load
-const FlipGridPreview = dynamic(
-    () => import("./FlipGrid").then(mod => ({ default: mod.FlipGridPreview })),
-    { loading: PreviewLoader, ssr: false }
+const TextMirrorPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
+        <TextMirror text="MORPHYS" config={{ fontSize: 40 }} hasTrigger={false} />
+    </div>
 );
 
-const AsciiSimulationPreview = dynamic(
-    () => import("./AsciiSimulation").then(mod => ({ default: mod.AsciiSimulationPreview })),
-    { loading: PreviewLoader, ssr: false }
+const CenterMenuPreview = () => (
+    <div className="w-full h-full flex items-center justify-center overflow-hidden relative">
+        <div className="transform scale-[0.6] w-full">
+            <CenterMenu className="!min-h-0 !pt-0" />
+        </div>
+    </div>
 );
 
-const LiquidMorphPreview = dynamic(
-    () => import("./LiquidMorph").then(mod => ({ default: mod.LiquidMorphPreview })),
-    { loading: PreviewLoader, ssr: false }
+const GlassSurgePreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
+        <GlassSurge text="MORPHYS" className="text-3xl md:text-4xl font-bold tracking-widest" />
+    </div>
 );
 
-const PageRevealPreview = dynamic(
-    () => import("./PageReveal").then(mod => ({ default: mod.PageRevealPreview })),
-    { loading: PreviewLoader, ssr: false }
+const LayeredImageShowcasePreview = () => (
+    <div className="w-full h-full overflow-hidden relative">
+        <LayeredImageShowcase className="!h-full !p-4" config={{ title: "SHOWCASE" }} />
+    </div>
 );
 
-const NavbarMenuPreview = dynamic(
-    () => import("./NavbarMenu").then(mod => ({ default: mod.NavbarMenuPreview })),
-    { loading: PreviewLoader, ssr: false }
+const ExpandableStripsPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
+        <div className="transform scale-[0.5] w-[200%] h-[200%] flex items-center justify-center origin-center">
+            <ExpandableStrips className="!h-full !min-h-0 !py-0 !bg-transparent" />
+        </div>
+    </div>
 );
 
-const NavbarMenu2Preview = dynamic(
-    () => import("./NavbarMenu2").then(mod => ({ default: mod.NavbarMenu2Preview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const SpotlightSearchPreview = dynamic(
-    () => import("./SpotlightSearch").then(mod => ({ default: mod.SpotlightSearchPreview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const ImageTrailCursorPreview = dynamic(
-    () => import("./ImageTrailCursor").then(mod => ({ default: mod.ImageTrailCursorPreview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const RealityLensPreview = dynamic(
-    () => import("./RealityLens").then(mod => ({ default: mod.RealityLensPreview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const ScrollToRevealPreview = dynamic(
-    () => import("./ScrollToReveal").then(mod => ({ default: mod.ScrollToRevealPreview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const DiffuseTextPreview = dynamic(
-    () => import("./DiffuseText").then(mod => ({ default: mod.DiffuseTextPreview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const DiagonalFocusPreview = dynamic(
-    () => import("./DiagonalFocus").then(mod => ({ default: mod.DiagonalFocusPreview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const NotificationStackPreview = dynamic(
-    () => import("./NotificationStack").then(mod => ({ default: mod.NotificationStackPreview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const TextPressure = dynamic(
-    () => import("./TextPressure").then(mod => ({ default: mod.TextPressure })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-// Wrapper components with inline definitions to avoid additional imports
-const FluidHeightInteractive = dynamic(
-    () => import("./FluidHeight").then(mod => {
-        const FluidHeight = mod.default;
-        return {
-            default: () => (
-                <FluidHeight
-                    className="text-[3rem]"
-                    containerClassName="pb-12"
-                    showHint={false}
-                />
-            )
-        };
-    }),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const TextMirrorInteractive = dynamic(
-    () => import("./TextMirror").then(mod => {
-        const TextMirror = mod.default;
-        return {
-            default: () => (
-                <TextMirror
-                    text="MORPHYS"
-                    hasTrigger={false}
-                    config={{
-                        fontSize: 40,
-                        spread: 15,
-                        idleTimeout: 3000
-                    }}
-                />
-            )
-        };
-    }),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const StepMorphInteractive = dynamic(
-    () => import("./StepMorph").then(mod => {
-        const StepMorph = mod.default;
-        return {
-            default: () => (
-                <StepMorph
-                    className="text-[2.5rem]"
-                    containerClassName=""
-                    innerClassName=""
-                    stepSize={14}
-                    showHint={false}
-                />
-            )
-        };
-    }),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const CenterMenuPreview = dynamic(
-    () => import("./CenterMenu").then(mod => {
-        const CenterMenu = mod.CenterMenu;
-        return {
-            default: () => (
-                <div className="w-full h-full flex items-center justify-center">
-                    <CenterMenu className="pointer-events-none transform-gpu scale-[0.7] !min-h-0 !h-auto !pt-0 !overflow-visible" />
-                </div>
-            )
-        };
-    }),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const GlassSurgePreview = dynamic(
-    () => import("./GlassSurge").then(mod => {
-        const GlassSurge = mod.default;
-        return {
-            default: () => (
-                <div className="w-full h-full flex items-center justify-center">
-                    <GlassSurge className="text-5xl font-bold tracking-widest font-logo" text="MORPHYS" />
-                </div>
-            )
-        };
-    }),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const LayeredImageShowcasePreview = dynamic(
-    () => import("./LayeredImageShowcase").then(mod => {
-        const LayeredImageShowcase = mod.LayeredImageShowcase;
-        return {
-            default: () => (
-                <LayeredImageShowcase className="!h-full text-[0.5rem]" />
-            )
-        };
-    }),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const ImpactTextPreview = dynamic(
-    () => import("./ImpactText").then(mod => ({ default: mod.ImpactTextPreview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const ClothTickerPreview = dynamic(
-    () => import("./ClothTicker").then(mod => ({ default: mod.ClothTickerPreview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-const WaveMarqueePreview = dynamic(
-    () => import("./WaveMarquee").then(mod => ({ default: mod.WaveMarqueePreview })),
-    { loading: PreviewLoader, ssr: false }
-);
-
-// Component previews mapping - all are now dynamically loaded
+// Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
     'ascii-simulation': AsciiSimulationPreview,
     'liquid-morph': LiquidMorphPreview,
     'page-reveal': PageRevealPreview,
+    'wave-marquee': WaveMarqueePreview,
+    'step-morph': StepMorphPreview,
+    'scroll-to-reveal': ScrollToRevealPreview,
+    'spotlight-search': SpotlightSearchPreview,
+    'reality-lens': RealityLensPreview,
+    'notification-stack': NotificationStackPreview,
     'navbar-menu': NavbarMenuPreview,
     'navbar-menu-2': NavbarMenu2Preview,
-    'spotlight-search': SpotlightSearchPreview,
+    'impact-text': ImpactTextPreview,
     'image-trail-cursor': ImageTrailCursorPreview,
-    'reality-lens': RealityLensPreview,
-    'scroll-to-reveal': ScrollToRevealPreview,
-    'diffuse-text': DiffuseTextPreview,
+    'fluid-height': FluidHeightPreview,
     'diagonal-focus': DiagonalFocusPreview,
-    'notification-stack': NotificationStackPreview,
-    'text-pressure': TextPressure,
-    'fluid-height': FluidHeightInteractive,
-    'text-mirror': TextMirrorInteractive,
-    'step-morph': StepMorphInteractive,
+    'diffuse-text': DiffuseTextPreview,
+    'reveal-marquee': ClothTickerPreview,
+    'text-pressure': TextPressurePreview,
+    'text-mirror': TextMirrorPreview,
     'center-menu': CenterMenuPreview,
     'glass-surge': GlassSurgePreview,
     'layered-image-showcase': LayeredImageShowcasePreview,
-    'impact-text': ImpactTextPreview,
-    'reveal-marquee': ClothTickerPreview,
-    'wave-marquee': WaveMarqueePreview,
+    'expandable-strips': ExpandableStripsPreview,
 };
 
 export function NormalComponents() {
-    const router = useRouter();
-    const { startLoading } = useNavigationLoading();
-
-    // Prefetch component on hover for faster navigation
-    const handleMouseEnter = useCallback((componentId: string) => {
-        if (prefetchedComponents.has(componentId)) return;
-
-        const moduleName = componentModuleMap[componentId];
-        if (!moduleName) return;
-
-        prefetchedComponents.add(componentId);
-
-        // Prefetch the component module
-        import(`@/components/ui/${moduleName}`).catch(() => {
-            prefetchedComponents.delete(componentId);
-        });
-
-        // Prefetch the route
-        router.prefetch(`/components/${componentId}`);
-    }, [router]);
-
-    // Handle card click - show loading immediately
-    const handleCardClick = useCallback(() => {
-        startLoading();
-    }, [startLoading]);
-
     return (
-        <div className="w-full h-full flex flex-col items-center justify-start px-4 md:px-8 pb-12 mt-0 md:mt-4">
+        <div className="w-full h-full flex flex-col items-center justify-start px-4 md:px-8 pb-12 mt-8 md:mt-20">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full max-w-7xl">
-                {componentsDataLite.map((component, i) => {
+                {componentsData.map((component, i) => {
                     const PreviewComponent = componentPreviews[component.id];
 
                     return (
                         <Link
                             key={component.id}
                             href={`/components/${component.id}`}
-                            prefetch={true}
-                            onMouseEnter={() => handleMouseEnter(component.id)}
-                            onClick={handleCardClick}
                             className="block"
                         >
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.8, y: 50, filter: "blur(4px)" }}
-                                whileInView={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-                                viewport={{ once: true, margin: "-50px" }}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
                                 transition={{
-                                    duration: 0.8,
-                                    delay: (i % 3) * 0.1,
-                                    ease: [0.2, 0.8, 0.2, 1],
+                                    duration: 0.5,
+                                    delay: i * 0.05,
+                                    ease: [0.23, 1, 0.32, 1]
                                 }}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
@@ -377,9 +178,7 @@ export function NormalComponents() {
                                         component-sandbox-border
                                     ">
                                         {PreviewComponent ? (
-                                            <VisiblePreview>
-                                                <PreviewComponent />
-                                            </VisiblePreview>
+                                            <PreviewComponent />
                                         ) : (
                                             <span className="text-foreground/30 text-sm">
                                                 Preview coming soon
@@ -395,3 +194,4 @@ export function NormalComponents() {
         </div>
     );
 }
+

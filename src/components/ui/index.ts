@@ -21,3 +21,5 @@ export { NormalComponents } from './NormalComponents';
 
 export { ImpactText } from './ImpactText';
 export { ClothTicker } from './ClothTicker';
+export { WaveMarquee } from './WaveMarquee';
+export { ExpandableStrips } from './ExpandableStrips';

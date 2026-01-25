@@ -149,7 +149,7 @@ export function NavbarMenu2({ config: userConfig }: NavbarMenu2Props = {}) {
         <div
             ref={containerRef}
             className="w-full h-full relative overflow-hidden"
-            style={{ backgroundColor: '#f5f5f5' }}
+            style={{ backgroundColor: '#e7e5df' }}
         >
             {hasInitialized && (
                 <motion.div

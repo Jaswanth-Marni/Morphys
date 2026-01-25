@@ -63,6 +63,12 @@
   font-weight: 400;
 }
 
+/* Bangers font class */
+.font-bangers {
+  font-family: 'Bangers', system-ui;
+  letter-spacing: 0.1em;
+}
+
 /* Heading letter hover effect - Weight expansion only */
 .heading-letter {
   font-family: 'Clash Display Variable', sans-serif;
@@ -110,7 +116,7 @@
 
 /* Light mode - only when explicitly set */
 [data-theme="light"] {
-  --background: #f8f8f8;
+  --background: #e7e5df;
   --foreground: #171717;
 
   /* Glassmorphism variables - Light mode */

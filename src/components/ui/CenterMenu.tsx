@@ -47,7 +47,7 @@ export const CenterMenu = ({ className = "" }: { className?: string }) => {
     ];
 
     // Define theme-based colors directly
-    const bgColor = isDarkMode ? "#1f1f1f" : "#fafafa";
+    const bgColor = isDarkMode ? "#1f1f1f" : "#e7e5df";
     const textColor = isDarkMode ? "#ffffff" : "#171717";
     const textMuted = isDarkMode ? "#a3a3a3" : "#737373";
     const borderColor = isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.2)";

@@ -220,6 +220,15 @@ export const componentMetadata: ComponentMetadata[] = [
         category: 'animation',
         dependencies: ['framer-motion', 'react'],
     },
+    {
+        id: 'expandable-strips',
+        name: 'Expandable Strips',
+        index: 24,
+        description: 'An interactive image gallery where strips expand on hover. Features smooth layout transitions and dynamic color reveals.',
+        tags: ['gallery', 'accordion', 'expand', 'image', 'interaction'],
+        category: 'interaction',
+        dependencies: ['framer-motion', 'react'],
+    },
 ];
 
 // Fast lookup by ID

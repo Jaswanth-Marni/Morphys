@@ -54,6 +54,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <link
+          href="https://fonts.googleapis.com/css2?family=Bangers&display=swap"
+          rel="stylesheet"
+        />
+        <link
           href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@100..900&display=swap"
           rel="stylesheet"
         />

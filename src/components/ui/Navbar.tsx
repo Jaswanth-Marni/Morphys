@@ -78,7 +78,7 @@ const Navbar = () => {
                     >
                         {/* --- LOGO SECTION --- */}
                         <div className="flex items-center cursor-pointer">
-                            <span className={`font-logo text-3xl tracking-wide select-none ${isLight ? 'text-black' : 'text-white'}`}>
+                            <span className={`font-logo text-3xl tracking-wide select-none leading-none translate-y-[3px] ${isLight ? 'text-black' : 'text-white'}`}>
                                 Morphys
                             </span>
                         </div>

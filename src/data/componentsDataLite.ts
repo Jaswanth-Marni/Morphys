@@ -606,6 +606,23 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'config', type: 'Partial<WaveMarqueeConfig>', default: '{}', description: 'Configuration object' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
+    },
+    {
+        id: 'expandable-strips',
+        name: 'Expandable Strips',
+        index: 24,
+        description: 'An interactive image gallery where strips expand on hover. Features smooth layout transitions and dynamic color reveals.',
+        tags: ['gallery', 'accordion', 'expand', 'image', 'interaction'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { ExpandableStrips } from '@/components/ui';
+
+// Basic usage
+<ExpandableStrips />`,
+        props: [
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
     }
 ];
 

@@ -68,7 +68,7 @@ const Menu = () => {
                     }}
                     className={`fixed inset-0 z-[60] flex flex-col items-center pt-24
                         ${isLight
-                            ? 'bg-[#f5f5f5]'
+                            ? 'bg-[#e7e5df]'
                             : 'bg-[#080808]'
                         }
                     `}
