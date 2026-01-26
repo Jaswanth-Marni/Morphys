@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { componentsData } from "@/data/componentsData";
+import { componentsDataLite as componentsData } from "@/data/componentsDataLite";
 import { FlipGridPreview } from "./FlipGrid";
 import { AsciiSimulationPreview } from "./AsciiSimulation";
 import { LiquidMorphPreview } from "./LiquidMorph";
@@ -44,14 +44,14 @@ const TextMirrorPreview = () => (
 const CenterMenuPreview = () => (
     <div className="w-full h-full flex items-center justify-center overflow-hidden relative">
         <div className="transform scale-[0.6] w-full">
-            <CenterMenu className="!min-h-0 !pt-0" />
+            <CenterMenu className="!min-h-0 !pt-0 !overflow-visible !pb-8" />
         </div>
     </div>
 );
 
 const GlassSurgePreview = () => (
     <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
-        <GlassSurge text="MORPHYS" className="text-3xl md:text-4xl font-bold tracking-widest" />
+        <GlassSurge text="MORPHYS" className="text-3xl md:text-4xl font-bold tracking-widest font-logo" />
     </div>
 );
 
@@ -99,7 +99,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
 
 export function NormalComponents() {
     return (
-        <div className="w-full h-full flex flex-col items-center justify-start px-4 md:px-8 pb-12 mt-8 md:mt-20">
+        <div className="w-full min-h-full flex flex-col items-center justify-start px-4 md:px-8 pb-12 mt-8 md:mt-20">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full max-w-7xl">
                 {componentsData.map((component, i) => {
                     const PreviewComponent = componentPreviews[component.id];

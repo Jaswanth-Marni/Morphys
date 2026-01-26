@@ -29,7 +29,7 @@ export function StyleSpecificComponents() {
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center md:justify-start px-2 pb-0 md:pb-12 mt-0 md:mt-8">
+        <div className="w-full min-h-full flex flex-col items-center justify-center md:justify-start px-2 pb-0 md:pb-12 mt-0 md:mt-8">
             <div className="grid grid-cols-4 lg:grid-cols-8 gap-2 w-fit">
                 {uiStyles.map((style, index) => (
                     <motion.div
