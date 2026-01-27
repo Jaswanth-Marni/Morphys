@@ -155,6 +155,11 @@ const FrostedGlass = dynamic(() => import("@/components/ui/FrostedGlass").then(m
     ssr: false
 });
 
+const TextReveal = dynamic(() => import("@/components/ui/TextReveal").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -234,6 +239,15 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'wave-marquee': WaveMarquee as React.ComponentType<{ config?: any }>,
     'expandable-strips': ExpandableStrips as React.ComponentType<{ config?: any }>,
     'frosted-glass': FrostedGlass as React.ComponentType<{ config?: any }>,
+    'text-reveal': ({ config = {} }: { config?: any }) => (
+        <div className="flex items-center justify-center w-full h-full">
+            <TextReveal
+                text={config.text || "MORPHYS"}
+                delay={config.delay || 0.5}
+                className={config.className || "text-[3rem] md:text-[5rem] lg:text-[8rem] font-bold tracking-tighter text-foreground"}
+            />
+        </div>
+    ),
 };
 
 
@@ -831,12 +845,31 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                     <div className="space-y-3">
                                         <label className="text-sm font-medium text-foreground/60">Content</label>
                                         <div>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'text-reveal' ? (
+                                // TEXT REVEAL CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Animation</label>
+                                        <NumberControl
+                                            label="Delay"
+                                            value={Math.round((config.delay || 0) * 10)}
+                                            min={0}
+                                            max={20}
+                                            onChange={(val) => onConfigChange('delay', val / 10)}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
                                             <span className="text-xs text-foreground/40 mb-1 block">Text</span>
                                             <input
                                                 type="text"
-                                                value={config.text || 'CURATED CHAOS'}
+                                                value={config.text || 'MORPHYS'}
                                                 onChange={(e) => onConfigChange('text', e.target.value)}
-                                                className="w-full h-10 px-3 bg-white/25 backdrop-blur-md border border-white/30 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
                                             />
                                         </div>
                                     </div>
@@ -1336,6 +1369,20 @@ ${configEntries.join('\n')}
 />`;
         }
 
+        if (componentId === 'text-reveal') {
+            return `import TextReveal from '@/components/ui/TextReveal';
+
+// Basic usage
+<TextReveal text="${config.text || 'MORPHYS'}" />
+
+// With custom delay
+<TextReveal
+    text="${config.text || 'MORPHYS'}"
+    delay={${config.delay || 0.5}}
+    className="text-6xl font-bold"
+/>`;
+        }
+
         // DEFAULT FALLBACK - Use the usage from componentsDataLite
         // This ensures every component shows its correct usage code
         const componentDataForUsage = getComponentByIdLite(componentId);
@@ -1557,6 +1604,12 @@ export default function ComponentDetailPage() {
                 logoScale: 1.2
             };
         }
+        if (componentId === 'text-reveal') {
+            return {
+                text: "MORPHYS",
+                delay: 0.5
+            };
+        }
         return {
             cols: 10,
             rows: 8,
@@ -1724,7 +1777,13 @@ export default function ComponentDetailPage() {
                 amplitude: 80,
                 wavelength: 200,
                 grayscale: true,
+                grayscale: true,
                 logoScale: 1.2
+            });
+        } else if (componentId === 'text-reveal') {
+            setConfig({
+                text: "MORPHYS",
+                delay: 0.5
             });
         }
     }, [componentId]);

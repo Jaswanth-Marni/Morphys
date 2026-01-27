@@ -238,6 +238,15 @@ export const componentMetadata: ComponentMetadata[] = [
         category: 'effect',
         dependencies: ['react'],
     },
+    {
+        id: 'text-reveal',
+        name: 'Text Reveal',
+        index: 26,
+        description: 'A text animation where letters reveal by rotating from 90 degrees on the Y-axis.',
+        tags: ['text', 'reveal', 'rotation', '3d', 'animation'],
+        category: 'animation',
+        dependencies: ['framer-motion', 'react'],
+    },
 ];
 
 // Fast lookup by ID

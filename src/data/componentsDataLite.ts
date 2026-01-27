@@ -650,6 +650,32 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'config', type: 'object', default: '{}', description: 'Configuration object' },
             { name: 'containerClassName', type: 'string', default: "''", description: 'Class for the container' },
         ]
+    },
+    {
+        id: 'text-reveal',
+        name: 'Text Reveal',
+        index: 26,
+        description: 'A text animation where letters reveal by rotating from 90 degrees on the Y-axis.',
+        tags: ['text', 'reveal', 'rotation', '3d', 'animation'],
+        category: 'animation',
+        previewConfig: { text: 'MORPHYS', delay: 0.5 },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import TextReveal from '@/components/ui/TextReveal';
+
+// Basic usage
+<TextReveal text="MORPHYS" />
+
+// Custom configuration
+<TextReveal
+    text="MORPHYS"
+    delay={0.5}
+    className="text-6xl"
+/>`,
+        props: [
+            { name: 'text', type: 'string', default: "'Text Reveal Animation'", description: 'Text to display' },
+            { name: 'delay', type: 'number', default: '0', description: 'Delay before animation starts' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
     }
 ];
 

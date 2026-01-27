@@ -1516,6 +1516,107 @@ export const FrostedGlass = ({
 
 export default FrostedGlass;`
     },
+    {
+        id: 'text-reveal',
+        name: 'Text Reveal',
+        index: 26,
+        description: 'A text animation where letters reveal by rotating from 90 degrees on the Y-axis.',
+        tags: ['text', 'reveal', 'rotation', '3d', 'animation'],
+        category: 'animation',
+        previewConfig: { text: 'MORPHYS', delay: 0.5 },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import TextReveal from '@/components/ui/TextReveal';
+
+// Basic usage
+<TextReveal text="MORPHYS" />
+
+// Responsive configuration
+<TextReveal
+    text="MORPHYS"
+    delay={0.5}
+    className="text-[3rem] md:text-6xl font-bold tracking-tighter"
+/>`,
+        fullCode: `import React from 'react';
+import { motion } from 'framer-motion';
+
+interface TextRevealProps {
+    text: string;
+    className?: string;
+    delay?: number;
+}
+
+const TextReveal: React.FC<TextRevealProps> = ({
+    text = "Text Reveal Animation",
+    className = "",
+    delay = 0,
+}) => {
+    const words = text.split(" ");
+
+    const [animationKey, setAnimationKey] = React.useState(0);
+
+    React.useEffect(() => {
+        const interval = setInterval(() => {
+            setAnimationKey(prev => prev + 1);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const letterVariants = {
+        hidden: { 
+            rotateY: -90, 
+            opacity: 0 
+        },
+        visible: (i: number) => ({
+            rotateY: 0,
+            opacity: 1,
+            transition: {
+                delay: delay + (i * 0.05),
+                duration: 0.5,
+                ease: "easeOut",
+            },
+        }),
+    };
+
+    let globalLetterIndex = 0;
+
+    return (
+        <div className={\`relative flex items-center justify-center p-4 \${className}\`}>
+            <motion.div
+                key={animationKey}
+                className="flex flex-wrap items-center justify-center gap-[0.3em] font-bold uppercase"
+                initial="hidden"
+                animate="visible"
+                style={{ perspective: "1000px", fontFamily: '"Big Shoulders Display", cursive', fontWeight: 900 }}
+            >
+                {words.map((word, wIndex) => (
+                    <div key={wIndex} className="flex whitespace-nowrap">
+                        {word.split("").map((char, cIndex) => {
+                            const index = globalLetterIndex++;
+                            return (
+                                <motion.span
+                                    key={cIndex}
+                                    custom={index}
+                                    variants={letterVariants}
+                                    style={{ display: "inline-block", transformStyle: "preserve-3d" }}
+                                >
+                                    {char}
+                                </motion.span>
+                            );
+                        })}
+                    </div>
+                ))}
+            </motion.div>
+        </div>
+    );
+};
+
+export default TextReveal;`,
+        props: [
+            { name: 'text', type: 'string', default: "'Text Reveal Animation'", description: 'Text to display' },
+            { name: 'delay', type: 'number', default: '0', description: 'Delay before animation starts' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
+    },
     // More components will be added here
 ];
 
