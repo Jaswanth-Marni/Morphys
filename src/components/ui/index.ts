@@ -1,5 +1,6 @@
 export { ProgressiveBlur } from "./ProgressiveBlur";
 export { DotPattern } from "./DotPattern";
+export { FrostedGlass } from "./FrostedGlass";
 export { ThemeToggle } from "./ThemeToggle";
 export { Hero } from "./Hero";
 export { GlassPill } from "./GlassPill";

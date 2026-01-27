@@ -32,6 +32,7 @@ const componentModuleMap: Record<string, string> = {
     'reveal-marquee': 'ClothTicker',
     'wave-marquee': 'WaveMarquee',
     'expandable-strips': 'ExpandableStrips',
+    'frosted-glass': 'FrostedGlass',
 };
 
 // Prefetch cache to avoid duplicate prefetches

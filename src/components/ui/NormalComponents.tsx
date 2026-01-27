@@ -27,6 +27,7 @@ import { CenterMenu } from "./CenterMenu";
 import { GlassSurge } from "./GlassSurge";
 import { LayeredImageShowcase } from "./LayeredImageShowcase";
 import { ExpandableStrips } from "./ExpandableStrips";
+import { FrostedGlass } from "./FrostedGlass";
 
 // Preview Wrappers
 const TextPressurePreview = () => (
@@ -69,6 +70,12 @@ const ExpandableStripsPreview = () => (
     </div>
 );
 
+const FrostedGlassPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
+        <FrostedGlass config={{ text: "CURATED CHAOS", fontSize: 90, blurAmount: 30 }} containerClassName="!bg-black !min-h-0" />
+    </div>
+);
+
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -95,6 +102,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'glass-surge': GlassSurgePreview,
     'layered-image-showcase': LayeredImageShowcasePreview,
     'expandable-strips': ExpandableStripsPreview,
+    'frosted-glass': FrostedGlassPreview,
 };
 
 export function NormalComponents() {

@@ -623,6 +623,33 @@ export const componentsDataLite: ComponentDataLite[] = [
         props: [
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
+    },
+    {
+        id: 'frosted-glass',
+        name: 'Frosted Glass Text',
+        index: 25,
+        description: 'Knockout text that reveals a blurred background image using SVG masking. Ideal for headers and impact text over complex images.',
+        tags: ['text', 'glass', 'blur', 'mask', 'svg'],
+        category: 'effect',
+        previewConfig: { text: 'CURATED CHAOS', blurAmount: 30 },
+        dependencies: ['react'],
+        usage: `import { FrostedGlass } from '@/components/ui';
+
+// Basic usage
+<FrostedGlass />
+
+// Custom configuration
+<FrostedGlass
+    config={{
+        text: "CURATED CHAOS",
+        blurAmount: 30,
+        fontSize: 300
+    }}
+/>`,
+        props: [
+            { name: 'config', type: 'object', default: '{}', description: 'Configuration object' },
+            { name: 'containerClassName', type: 'string', default: "''", description: 'Class for the container' },
+        ]
     }
 ];
 

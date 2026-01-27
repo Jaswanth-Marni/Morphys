@@ -229,6 +229,15 @@ export const componentMetadata: ComponentMetadata[] = [
         category: 'interaction',
         dependencies: ['framer-motion', 'react'],
     },
+    {
+        id: 'frosted-glass',
+        name: 'Frosted Glass',
+        index: 25,
+        description: 'Knockout text that reveals a blurred background image, creating a sophisticated frosted glass effect.',
+        tags: ['text', 'glass', 'blur', 'mask', 'svg'],
+        category: 'effect',
+        dependencies: ['react'],
+    },
 ];
 
 // Fast lookup by ID

@@ -150,6 +150,11 @@ const ExpandableStrips = dynamic(() => import("@/components/ui/ExpandableStrips"
     ssr: false
 });
 
+const FrostedGlass = dynamic(() => import("@/components/ui/FrostedGlass").then(mod => ({ default: mod.FrostedGlass })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -228,6 +233,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'reveal-marquee': ClothTicker as React.ComponentType<{ config?: any }>,
     'wave-marquee': WaveMarquee as React.ComponentType<{ config?: any }>,
     'expandable-strips': ExpandableStrips as React.ComponentType<{ config?: any }>,
+    'frosted-glass': FrostedGlass as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -274,7 +280,7 @@ function NumberControl({ label, value, min, max, suffix = '', onChange }: Number
                 <button
                     onClick={() => onChange(Math.max(safeValue - 1, min))}
                     disabled={safeValue <= min}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-50 transition-colors text-foreground/70"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/25 backdrop-blur-md border border-white/30 hover:bg-white/40 disabled:opacity-50 transition-colors text-foreground"
                 >
                     -
                 </button>
@@ -285,14 +291,14 @@ function NumberControl({ label, value, min, max, suffix = '', onChange }: Number
                         onChange={(e) => setLocalValue(e.target.value)}
                         onBlur={handleCommit}
                         onKeyDown={handleKeyDown}
-                        className="w-full h-8 px-2 text-center bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20 appearance-none"
+                        className="w-full h-8 px-2 text-center bg-white/25 backdrop-blur-md border border-white/30 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20 appearance-none"
                     />
                     {suffix && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-foreground/40 pointer-events-none">{suffix}</span>}
                 </div>
                 <button
                     onClick={() => onChange(Math.min(safeValue + 1, max))}
                     disabled={safeValue >= max}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-50 transition-colors text-foreground/70"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/25 backdrop-blur-md border border-white/30 hover:bg-white/40 disabled:opacity-50 transition-colors text-foreground"
                 >
                     +
                 </button>
@@ -800,202 +806,63 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         </div>
                                     </div>
                                 </>
-                            ) : componentId === 'text-mirror' ? (
-                                // TEXT MIRROR CONTROLS
+                            ) : componentId === 'frosted-glass' ? (
+                                // FROSTED GLASS CONTROLS
                                 <>
                                     <div className="space-y-3">
                                         <label className="text-sm font-medium text-foreground/60">Appearance</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <NumberControl
-                                                label="Font Size"
-                                                value={config.fontSize || 120}
-                                                min={60}
-                                                max={200}
-                                                onChange={(val) => onConfigChange('fontSize', val)}
-                                            />
-                                            <NumberControl
-                                                label="Spread"
-                                                value={config.spread || 30}
-                                                min={0}
-                                                max={100}
-                                                onChange={(val) => onConfigChange('spread', val)}
-                                            />
-                                        </div>
-                                    </div>
-                                </>
-                            ) : componentId === 'wave-marquee' ? (
-                                // WAVE MARQUEE CONTROLS
-                                <>
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Animation</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <NumberControl label="Speed" value={config.speed} min={0} max={10} onChange={(val) => onConfigChange('speed', val)} />
-                                            <NumberControl label="Amplitude" value={config.amplitude} min={0} max={200} onChange={(val) => onConfigChange('amplitude', val)} />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <NumberControl label="Wavelength" value={config.wavelength} min={50} max={500} onChange={(val) => onConfigChange('wavelength', val)} />
-                                            <NumberControl label="Logo Scale" value={Math.round(config.logoScale * 10)} min={5} max={30} onChange={(val) => onConfigChange('logoScale', val / 10)} />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-foreground/60">Grayscale</span>
-                                            <button onClick={() => onConfigChange('grayscale', !config.grayscale)} className={`w-12 h-6 rounded-full relative transition-colors ${config.grayscale ? 'bg-foreground' : 'bg-foreground/20'}`}>
-                                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${config.grayscale ? 'left-7' : 'left-1'}`} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : componentId === 'glass-surge' ? (
-                                // GLASS SURGE CONTROLS
-                                <>
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Content</label>
-                                        <div>
-                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
-                                            <input
-                                                type="text"
-                                                value={config.text}
-                                                onChange={(e) => onConfigChange('text', e.target.value)}
-                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20 font-logo"
-                                            />
-                                        </div>
-                                    </div>
-                                </>
-                            ) : componentId === 'text-pressure' ? (
-                                // TEXT PRESSURE CONTROLS
-                                <>
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Content</label>
-                                        <div>
-                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
-                                            <input
-                                                type="text"
-                                                value={config.text || 'MORPHYS'}
-                                                onChange={(e) => onConfigChange('text', e.target.value)}
-                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
-                                        <div>
-                                            <span className="text-xs text-foreground/40 mb-1 block">Text Color</span>
-                                            <input
-                                                type="color"
-                                                value={config.textColor === 'var(--foreground)' ? '#000000' : config.textColor || '#000000'}
-                                                onChange={(e) => onConfigChange('textColor', e.target.value)}
-                                                className="w-full h-10 rounded-lg cursor-pointer"
-                                            />
-                                        </div>
                                         <NumberControl
-                                            label="Min Font Size"
-                                            value={config.minFontSize || 36}
-                                            min={20}
-                                            max={100}
+                                            label="Blur Amount"
+                                            value={config.blurAmount || 30}
+                                            min={0}
+                                            max={50}
                                             suffix="px"
-                                            onChange={(val) => onConfigChange('minFontSize', val)}
+                                            onChange={(val) => onConfigChange('blurAmount', val)}
+                                        />
+                                        <NumberControl
+                                            label="Font Size"
+                                            value={config.fontSize || 300}
+                                            min={40}
+                                            max={600}
+                                            suffix="px"
+                                            onChange={(val) => onConfigChange('fontSize', val)}
                                         />
                                     </div>
-                                </>
-                            ) : componentId === 'notification-stack' || componentId === 'diagonal-focus' || componentId === 'fluid-height' || componentId === 'step-morph' || componentId === 'center-menu' || componentId === 'impact-text' || componentId === 'reveal-marquee' ? (
-                                // NOTIFICATION STACK / DIAGONAL FOCUS / FLUID HEIGHT / STEP MORPH / CENTER MENU / IMPACT TEXT / REVEAL MARQUEE - No adjustable settings
-                                <div className="text-center py-8">
-                                    <div className="w-12 h-12 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground/40">
-                                            <circle cx="12" cy="12" r="10" />
-                                            <path d="M12 16v-4" />
-                                            <path d="M12 8h.01" />
-                                        </svg>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.text || 'CURATED CHAOS'}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-10 px-3 bg-white/25 backdrop-blur-md border border-white/30 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                            />
+                                        </div>
                                     </div>
-                                    <p className="text-sm text-foreground/50">
-                                        This component uses pre-configured settings optimized for the best visual experience.
-                                    </p>
+                                </>
+                            ) : componentId === 'expandable-strips' ? (
+                                // EXPANDABLE STRIPS CONTROLS
+                                <div className="p-4 text-center text-foreground/50 text-sm">
+                                    No configurable options for this component.
                                 </div>
-                            ) : (
-                                // FLIP GRID CONTROLS
-                                <>
-                                    {/* Grid Size */}
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Grid Size</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <NumberControl label="Columns" value={config.cols} min={1} max={200} onChange={(val) => onConfigChange('cols', val)} />
-                                            <NumberControl label="Rows" value={config.rows} min={1} max={200} onChange={(val) => onConfigChange('rows', val)} />
-                                        </div>
-                                    </div>
-                                    {/* Pattern */}
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Pattern</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {patterns.map((pattern) => (
-                                                <button key={pattern} onClick={() => onConfigChange('pattern', pattern)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${config.pattern === pattern ? 'bg-foreground text-background' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/70'}`}>
-                                                    {pattern}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    {/* Easing */}
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Easing</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {easings.map((easing) => (
-                                                <button key={easing} onClick={() => onConfigChange('easing', easing)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${config.easing === easing ? 'bg-foreground text-background' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/70'}`}>
-                                                    {easing}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    {/* Speed */}
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Speed</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {speeds.map((speed) => (
-                                                <button key={speed} onClick={() => onConfigChange('speed', speed)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${config.speed === speed ? 'bg-foreground text-background' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/70'}`}>
-                                                    {speed}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    {/* Colors */}
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Colors</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div>
-                                                <span className="text-xs text-foreground/40">Front</span>
-                                                <input type="color" value={config.colorFront === 'var(--foreground)' ? '#ffffff' : config.colorFront} onChange={(e) => onConfigChange('colorFront', e.target.value)} className="w-full h-10 rounded-lg cursor-pointer" />
-                                            </div>
-                                            <div>
-                                                <span className="text-xs text-foreground/40">Back</span>
-                                                <input type="color" value={config.colorBack === 'var(--background)' ? '#000000' : config.colorBack} onChange={(e) => onConfigChange('colorBack', e.target.value)} className="w-full h-10 rounded-lg cursor-pointer" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Spacing */}
-                                    <div className="space-y-3">
-                                        <label className="text-sm font-medium text-foreground/60">Spacing</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <NumberControl label="Gap" value={config.gap} min={0} max={50} suffix="px" onChange={(val) => onConfigChange('gap', val)} />
-                                            <NumberControl label="Radius" value={config.borderRadius} min={0} max={50} suffix="px" onChange={(val) => onConfigChange('borderRadius', val)} />
-                                        </div>
-                                    </div>
-                                    {/* Interactive Toggle */}
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-sm font-medium text-foreground/60">Interactive Mode</label>
-                                        <button onClick={() => onConfigChange('interactive', !config.interactive)} className={`w-12 h-6 rounded-full transition-colors duration-200 ${config.interactive ? 'bg-foreground' : 'bg-foreground/20'} relative`}>
-                                            <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform duration-200 ${config.interactive ? 'left-7' : 'left-1'}`} />
-                                        </button>
-                                    </div>
-                                </>
-                            )}
+                            ) : null}
                         </div>
-                    </motion.div >
+                    </motion.div>
                 </>
             )
             }
         </AnimatePresence >
     );
 }
+
+
+
+
+
+
+
+
 
 // ============================================
 // CODE DISPLAY
