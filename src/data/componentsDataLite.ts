@@ -676,6 +676,32 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'delay', type: 'number', default: '0', description: 'Delay before animation starts' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
+    },
+    {
+        id: 'text-reveal-2',
+        name: 'Text Reveal 2',
+        index: 27,
+        description: 'A step-wise telescoping text reveal where letters slide out from behind each other.',
+        tags: ['text', 'reveal', 'telescope', 'slide', 'animation'],
+        category: 'animation',
+        previewConfig: { text: 'MORPHYS', delay: 0 },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import TextReveal2 from '@/components/ui/TextReveal2';
+
+// Basic usage
+<TextReveal2 text="MORPHYS" />
+
+// Custom configuration
+<TextReveal2
+    text="MORPHYS"
+    delay={0}
+    className="text-6xl"
+/>`,
+        props: [
+            { name: 'text', type: 'string', default: "'MORPHYS'", description: 'Text to display' },
+            { name: 'delay', type: 'number', default: '0', description: 'Delay before animation starts' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
     }
 ];
 

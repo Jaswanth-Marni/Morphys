@@ -29,6 +29,7 @@ import { LayeredImageShowcase } from "./LayeredImageShowcase";
 import { ExpandableStrips } from "./ExpandableStrips";
 import { FrostedGlass } from "./FrostedGlass";
 import TextReveal from "./TextReveal";
+import TextReveal2 from "./TextReveal2";
 
 // Preview Wrappers
 const TextPressurePreview = () => (
@@ -83,6 +84,12 @@ const TextRevealPreview = () => (
     </div>
 );
 
+const TextReveal2Preview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
+        <TextReveal2 text="MORPHYS" className="text-[3rem] font-bold" />
+    </div>
+);
+
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -111,6 +118,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'expandable-strips': ExpandableStripsPreview,
     'frosted-glass': FrostedGlassPreview,
     'text-reveal': TextRevealPreview,
+    'text-reveal-2': TextReveal2Preview,
 };
 
 export function NormalComponents() {

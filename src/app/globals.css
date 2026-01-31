@@ -27,6 +27,15 @@
   font-display: swap;
 }
 
+/* Victory Striker Font */
+@font-face {
+  font-family: 'Victory Striker';
+  src: url('/Victory%20Striker%20Sans%20Demo.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Kugile Font */
 @font-face {
   font-family: 'Kugile';
@@ -50,6 +59,11 @@
 /* Thunder font class */
 .font-thunder {
   font-family: 'Thunder', sans-serif;
+}
+
+/* Victory Striker class */
+.font-victory {
+  font-family: 'Victory Striker', sans-serif;
 }
 
 /* Heading font class - using Clash Display variable font */

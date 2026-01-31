@@ -42,7 +42,7 @@ function useResponsiveConfig(baseConfig: ClothTickerConfig) {
             return {
                 ...baseConfig,
                 fontSize: '6rem',
-                imageSize: { width: 320, height: 420 },
+                imageSize: { width: 250, height: 180 }, // Adjusted for tablet
                 gap: 35,
                 parallaxStrength: 20,
             };
@@ -79,7 +79,7 @@ function useResponsiveConfig(baseConfig: ClothTickerConfig) {
                 setConfig({
                     ...parsedBaseConfig,
                     fontSize: '6rem',
-                    imageSize: { width: 320, height: 420 },
+                    imageSize: { width: 250, height: 180 }, // Adjusted for tablet
                     gap: 35,
                     parallaxStrength: 20,
                 });
@@ -125,7 +125,7 @@ export interface ClothTickerProps {
 
 const defaultConfig: ClothTickerConfig = {
     speed: 0.08, // Faster scrolling
-    imageSize: { width: 500, height: 650 }, // Large pictures
+    imageSize: { width: 400, height: 266 }, // Reduced scale, landscape orientation
     fontSize: '14rem',
     textColor: 'var(--foreground)',
     gap: 60,
@@ -299,8 +299,12 @@ function TickerItem({ word, image, config, onHoverChange }: {
     const springY = useSpring(mouseY, springConfig);
 
     // Calculate parallax translation (move image with cursor)
-    const parallaxX = useTransform(springX, [-0.5, 0.5], [-config.parallaxStrength, config.parallaxStrength]);
-    const parallaxY = useTransform(springY, [-0.5, 0.5], [-config.parallaxStrength, config.parallaxStrength]);
+    const rawParallaxX = useTransform(springX, [-0.5, 0.5], [-config.parallaxStrength, config.parallaxStrength]);
+    const rawParallaxY = useTransform(springY, [-0.5, 0.5], [-config.parallaxStrength, config.parallaxStrength]);
+
+    // Combined transform for centering + parallax
+    const x = useTransform(rawParallaxX, (v) => `calc(-50% + ${v}px)`);
+    const y = useTransform(rawParallaxY, (v) => `calc(-50% + ${v}px)`);
 
     // Calculate 3D rotation for depth effect
     const rotateX = useTransform(springY, [-0.5, 0.5], [config.rotationStrength, -config.rotationStrength]);
@@ -377,16 +381,14 @@ function TickerItem({ word, image, config, onHoverChange }: {
                     <motion.div
                         className="absolute z-20 pointer-events-none"
                         style={{
-                            width: config.imageSize.width,
-                            height: config.imageSize.height,
+                            width: config.imageSize.width, // Fixed width from config
+                            height: 'auto', // Auto height based on aspect ratio
                             position: 'absolute' as PositionType,
                             left: '50%',
                             top: '50%',
-                            // Direct parallax translation
-                            x: parallaxX,
-                            y: parallaxY,
-                            marginLeft: -config.imageSize.width / 2,
-                            marginTop: -config.imageSize.height / 2,
+                            // Direct parallax translation with centering
+                            x,
+                            y,
                             // 3D transforms
                             rotateX,
                             rotateY,
@@ -419,14 +421,8 @@ function TickerItem({ word, image, config, onHoverChange }: {
                         <img
                             src={image}
                             alt={word}
-                            className="w-full h-full object-contain shadow-2xl"
-                            style={{
-                                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-                            }}
+                            className="w-full h-auto block"
                         />
-
-                        {/* Glass overlay for that premium feel */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent mix-blend-overlay pointer-events-none" />
                     </motion.div>
                 )}
             </AnimatePresence>

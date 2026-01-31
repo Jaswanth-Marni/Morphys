@@ -160,6 +160,11 @@ const TextReveal = dynamic(() => import("@/components/ui/TextReveal").then(mod =
     ssr: false
 });
 
+const TextReveal2 = dynamic(() => import("@/components/ui/TextReveal2").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -244,6 +249,15 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
             <TextReveal
                 text={config.text || "MORPHYS"}
                 delay={config.delay || 0.5}
+                className={config.className || "text-[3rem] md:text-[5rem] lg:text-[8rem] font-bold tracking-tighter text-foreground"}
+            />
+        </div>
+    ),
+    'text-reveal-2': ({ config = {} }: { config?: any }) => (
+        <div className="flex items-center justify-center w-full h-full">
+            <TextReveal2
+                text={config.text || "MORPHYS"}
+                delay={config.delay || 0}
                 className={config.className || "text-[3rem] md:text-[5rem] lg:text-[8rem] font-bold tracking-tighter text-foreground"}
             />
         </div>
@@ -1369,6 +1383,20 @@ ${configEntries.join('\n')}
 />`;
         }
 
+        if (componentId === 'text-reveal-2') {
+            return `import TextReveal2 from '@/components/ui/TextReveal2';
+
+// Basic usage
+<TextReveal2 text="${config.text || 'MORPHYS'}" />
+
+// With custom delay
+<TextReveal2
+    text="${config.text || 'MORPHYS'}"
+    delay={${config.delay || 0}}
+    className="text-6xl font-bold"
+/>`;
+        }
+
         if (componentId === 'text-reveal') {
             return `import TextReveal from '@/components/ui/TextReveal';
 
@@ -1610,6 +1638,12 @@ export default function ComponentDetailPage() {
                 delay: 0.5
             };
         }
+        if (componentId === 'text-reveal-2') {
+            return {
+                text: "MORPHYS",
+                delay: 0
+            };
+        }
         return {
             cols: 10,
             rows: 8,
@@ -1784,6 +1818,11 @@ export default function ComponentDetailPage() {
             setConfig({
                 text: "MORPHYS",
                 delay: 0.5
+            });
+        } else if (componentId === 'text-reveal-2') {
+            setConfig({
+                text: "MORPHYS",
+                delay: 0
             });
         }
     }, [componentId]);

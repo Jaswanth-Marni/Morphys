@@ -34,6 +34,7 @@ const componentModuleMap: Record<string, string> = {
     'expandable-strips': 'ExpandableStrips',
     'frosted-glass': 'FrostedGlass',
     'text-reveal': 'TextReveal',
+    'text-reveal-2': 'TextReveal2',
 };
 
 // Prefetch cache to avoid duplicate prefetches
@@ -44,7 +45,7 @@ const ITEM_WIDTH = 40; // Width for each component slot
 const PADDING = 16; // Padding on each side
 const MAX_NAV_WIDTH = 500; // Maximum width of the navigation bar on desktop
 const EDGE_THRESHOLD = 60; // Pixels from edge to trigger scrolling
-const MAX_SCROLL_SPEED = 8; // Maximum scroll speed per frame
+const MAX_SCROLL_SPEED = 4; // Maximum scroll speed per frame
 
 // Store scroll position globally to persist across remounts
 let lastScrollPosition = 0;
@@ -143,9 +144,21 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
             container.scrollLeft = newScroll;
         }
 
+        // Update hovered component during edge scroll based on cursor position
+        if (lastClientX.current > 0) {
+            const rect = container.getBoundingClientRect();
+            const x = lastClientX.current - rect.left + container.scrollLeft - PADDING;
+            const index = Math.floor(x / ITEM_WIDTH);
+            const clampedIndex = Math.max(0, Math.min(sortedComponents.length - 1, index));
+            const componentId = sortedComponents[clampedIndex]?.id || null;
+            if (componentId) {
+                setHoveredId(componentId);
+            }
+        }
+
         // Continue the animation loop
         scrollAnimationRef.current = requestAnimationFrame(smoothScrollLoop);
-    }, [totalContentWidth]);
+    }, [totalContentWidth, sortedComponents]);
 
     // Start smooth scrolling
     const startSmoothScroll = useCallback((direction: 'left' | 'right', speed: number) => {
@@ -245,13 +258,19 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
         const cursorX = e.clientX - rect.left;
         const containerWidth = rect.width;
 
-        // Implement drag-to-scroll: Move content with the mouse
-        // Use a multiplier to make the drag feel more responsive if needed, but 1:1 is standard
+        // Implement drag-to-scroll: REMOVED as per user request to prevent "normal scrolling"
+        // We only want to select ticks (scrub) and auto-scroll at edges
+        /* 
         const deltaX = lastClientX.current - e.clientX;
         if (Math.abs(deltaX) > 0) {
             container.scrollLeft += deltaX;
             lastClientX.current = e.clientX;
-        }
+        } 
+        */
+        // IMPORTANT: Update lastClientX even if we don't scroll, for velocity calc if needed later, 
+        // but strictly we just need it for the edge scroll logic which uses a ref. 
+        // Actually, edge scroll uses lastClientX.current to recalculate hover. 
+        lastClientX.current = e.clientX;
 
         // Check if near edges and calculate scroll speed based on distance from edge
         if (cursorX < EDGE_THRESHOLD && container.scrollLeft > 0) {
@@ -320,50 +339,60 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
             className="fixed bottom-4 md:bottom-4 left-0 right-0 flex flex-col items-center z-[60] pointer-events-none px-4 pb-safe"
         >
-            {/* Centered Name Popup */}
+            {/* Centered Name Popup - Premium Glass Design */}
             <AnimatePresence>
                 {hoveredComponent && (
                     <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        className="mb-2 md:mb-3 px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl shadow-2xl backdrop-blur-xl pointer-events-none"
+                        initial={{ opacity: 0, y: 15, scale: 0.95, filter: 'blur(5px)' }}
+                        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(5px)' }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25, mass: 0.8 }}
+                        className="mb-4 px-4 py-2 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl pointer-events-none flex items-center gap-3 border"
                         style={{
-                            backgroundColor: isLight ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.85)',
-                            border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.15)',
+                            backgroundColor: isLight ? 'rgba(255,255,255,0.85)' : 'rgba(10,10,10,0.7)',
+                            borderColor: isLight ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.08)',
+                            boxShadow: isLight
+                                ? '0 4px 20px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.5)'
+                                : '0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 0 rgba(255,255,255,0.1)'
                         }}
                     >
-                        <div className="flex items-center gap-3">
-                            <span
-                                className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                style={{
-                                    backgroundColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)',
-                                    color: isLight ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)',
-                                }}
-                            >
-                                {String(hoveredIndex + 1).padStart(2, '0')}
-                            </span>
-                            <span
-                                className="text-xs md:text-sm font-semibold tracking-wide"
-                                style={{
-                                    color: isLight ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
-                                }}
-                            >
-                                {hoveredComponent.name}
-                            </span>
-                        </div>
+                        <span
+                            className="text-[11px] font-mono font-bold tracking-wider"
+                            style={{
+                                color: isLight ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.4)',
+                            }}
+                        >
+                            {String(hoveredIndex + 1).padStart(2, '0')}
+                        </span>
+
+                        {/* Divider */}
+                        <div
+                            className="h-3 w-[1px]"
+                            style={{ backgroundColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)' }}
+                        />
+
+                        <span
+                            className="text-sm font-medium tracking-wide whitespace-nowrap"
+                            style={{
+                                color: isLight ? '#000000' : '#ffffff',
+                                textShadow: isLight ? 'none' : '0 0 20px rgba(255,255,255,0.3)'
+                            }}
+                        >
+                            {/* Format name to ensure human-readable spacing (e.g. "TextReveal2" -> "Text Reveal 2") */}
+                            {hoveredComponent.name.replace(/([A-Z])/g, ' $1').replace(/[-_]/g, ' ').trim().replace(/\s+/g, ' ')}
+                        </span>
                     </motion.div>
                 )}
             </AnimatePresence>
 
             <div
-                className="pointer-events-auto backdrop-blur-xl rounded-xl md:rounded-2xl shadow-2xl overflow-hidden"
+                className="pointer-events-auto backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden"
                 style={{
-                    backgroundColor: isLight ? 'transparent' : 'rgba(0,0,0,0.6)',
-                    border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.2)',
+                    backgroundColor: isLight ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)', // More transparent
+                    border: isLight ? '1px solid rgba(255,255,255,0.4)' : '1px solid rgba(255,255,255,0.08)',
                     maxWidth: `min(${MAX_NAV_WIDTH}px, calc(100vw - 32px))`,
                     width: '100%',
+                    boxShadow: isLight ? '0 10px 40px -10px rgba(0,0,0,0.1)' : '0 10px 40px -10px rgba(0,0,0,0.5)',
                 }}
             >
                 <div
@@ -373,7 +402,7 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
                     onPointerUp={handlePointerUp}
                     onPointerLeave={handlePointerLeave}
                     onScroll={handleScroll}
-                    className="flex items-center py-3 cursor-grab active:cursor-grabbing touch-none select-none overflow-x-auto"
+                    className="flex items-center py-2 cursor-grab active:cursor-grabbing touch-none select-none overflow-x-auto"
                     style={{
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none',
@@ -393,41 +422,114 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
                                 className="flex-shrink-0 flex items-center relative"
                                 style={{
                                     width: isLast ? 6 : ITEM_WIDTH, // Last item only has the major tick width
-                                    height: 32,
+                                    height: 38,
                                 }}
                                 onClick={() => handleTickClick(component.id)}
                             >
                                 {/* Major Tick - positioned at start */}
-                                <motion.div
-                                    animate={{
-                                        height: isActive ? 28 : isHovered ? 24 : 16,
-                                        width: isActive ? 6 : 2,
-                                        backgroundColor: isActive || isHovered
-                                            ? (isLight ? '#000000' : '#ffffff')
-                                            : (isLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)')
-                                    }}
-                                    transition={{
-                                        type: "spring",
-                                        stiffness: 400,
-                                        damping: 25
-                                    }}
-                                    className="rounded-full cursor-pointer flex-shrink-0"
-                                />
+                                {(() => {
+                                    // Calculate distance from hovered tick for pressure effect
+                                    const hoveredIndex = sortedComponents.findIndex(c => c.id === hoveredId);
+                                    const distance = hoveredIndex >= 0 ? Math.abs(index - hoveredIndex) : Infinity;
 
-                                {/* Minor Ticks - evenly spaced after major tick */}
-                                {!isLast && (
-                                    <div className="flex-1 flex items-center justify-evenly pointer-events-none">
-                                        {[1, 2, 3].map((i) => (
-                                            <div
-                                                key={i}
-                                                className="w-[1px] h-2.5 rounded-full"
-                                                style={{
-                                                    backgroundColor: isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)'
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
+                                    // Height based on distance (pressure effect) - only during drag
+                                    let tickHeight = 16; // baseline
+                                    let tickWidth = 2; // baseline
+
+                                    if (isDragging && hoveredIndex >= 0) {
+                                        // Pressure effect: height decreases with distance
+                                        if (distance === 0) {
+                                            tickHeight = 28; // selected
+                                            tickWidth = 6; // only selected gets wider
+                                        } else if (distance === 1) {
+                                            tickHeight = 22;
+                                        } else if (distance === 2) {
+                                            tickHeight = 18;
+                                        } else {
+                                            tickHeight = 16;
+                                        }
+                                    } else {
+                                        // Not dragging: original behavior
+                                        if (isActive || isHovered) {
+                                            tickHeight = 28;
+                                            tickWidth = 6;
+                                        }
+                                    }
+
+                                    const isSelected = isDragging ? isHovered : (isActive || isHovered);
+
+                                    return (
+                                        <motion.div
+                                            animate={{
+                                                height: tickHeight,
+                                                width: tickWidth,
+                                                backgroundColor: isSelected
+                                                    ? (isLight ? '#000000' : '#ffffff')
+                                                    : (isLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)')
+                                            }}
+                                            transition={{
+                                                type: "spring",
+                                                stiffness: 500,
+                                                damping: 30,
+                                                mass: 0.5
+                                            }}
+                                            className="rounded-full cursor-pointer flex-shrink-0"
+                                        />
+                                    );
+                                })()}
+
+
+                                {/* Minor Ticks - evenly spaced after major tick with pressure effect */}
+                                {!isLast && (() => {
+                                    const hoveredIdx = sortedComponents.findIndex(c => c.id === hoveredId);
+
+                                    return (
+                                        <div className="flex-1 flex items-center justify-evenly pointer-events-none">
+                                            {[1, 2, 3].map((i) => {
+                                                // Calculate fractional distance for minor ticks
+                                                // Minor tick i is at position: index + (i * 0.25)
+                                                const minorPosition = index + (i * 0.25);
+                                                const distanceFromHovered = hoveredIdx >= 0 ? Math.abs(minorPosition - hoveredIdx) : Infinity;
+
+                                                // Height for minor ticks during drag
+                                                let minorHeight = 10; // baseline (h-2.5)
+
+                                                if (isDragging && hoveredIdx >= 0) {
+                                                    if (distanceFromHovered < 0.5) {
+                                                        minorHeight = 18;
+                                                    } else if (distanceFromHovered < 1) {
+                                                        minorHeight = 14;
+                                                    } else if (distanceFromHovered < 1.5) {
+                                                        minorHeight = 12;
+                                                    } else if (distanceFromHovered < 2) {
+                                                        minorHeight = 10;
+                                                    } else {
+                                                        minorHeight = 8;
+                                                    }
+                                                }
+
+                                                return (
+                                                    <motion.div
+                                                        key={i}
+                                                        animate={{
+                                                            height: minorHeight,
+                                                        }}
+                                                        transition={{
+                                                            type: "spring",
+                                                            stiffness: 500,
+                                                            damping: 30,
+                                                            mass: 0.5
+                                                        }}
+                                                        className="w-[1px] rounded-full"
+                                                        style={{
+                                                            backgroundColor: isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)'
+                                                        }}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })()}
 
                             </div>
                         );

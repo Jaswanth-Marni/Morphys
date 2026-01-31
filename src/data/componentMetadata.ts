@@ -123,7 +123,7 @@ export const componentMetadata: ComponentMetadata[] = [
     },
     {
         id: 'notification-stack',
-        name: 'Notification Stack',
+        name: 'Stack Carousel',
         index: 13,
         description: 'Stacked notifications with smooth animations.',
         tags: ['notification', 'stack', 'toast', 'alert', 'animation'],
@@ -195,7 +195,7 @@ export const componentMetadata: ComponentMetadata[] = [
     },
     {
         id: 'impact-text',
-        name: 'Impact Text',
+        name: 'Loading 1',
         index: 21,
         description: 'A dramatic text animation with variable font weight waves and blur-to-reveal effects. Features continuous italic and weight transitions.',
         tags: ['text', 'animation', 'variable-font', 'blur', 'reveal', 'loading'],
@@ -231,7 +231,7 @@ export const componentMetadata: ComponentMetadata[] = [
     },
     {
         id: 'frosted-glass',
-        name: 'Frosted Glass',
+        name: 'Frosted Glass Text',
         index: 25,
         description: 'Knockout text that reveals a blurred background image, creating a sophisticated frosted glass effect.',
         tags: ['text', 'glass', 'blur', 'mask', 'svg'],
@@ -244,6 +244,15 @@ export const componentMetadata: ComponentMetadata[] = [
         index: 26,
         description: 'A text animation where letters reveal by rotating from 90 degrees on the Y-axis.',
         tags: ['text', 'reveal', 'rotation', '3d', 'animation'],
+        category: 'animation',
+        dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'text-reveal-2',
+        name: 'Text Reveal 2',
+        index: 27,
+        description: 'A step-wise telescoping text reveal where letters slide out from behind each other.',
+        tags: ['text', 'reveal', 'telescope', 'slide', 'animation'],
         category: 'animation',
         dependencies: ['framer-motion', 'react'],
     },
