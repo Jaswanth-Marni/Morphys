@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 interface TextRevealProps {
     text: string;
@@ -55,7 +55,7 @@ const TextReveal: React.FC<TextRevealProps> = ({
     // However, nested stagger is tricky. 
     // Let's use the manual delay approach for 100% control as discussed.
 
-    const manualLetterVariants = {
+    const manualLetterVariants: Variants = {
         hidden: {
             rotateY: -90,
             opacity: 0
