@@ -8,7 +8,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 export type PixelShape = 'torus' | 'cube' | 'car';
 
-export interface ObjMesh {
+interface ObjMesh {
     vertices: number[];
     faces: number[];
     normals?: number[];
