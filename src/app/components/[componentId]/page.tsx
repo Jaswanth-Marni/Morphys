@@ -165,6 +165,26 @@ const TextReveal2 = dynamic(() => import("@/components/ui/TextReveal2").then(mod
     ssr: false
 });
 
+const CRTGlitch = dynamic(() => import("@/components/ui/CRTGlitch").then(mod => ({ default: mod.CRTGlitch })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const FlipClock = dynamic(() => import("@/components/ui/FlipClock").then(mod => ({ default: mod.FlipClock })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const Gravity = dynamic(() => import("@/components/ui/Gravity").then(mod => ({ default: mod.Gravity })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const PixelSimulation = dynamic(() => import("@/components/ui/PixelSimulation").then(mod => ({ default: mod.PixelSimulation })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -262,6 +282,28 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
             />
         </div>
     ),
+    'crt-glitch': ({ config = {} }: { config?: any }) => (
+        <CRTGlitch
+            config={{
+                text: config.text || "MORPHYS",
+                noiseIntensity: config.noiseIntensity ?? 0.15,
+                scanlineIntensity: config.scanlineIntensity ?? 0.4,
+                rgbShiftIntensity: config.rgbShiftIntensity ?? 0.6,
+                glitchFrequency: config.glitchFrequency ?? 0.3,
+                flickerIntensity: config.flickerIntensity ?? 0.1,
+                vhsTracking: config.vhsTracking ?? true,
+                phosphorGlow: config.phosphorGlow ?? true,
+                curvedScreen: config.curvedScreen ?? true,
+                colorTint: config.colorTint || 'none',
+                autoGlitch: config.autoGlitch ?? true,
+                hoverTrigger: config.hoverTrigger ?? true,
+                fontSize: config.fontSize || 80,
+            }}
+        />
+    ),
+    'flip-clock': FlipClock as React.ComponentType<{ config?: any }>,
+    'gravity': Gravity as React.ComponentType<{ config?: any }>,
+    'pixel-simulation': PixelSimulation as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -408,7 +450,62 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                         </div>
 
                         <div className="space-y-6">
-                            {componentId === 'ascii-simulation' ? (
+                            {componentId === 'pixel-simulation' ? (
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Shape</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['torus', 'cube', 'car'].map((shape) => (
+                                                <button
+                                                    key={shape}
+                                                    onClick={() => onConfigChange('shape', shape)}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${config.shape === shape ? 'bg-foreground text-background' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/70'}`}
+                                                >
+                                                    {shape.charAt(0).toUpperCase() + shape.slice(1)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Sizing</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl label="Pixel Size" value={config.pixelSize} min={2} max={32} suffix="px" onChange={(val) => onConfigChange('pixelSize', val)} />
+                                            <NumberControl label="Gap" value={config.gap} min={0} max={10} suffix="px" onChange={(val) => onConfigChange('gap', val)} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Simulation</label>
+                                        <NumberControl label="Speed" value={config.speed} min={0} max={20} onChange={(val) => onConfigChange('speed', val)} />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <div className="space-y-2">
+                                            <label className="text-xs text-foreground/40 block">Color Mode</label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {['monochrome', 'depth', 'normal', 'rainbow'].map((mode) => (
+                                                    <button
+                                                        key={mode}
+                                                        onClick={() => onConfigChange('colorMode', mode)}
+                                                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${config.colorMode === mode ? 'bg-foreground text-background' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/70'}`}
+                                                    >
+                                                        {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3 mt-2">
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Color 1</span>
+                                                <input type="color" value={config.color1} onChange={(e) => onConfigChange('color1', e.target.value)} className="w-full h-10 rounded-lg cursor-pointer" />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Color 2</span>
+                                                <input type="color" value={config.color2} onChange={(e) => onConfigChange('color2', e.target.value)} className="w-full h-10 rounded-lg cursor-pointer" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'ascii-simulation' ? (
                                 // ASCII SIMULATION CONTROLS
                                 <>
                                     <div className="space-y-3">
@@ -749,6 +846,82 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         />
                                     </div>
                                 </>
+                            ) : componentId === 'pixel-simulation' ? (
+                                // PIXEL SIMULATION CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Shape</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(['torus', 'cube'] as const).map((shape) => (
+                                                <button
+                                                    key={shape}
+                                                    onClick={() => onConfigChange('shape', shape)}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${config.shape === shape ? 'bg-foreground text-background' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/70'}`}
+                                                >
+                                                    {shape.charAt(0).toUpperCase() + shape.slice(1)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Pixelation</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl
+                                                label="Pixel Size"
+                                                value={config.pixelSize || 8}
+                                                min={2}
+                                                max={32}
+                                                suffix="px"
+                                                onChange={(val) => onConfigChange('pixelSize', val)}
+                                            />
+                                            <NumberControl
+                                                label="Gap"
+                                                value={config.gap || 0}
+                                                min={0}
+                                                max={10}
+                                                suffix="px"
+                                                onChange={(val) => onConfigChange('gap', val)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Color Mode</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(['monochrome', 'depth', 'normal', 'rainbow'] as const).map((mode) => (
+                                                <button
+                                                    key={mode}
+                                                    onClick={() => onConfigChange('colorMode', mode)}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${config.colorMode === mode ? 'bg-foreground text-background' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/70'}`}
+                                                >
+                                                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Colors</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Primary</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.color1 || '#4F46E5'}
+                                                    onChange={(e) => onConfigChange('color1', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Secondary</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.color2 || '#ec4899'}
+                                                    onChange={(e) => onConfigChange('color2', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
                             ) : componentId === 'scroll-to-reveal' ? (
                                 // SCROLL TO REVEAL CONTROLS
                                 <>
@@ -921,6 +1094,111 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                                 className="w-full h-10 px-3 bg-white/25 backdrop-blur-md border border-white/30 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
                                                 placeholder="Enter text..."
                                             />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'crt-glitch' ? (
+                                // CRT GLITCH CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.text ?? 'MORPHYS'}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-10 px-3 bg-white/25 backdrop-blur-md border border-white/30 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                                placeholder="Enter text..."
+                                            />
+                                        </div>
+                                        <NumberControl
+                                            label="Font Size"
+                                            value={config.fontSize || 80}
+                                            min={20}
+                                            max={200}
+                                            suffix="px"
+                                            onChange={(val) => onConfigChange('fontSize', val)}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Effect Intensity</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl
+                                                label="Noise"
+                                                value={Math.round((config.noiseIntensity ?? 0.15) * 100)}
+                                                min={0}
+                                                max={100}
+                                                suffix="%"
+                                                onChange={(val) => onConfigChange('noiseIntensity', val / 100)}
+                                            />
+                                            <NumberControl
+                                                label="Scan Lines"
+                                                value={Math.round((config.scanlineIntensity ?? 0.4) * 100)}
+                                                min={0}
+                                                max={100}
+                                                suffix="%"
+                                                onChange={(val) => onConfigChange('scanlineIntensity', val / 100)}
+                                            />
+                                            <NumberControl
+                                                label="RGB Shift"
+                                                value={Math.round((config.rgbShiftIntensity ?? 0.6) * 100)}
+                                                min={0}
+                                                max={100}
+                                                suffix="%"
+                                                onChange={(val) => onConfigChange('rgbShiftIntensity', val / 100)}
+                                            />
+                                            <NumberControl
+                                                label="Glitch Freq"
+                                                value={Math.round((config.glitchFrequency ?? 0.3) * 100)}
+                                                min={0}
+                                                max={100}
+                                                suffix="%"
+                                                onChange={(val) => onConfigChange('glitchFrequency', val / 100)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Options</label>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm text-foreground/60">Curved Screen</span>
+                                                <button onClick={() => onConfigChange('curvedScreen', !config.curvedScreen)} className={`w-12 h-6 rounded-full relative transition-colors ${config.curvedScreen !== false ? 'bg-foreground' : 'bg-foreground/20'}`}>
+                                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${config.curvedScreen !== false ? 'left-7' : 'left-1'}`} />
+                                                </button>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm text-foreground/60">Phosphor Glow</span>
+                                                <button onClick={() => onConfigChange('phosphorGlow', !config.phosphorGlow)} className={`w-12 h-6 rounded-full relative transition-colors ${config.phosphorGlow !== false ? 'bg-foreground' : 'bg-foreground/20'}`}>
+                                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${config.phosphorGlow !== false ? 'left-7' : 'left-1'}`} />
+                                                </button>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm text-foreground/60">VHS Tracking</span>
+                                                <button onClick={() => onConfigChange('vhsTracking', !config.vhsTracking)} className={`w-12 h-6 rounded-full relative transition-colors ${config.vhsTracking !== false ? 'bg-foreground' : 'bg-foreground/20'}`}>
+                                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${config.vhsTracking !== false ? 'left-7' : 'left-1'}`} />
+                                                </button>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm text-foreground/60">Auto Glitch</span>
+                                                <button onClick={() => onConfigChange('autoGlitch', !config.autoGlitch)} className={`w-12 h-6 rounded-full relative transition-colors ${config.autoGlitch !== false ? 'bg-foreground' : 'bg-foreground/20'}`}>
+                                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${config.autoGlitch !== false ? 'left-7' : 'left-1'}`} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Color Tint</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(['none', 'green', 'amber', 'blue'] as const).map((tint) => (
+                                                <button
+                                                    key={tint}
+                                                    onClick={() => onConfigChange('colorTint', tint)}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${(config.colorTint || 'none') === tint ? 'bg-foreground text-background' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/70'}`}
+                                                >
+                                                    {tint.charAt(0).toUpperCase() + tint.slice(1)}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
                                 </>
@@ -1171,6 +1449,32 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
                 return `import { PageReveal } from '@/components/ui';\n\n// Basic usage - wraps your page content\n<PageReveal>\n    <YourPageContent />\n</PageReveal>`;
             }
             return `import { PageReveal } from '@/components/ui';\n\n<PageReveal\n    config={{\n${configEntries.join('\n')}\n    }}\n>\n    <YourPageContent />\n</PageReveal>`;
+        }
+
+        if (componentId === 'pixel-simulation') {
+            const defaultConfig = {
+                shape: 'torus',
+                scale: 1,
+                speed: 1,
+                pixelSize: 8,
+                gap: 0,
+                colorMode: 'depth',
+                color1: '#4F46E5',
+                color2: '#ec4899',
+            };
+
+            const configEntries: string[] = [];
+            if (config.shape !== defaultConfig.shape) configEntries.push(`        shape: '${config.shape}',`);
+            if (config.pixelSize !== defaultConfig.pixelSize) configEntries.push(`        pixelSize: ${config.pixelSize},`);
+            if (config.gap !== defaultConfig.gap) configEntries.push(`        gap: ${config.gap},`);
+            if (config.colorMode !== defaultConfig.colorMode) configEntries.push(`        colorMode: '${config.colorMode}',`);
+            if (config.color1 !== defaultConfig.color1) configEntries.push(`        color1: '${config.color1}',`);
+            if (config.color2 !== defaultConfig.color2) configEntries.push(`        color2: '${config.color2}',`);
+
+            if (configEntries.length === 0) {
+                return `import { PixelSimulation } from '@/components/ui';\n\n// Basic usage\n<PixelSimulation />`;
+            }
+            return `import { PixelSimulation } from '@/components/ui';\n\n<PixelSimulation\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
         }
 
         if (componentId === 'spotlight-search') {
@@ -1500,6 +1804,35 @@ ${configEntries.join('\n')}
 />`;
         }
 
+        if (componentId === 'crt-glitch') {
+            return `import { CRTGlitch } from '@/components/ui';
+
+// Basic usage
+<CRTGlitch />
+
+// With custom configuration
+<CRTGlitch
+    config={{
+        text: "${config.text || 'MORPHYS'}",
+        noiseIntensity: ${config.noiseIntensity ?? 0.15},
+        scanlineIntensity: ${config.scanlineIntensity ?? 0.4},
+        rgbShiftIntensity: ${config.rgbShiftIntensity ?? 0.6},
+        glitchFrequency: ${config.glitchFrequency ?? 0.3},
+        colorTint: '${config.colorTint || 'none'}',
+        curvedScreen: ${config.curvedScreen !== false},
+        phosphorGlow: ${config.phosphorGlow !== false},
+        fontSize: ${config.fontSize || 80}
+    }}
+/>`;
+        }
+
+        if (componentId === 'flip-clock') {
+            return `import { FlipClock } from '@/components/ui';
+
+// Basic usage
+<FlipClock />`;
+        }
+
         // DEFAULT FALLBACK - Use the usage from componentsDataLite
         // This ensures every component shows its correct usage code
         const componentDataForUsage = getComponentByIdLite(componentId);
@@ -1740,6 +2073,36 @@ export default function ComponentDetailPage() {
                 delay: 0
             };
         }
+        if (componentId === 'crt-glitch') {
+            return {
+                text: "MORPHYS",
+                noiseIntensity: 0.15,
+                scanlineIntensity: 0.4,
+                rgbShiftIntensity: 0.6,
+                glitchFrequency: 0.3,
+                flickerIntensity: 0.1,
+                vhsTracking: true,
+                phosphorGlow: true,
+                curvedScreen: true,
+                colorTint: 'none',
+                autoGlitch: true,
+                hoverTrigger: true,
+                fontSize: 80,
+            };
+        }
+        if (componentId === 'pixel-simulation') {
+            return {
+                shape: 'car',
+                pixelSize: 8,
+                gap: 2,
+                speed: 4,
+                rotationX: 0,
+                rotationY: 0,
+                colorMode: 'depth',
+                color1: '#6366f1',
+                color2: '#a855f7'
+            };
+        }
         return {
             cols: 10,
             rows: 8,
@@ -1924,6 +2287,20 @@ export default function ComponentDetailPage() {
             setConfig({
                 text: "MORPHYS",
                 delay: 0
+            });
+        } else if (componentId === 'flip-clock') {
+            setConfig({});
+        } else if (componentId === 'pixel-simulation') {
+            setConfig({
+                shape: 'car',
+                pixelSize: 8,
+                gap: 2,
+                speed: 4,
+                rotationX: 0,
+                rotationY: 0,
+                colorMode: 'depth',
+                color1: '#6366f1',
+                color2: '#a855f7'
             });
         }
     }, [componentId]);
@@ -2311,7 +2688,7 @@ export default function ComponentDetailPage() {
                                                     w-12 h-12 rounded-full
                                                     backdrop-blur-lg
                                                     flex items-center justify-center
-                                                    transition-colors
+                                                    transition-colors group
                                                     ${['scroll-to-reveal', 'layered-image-showcase'].includes(componentId)
                                                         ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
                                                         : componentId === 'notification-stack'
@@ -2320,11 +2697,11 @@ export default function ComponentDetailPage() {
                                                 `}
                                             >
                                                 {isFullScreen ? (
-                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <svg className="transition-transform duration-300 group-hover:scale-90" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                         <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
                                                     </svg>
                                                 ) : (
-                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <svg className="transition-transform duration-300 group-hover:scale-110" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                         <path d="M15 3h6v6" />
                                                         <path d="M9 21H3v-6" />
                                                         <path d="M21 3l-7 7" />
@@ -2342,7 +2719,7 @@ export default function ComponentDetailPage() {
                                                     w-12 h-12 rounded-full
                                                     backdrop-blur-lg
                                                     flex items-center justify-center
-                                                    transition-colors
+                                                    transition-colors group
                                                     ${['scroll-to-reveal', 'layered-image-showcase'].includes(componentId)
                                                         ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
                                                         : componentId === 'notification-stack'
@@ -2351,11 +2728,11 @@ export default function ComponentDetailPage() {
                                                 `}
                                             >
                                                 {isFullScreen ? (
-                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <svg className="transition-transform duration-300 group-hover:scale-90" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                         <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
                                                     </svg>
                                                 ) : (
-                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <svg className="transition-transform duration-300 group-hover:scale-110" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                         <path d="M15 3h6v6" />
                                                         <path d="M9 21H3v-6" />
                                                         <path d="M21 3l-7 7" />
@@ -2386,7 +2763,7 @@ export default function ComponentDetailPage() {
                                                     w-12 h-12 rounded-full
                                                     backdrop-blur-lg
                                                     flex items-center justify-center
-                                                    transition-colors
+                                                    transition-colors group
                                                     ${['navbar-menu-2', 'layered-image-showcase', 'scroll-to-reveal'].includes(componentId)
                                                         ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
                                                         : componentId === 'notification-stack'
@@ -2395,7 +2772,7 @@ export default function ComponentDetailPage() {
                                                     }
                                                 `}
                                             >
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <svg className="transition-transform duration-500 group-hover:rotate-180" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="M23 4v6h-6" />
                                                     <path d="M1 20v-6h6" />
                                                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
@@ -2412,7 +2789,7 @@ export default function ComponentDetailPage() {
                                                     w-12 h-12 rounded-full
                                                     backdrop-blur-lg
                                                     flex items-center justify-center
-                                                    transition-colors
+                                                    transition-colors group
                                                     ${['navbar-menu-2', 'layered-image-showcase', 'scroll-to-reveal'].includes(componentId)
                                                         ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
                                                         : componentId === 'notification-stack'
@@ -2421,7 +2798,7 @@ export default function ComponentDetailPage() {
                                                     }
                                                 `}
                                             >
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <svg className="transition-transform duration-500 group-hover:rotate-180" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="M23 4v6h-6" />
                                                     <path d="M1 20v-6h6" />
                                                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
@@ -2438,6 +2815,8 @@ export default function ComponentDetailPage() {
                                     animate={{
                                         right: controlsOpen ? 370 : 16,
                                     }}
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.95 }}
                                     transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                                     style={{ bottom: 16 }}
                                     className={`
@@ -2457,7 +2836,8 @@ export default function ComponentDetailPage() {
                                 >
                                     <motion.svg
                                         animate={{ rotate: controlsOpen ? 45 : 0 }}
-                                        transition={{ duration: 0.2 }}
+                                        whileHover={{ rotate: controlsOpen ? 90 : 45 }}
+                                        transition={{ duration: 0.3 }}
                                         width="20"
                                         height="20"
                                         viewBox="0 0 24 24"
@@ -2480,7 +2860,7 @@ export default function ComponentDetailPage() {
                                         w-12 h-12 rounded-full
                                         backdrop-blur-lg
                                         flex items-center justify-center
-                                        transition-colors
+                                        transition-colors group
                                         z-[60]
                                         md:hidden
                                         ${['scroll-to-reveal', 'layered-image-showcase'].includes(componentId)
@@ -2491,6 +2871,7 @@ export default function ComponentDetailPage() {
                                     `}
                                 >
                                     <svg
+                                        className="transition-transform duration-300 group-hover:rotate-45"
                                         width="20"
                                         height="20"
                                         viewBox="0 0 24 24"

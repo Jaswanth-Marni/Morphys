@@ -256,6 +256,42 @@ export const componentMetadata: ComponentMetadata[] = [
         category: 'animation',
         dependencies: ['framer-motion', 'react'],
     },
+    {
+        id: 'crt-glitch',
+        name: 'CRT Glitch',
+        index: 28,
+        description: 'A realistic CRT TV and VHS glitch effect with static noise, scan lines, RGB chromatic aberration, and random glitch distortions.',
+        tags: ['glitch', 'crt', 'vhs', 'retro', 'noise', 'distortion', 'effect'],
+        category: 'effect',
+        dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'flip-clock',
+        name: 'Flip Clock',
+        index: 29,
+        description: 'A kinetic flip-dot style clock where numbers are formed by a grid of individually flipping pixels, creating a mechanical retro aesthetic.',
+        tags: ['clock', 'time', 'flip', 'kinetic', 'retro', 'matrix'],
+        category: 'animation',
+        dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'gravity',
+        name: 'Gravity',
+        index: 30,
+        description: 'A physics-based layout where UI elements fall, stack, and collide using real-time rigid body physics. Fully interactive: grab, throw, and watch them settle.',
+        tags: ['physics', 'matter-js', 'gravity', 'interactive', 'playground', 'collision'],
+        category: 'interaction',
+        dependencies: ['matter-js', 'react', 'framer-motion'],
+    },
+    {
+        id: 'pixel-simulation',
+        name: 'Pixel Simulation',
+        index: 31,
+        description: 'A retro-futuristic 3D pixel rendering engine that simulates shapes with depth and lighting using a dynamic point cloud grid.',
+        tags: ['pixel', '3d', 'simulation', 'retro', 'rendering', 'effect'],
+        category: 'animation',
+        dependencies: ['react'],
+    },
 ];
 
 // Fast lookup by ID

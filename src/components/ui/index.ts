@@ -21,6 +21,10 @@ export * from './FlipGrid';
 export * from './AsciiSimulation';
 export * from './LiquidMorph';
 export * from './PageReveal';
+export * from './CRTGlitch';
+export * from './FlipClock';
+export * from './Gravity';
+export * from './PixelSimulation';
 
 
 // Infinite Canvas components

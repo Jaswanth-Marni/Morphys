@@ -1617,7 +1617,1301 @@ export default TextReveal;`,
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
     },
-    // More components will be added here
+    {
+        id: 'crt-glitch',
+        name: 'CRT Glitch',
+        index: 28,
+        description: 'A realistic CRT TV and VHS glitch effect with static noise, scan lines, RGB chromatic aberration, and random glitch distortions. Perfect for retro aesthetics, error states, or attention-grabbing transitions.',
+        tags: ['glitch', 'crt', 'vhs', 'retro', 'noise', 'distortion', 'effect'],
+        category: 'effect',
+        previewConfig: {
+            text: 'GLITCH',
+            noiseIntensity: 0.15,
+            glitchFrequency: 0.3
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { CRTGlitch } from '@/components/ui';
+
+// Basic usage
+<CRTGlitch />
+
+// With custom configuration
+<CRTGlitch
+    config={{
+        text: "ERROR 404",
+        noiseIntensity: 0.2,
+        scanlineIntensity: 0.5,
+        rgbShiftIntensity: 0.8,
+        glitchFrequency: 0.5,
+        colorTint: 'green',
+        curvedScreen: true
+    }}
+/>`,
+        fullCode: `"use client";
+
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface CRTGlitchConfig {
+    text?: string;
+    children?: React.ReactNode;
+    noiseIntensity?: number;
+    scanlineIntensity?: number;
+    rgbShiftIntensity?: number;
+    glitchFrequency?: number;
+    flickerIntensity?: number;
+    vhsTracking?: boolean;
+    phosphorGlow?: boolean;
+    curvedScreen?: boolean;
+    colorTint?: 'green' | 'amber' | 'blue' | 'none';
+    autoGlitch?: boolean;
+    hoverTrigger?: boolean;
+    fontSize?: number;
+    fontFamily?: string;
+}
+
+interface GlitchState {
+    active: boolean;
+    xShift: number;
+    yShift: number;
+    rgbSplit: number;
+    slice: { top: number; height: number; xOffset: number }[];
+}
+
+const defaultConfig = {
+    noiseIntensity: 0.15,
+    scanlineIntensity: 0.4,
+    rgbShiftIntensity: 0.6,
+    glitchFrequency: 0.3,
+    flickerIntensity: 0.1,
+    vhsTracking: true,
+    phosphorGlow: true,
+    curvedScreen: true,
+    colorTint: 'none' as const,
+    autoGlitch: true,
+    hoverTrigger: true,
+    fontSize: 80,
+    fontFamily: "'Big Shoulders Display', sans-serif",
+};
+
+const NoiseCanvas = React.memo(({ intensity, width, height }: { intensity: number; width: number; height: number }) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const animationRef = useRef<number>(0);
+    
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        canvas.width = width / 2;
+        canvas.height = height / 2;
+        const imageData = ctx.createImageData(canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        const drawNoise = () => {
+            for (let i = 0; i < data.length; i += 4) {
+                const noise = Math.random() * 255;
+                data[i] = noise; data[i + 1] = noise; data[i + 2] = noise; data[i + 3] = 255 * intensity;
+            }
+            ctx.putImageData(imageData, 0, 0);
+            animationRef.current = requestAnimationFrame(drawNoise);
+        };
+        drawNoise();
+        return () => cancelAnimationFrame(animationRef.current);
+    }, [intensity, width, height]);
+    
+    return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none mix-blend-overlay" style={{ imageRendering: 'pixelated' }} />;
+});
+NoiseCanvas.displayName = 'NoiseCanvas';
+
+const ScanLines = React.memo(({ intensity }: { intensity: number }) => (
+    <div className="absolute inset-0 pointer-events-none" style={{ background: \`repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, \${intensity * 0.5}) 2px, rgba(0, 0, 0, \${intensity * 0.5}) 4px)\`, zIndex: 10 }} />
+));
+ScanLines.displayName = 'ScanLines';
+
+const RGBShiftLayer = React.memo(({ children, intensity, glitchActive }: { children: React.ReactNode; intensity: number; glitchActive: boolean }) => {
+    const offset = glitchActive ? intensity * 8 : intensity * 2;
+    return (
+        <div className="relative">
+            <div className="absolute inset-0" style={{ color: '#ff0000', mixBlendMode: 'screen', transform: \`translateX(\${-offset}px)\`, opacity: 0.8 }}>{children}</div>
+            <div className="relative" style={{ color: '#00ff00', mixBlendMode: 'screen' }}>{children}</div>
+            <div className="absolute inset-0" style={{ color: '#0000ff', mixBlendMode: 'screen', transform: \`translateX(\${offset}px)\`, opacity: 0.8 }}>{children}</div>
+        </div>
+    );
+});
+RGBShiftLayer.displayName = 'RGBShiftLayer';
+
+export const CRTGlitch = ({ config = {}, className = "", containerClassName = "" }: { config?: Partial<CRTGlitchConfig>; className?: string; containerClassName?: string }) => {
+    const mergedConfig = useMemo(() => ({ ...defaultConfig, ...config }), [config]);
+    const { text = "MORPHYS", noiseIntensity, scanlineIntensity, rgbShiftIntensity, glitchFrequency, flickerIntensity, phosphorGlow, curvedScreen, colorTint, autoGlitch, hoverTrigger, fontSize, fontFamily } = { ...mergedConfig, ...config };
+    
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+    const [isHovering, setIsHovering] = useState(false);
+    const [glitchState, setGlitchState] = useState<GlitchState>({ active: false, xShift: 0, yShift: 0, rgbSplit: 0, slice: [] });
+    const [flickerOpacity, setFlickerOpacity] = useState(1);
+    const [isMobile, setIsMobile] = useState(false);
+    
+    useEffect(() => {
+        const updateDimensions = () => {
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                setDimensions({ width: rect.width, height: rect.height });
+            }
+            setIsMobile(window.innerWidth < 768);
+        };
+        updateDimensions();
+        window.addEventListener('resize', updateDimensions);
+        return () => window.removeEventListener('resize', updateDimensions);
+    }, []);
+    
+    const triggerGlitch = useCallback(() => {
+        const slices = Array.from({ length: Math.floor(Math.random() * 5) + 2 }, () => ({ top: Math.random() * 80, height: Math.random() * 15 + 5, xOffset: (Math.random() - 0.5) * 60 }));
+        setGlitchState({ active: true, xShift: (Math.random() - 0.5) * 20, yShift: (Math.random() - 0.5) * 10, rgbSplit: Math.random() * 10 + 5, slice: slices });
+        setTimeout(() => setGlitchState({ active: false, xShift: 0, yShift: 0, rgbSplit: 0, slice: [] }), 150 + Math.random() * 200);
+    }, []);
+    
+    useEffect(() => {
+        if (!autoGlitch) return;
+        const scheduleGlitch = () => setTimeout(() => { if (Math.random() < glitchFrequency) triggerGlitch(); scheduleGlitch(); }, 2000 / glitchFrequency + Math.random() * 3000);
+        const timeout = scheduleGlitch();
+        return () => clearTimeout(timeout);
+    }, [autoGlitch, glitchFrequency, triggerGlitch]);
+    
+    useEffect(() => {
+        if (flickerIntensity <= 0) return;
+        const interval = setInterval(() => { if (Math.random() < 0.3) { setFlickerOpacity(1 - Math.random() * flickerIntensity); setTimeout(() => setFlickerOpacity(1), 50); } }, 100);
+        return () => clearInterval(interval);
+    }, [flickerIntensity]);
+    
+    useEffect(() => {
+        if (hoverTrigger && isHovering) {
+            const interval = setInterval(() => { if (Math.random() < 0.4) triggerGlitch(); }, 300);
+            return () => clearInterval(interval);
+        }
+    }, [hoverTrigger, isHovering, triggerGlitch]);
+    
+    const tintColors = { green: 'rgba(0, 255, 100, 0.1)', amber: 'rgba(255, 176, 0, 0.1)', blue: 'rgba(100, 180, 255, 0.1)', none: 'transparent' };
+    const effectiveFontSize = isMobile ? Math.min(fontSize, 48) : fontSize;
+    
+    const content = config.children || (
+        <div className={\`font-black uppercase tracking-wider select-none \${className}\`} style={{ fontSize: \`\${effectiveFontSize}px\`, fontFamily, lineHeight: 1, textShadow: phosphorGlow ? '0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor' : 'none' }}>{text}</div>
+    );
+    
+    return (
+        <div ref={containerRef} className={\`relative w-full h-full min-h-[300px] overflow-hidden flex items-center justify-center bg-black \${containerClassName}\`} onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)} style={{ borderRadius: curvedScreen ? '20px' : '0', boxShadow: curvedScreen ? 'inset 0 0 100px rgba(0,0,0,0.9), inset 0 0 50px rgba(0,0,0,0.5)' : 'none' }}>
+            {curvedScreen && <div className="absolute inset-0 pointer-events-none rounded-[20px]" style={{ background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.8) 100%)', zIndex: 25 }} />}
+            <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: tintColors[colorTint], zIndex: 20 }} />
+            <NoiseCanvas intensity={noiseIntensity * (glitchState.active ? 2 : 1)} width={dimensions.width} height={dimensions.height} />
+            <ScanLines intensity={scanlineIntensity} />
+            <motion.div className="relative z-5 text-white" style={{ opacity: flickerOpacity }} animate={{ x: glitchState.xShift, y: glitchState.yShift }} transition={{ duration: 0.05, ease: 'linear' }}>
+                <RGBShiftLayer intensity={rgbShiftIntensity} glitchActive={glitchState.active}>{content}</RGBShiftLayer>
+            </motion.div>
+            {phosphorGlow && <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.03) 0%, transparent 70%)', zIndex: 30 }} />}
+        </div>
+    );
+};
+
+export default CRTGlitch;`,
+        props: [
+            { name: 'config.text', type: 'string', default: "'MORPHYS'", description: 'Text to display' },
+            { name: 'config.noiseIntensity', type: 'number', default: '0.15', description: 'Static noise amount (0-1)' },
+            { name: 'config.scanlineIntensity', type: 'number', default: '0.4', description: 'Scan line visibility (0-1)' },
+            { name: 'config.rgbShiftIntensity', type: 'number', default: '0.6', description: 'RGB chromatic aberration (0-1)' },
+            { name: 'config.glitchFrequency', type: 'number', default: '0.3', description: 'How often glitches occur (0-1)' },
+            { name: 'config.flickerIntensity', type: 'number', default: '0.1', description: 'Screen flicker amount (0-1)' },
+            { name: 'config.vhsTracking', type: 'boolean', default: 'true', description: 'Enable VHS tracking distortion' },
+            { name: 'config.phosphorGlow', type: 'boolean', default: 'true', description: 'Enable CRT phosphor bloom' },
+            { name: 'config.curvedScreen', type: 'boolean', default: 'true', description: 'Enable barrel distortion effect' },
+            { name: 'config.colorTint', type: "'green' | 'amber' | 'blue' | 'none'", default: "'none'", description: 'Retro monitor color tint' },
+            { name: 'config.autoGlitch', type: 'boolean', default: 'true', description: 'Enable automatic random glitches' },
+            { name: 'config.hoverTrigger', type: 'boolean', default: 'true', description: 'Trigger glitches on hover' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
+    },
+    {
+        id: 'flip-clock',
+        name: 'Flip Clock',
+        index: 29,
+        description: 'A kinetic flip-dot style clock where numbers are formed by a grid of individually flipping pixels, creating a mechanical retro aesthetic. Features rounded matrix numbers and wave-based flip animations.',
+        tags: ['clock', 'time', 'flip', 'kinetic', 'retro', 'matrix'],
+        category: 'animation',
+        previewConfig: {
+            theme: 'dark'
+        },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { FlipClock } from '@/components/ui';
+
+// Basic usage
+<FlipClock />`,
+        fullCode: `"use client";
+
+import React, { useEffect, useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
+
+// ============================================
+// DIGIT PATTERNS (4x6 Grid)
+// 1 = Active (Visible Pixel)
+// 0 = Inactive (Background)
+// Corners are rounded as requested
+// ============================================
+const DIGIT_PATTERNS: Record<string, number[][]> = {
+    '0': [
+        [0, 1, 1, 0],
+        [1, 0, 0, 1],
+        [1, 0, 0, 1],
+        [1, 0, 0, 1],
+        [1, 0, 0, 1],
+        [0, 1, 1, 0]
+    ],
+    '1': [
+        [0, 0, 1, 0],
+        [0, 1, 1, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 0],
+        [0, 1, 1, 1]
+    ],
+    '2': [
+        [0, 1, 1, 0],
+        [1, 0, 0, 1],
+        [0, 0, 0, 1],
+        [0, 0, 1, 0],
+        [0, 1, 0, 0],
+        [1, 1, 1, 1]
+    ],
+    '3': [
+        [0, 1, 1, 0],
+        [1, 0, 0, 1],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+        [1, 0, 0, 1],
+        [0, 1, 1, 0]
+    ],
+    '4': [
+        [1, 0, 0, 1],
+        [1, 0, 0, 1],
+        [1, 1, 1, 1],
+        [0, 0, 0, 1],
+        [0, 0, 0, 1],
+        [0, 0, 0, 1]
+    ],
+    '5': [
+        [1, 1, 1, 1],
+        [1, 0, 0, 0],
+        [1, 1, 1, 0],
+        [0, 0, 0, 1],
+        [1, 0, 0, 1],
+        [0, 1, 1, 0]
+    ],
+    '6': [
+        [0, 1, 1, 0],
+        [1, 0, 0, 0],
+        [1, 1, 1, 0],
+        [1, 0, 0, 1],
+        [1, 0, 0, 1],
+        [0, 1, 1, 0]
+    ],
+    '7': [
+        [1, 1, 1, 1],
+        [0, 0, 0, 1],
+        [0, 0, 1, 0],
+        [0, 1, 0, 0],
+        [0, 1, 0, 0],
+        [0, 1, 0, 0]
+    ],
+    '8': [
+        [0, 1, 1, 0],
+        [1, 0, 0, 1],
+        [0, 1, 1, 0],
+        [1, 0, 0, 1],
+        [1, 0, 0, 1],
+        [0, 1, 1, 0]
+    ],
+    '9': [
+        [0, 1, 1, 0],
+        [1, 0, 0, 1],
+        [1, 0, 0, 1],
+        [0, 1, 1, 1],
+        [0, 0, 0, 1],
+        [0, 1, 1, 0]
+    ]
+};
+
+// ============================================
+// TYPES
+// ============================================
+interface FlipPixelProps {
+    active: boolean;
+    x: number;
+    y: number;
+}
+
+// ============================================
+// SUB-COMPONENT: FLIP PIXEL
+// ============================================
+const FlipPixel = ({ active, x, y }: FlipPixelProps) => {
+    return (
+        <motion.div
+            initial={false}
+            animate={{ 
+                rotateX: active ? 180 : 0,
+                backgroundColor: active ? '#ffffff' : '#1a1a1a'
+            }}
+            transition={{
+                duration: 0.6,
+                type: 'spring',
+                stiffness: 260,
+                damping: 20,
+                delay: (x + y) * 0.02 // Wave delay effect
+            }}
+            style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '4px',
+                position: 'relative',
+                transformStyle: 'preserve-3d',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.5)'
+            }}
+        >
+            {/* Front Face (Inactive/Dark) */}
+            <div 
+                style={{ 
+                    position: 'absolute', 
+                    inset: 0, 
+                    backfaceVisibility: 'hidden',
+                    backgroundColor: '#1a1a1a',
+                    borderRadius: '4px',
+                    border: '1px solid #333'
+                }} 
+            />
+            {/* Back Face (Active/Bright) */}
+            <div 
+                style={{ 
+                    position: 'absolute', 
+                    inset: 0, 
+                    backfaceVisibility: 'hidden', 
+                    transform: 'rotateX(180deg)',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '4px',
+                    boxShadow: '0 0 10px rgba(255,255,255,0.5)'
+                }} 
+            />
+        </motion.div>
+    );
+};
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
+export function FlipClock() {
+    const [timeStr, setTimeStr] = useState("0000"); // HHMM
+
+    useEffect(() => {
+        const updateTime = () => {
+            const now = new Date();
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            setTimeStr(h + m);
+        };
+        updateTime();
+        const interval = setInterval(updateTime, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Grid Configuration
+    // - Digits are 4x6
+    // - Spacing between digits: 1
+    // - Spacing between HH and MM: 2
+    // - Layout: PADDING | H1 | s | H2 | ss | M1 | s | M2 | PADDING
+    // - Cols: 2 + 4 + 1 + 4 + 2 + 4 + 1 + 4 + 2 = 24 cols
+    // - Rows: 6 rows + 2 padding top + 2 padding bottom = 10 rows
+    
+    const rows = 10;
+    const cols = 24;
+
+    const grid = useMemo(() => {
+        // Initialize empty grid
+        const newGrid = Array(rows).fill(0).map(() => Array(cols).fill(0));
+
+        const insertDigit = (digit: string, startCol: number, startRow: number) => {
+            const pattern = DIGIT_PATTERNS[digit];
+            if (!pattern) return;
+            pattern.forEach((row, r) => {
+                row.forEach((val, c) => {
+                    if (startRow + r < rows && startCol + c < cols) {
+                        newGrid[startRow + r][startCol + c] = val;
+                    }
+                });
+            });
+        };
+
+        const [h1, h2, m1, m2] = timeStr.split('');
+        const startRow = 2; // Vertically centered
+
+        insertDigit(h1, 2, startRow);       // First Hour Digit
+        insertDigit(h2, 7, startRow);       // Second Hour Digit
+        
+        // Colon / Separator
+        newGrid[startRow + 1][12] = 1;
+        newGrid[startRow + 4][12] = 1;
+        newGrid[startRow + 1][13] = 1;
+        newGrid[startRow + 4][13] = 1;
+
+        insertDigit(m1, 15, startRow);      // First Minute Digit
+        insertDigit(m2, 20, startRow);      // Second Minute Digit
+
+        return newGrid;
+    }, [timeStr]);
+
+    return (
+        <div className="w-full h-full flex items-center justify-center bg-black p-4">
+            <div 
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: \\\`repeat(\\\${cols}, 1fr)\\\`,
+                    gridTemplateRows: \\\`repeat(\\\${rows}, 1fr)\\\`,
+                    gap: '6px', // Gap between flip cards
+                    width: '100%',
+                    aspectRatio: \\\`\\\${cols}/\\\${rows}\\\`
+                }}
+            >
+                {grid.map((row, r) => (
+                    row.map((isActive, c) => (
+                        <FlipPixel 
+                            key={\\\`\\\${r}-\\\${c}\\\`} 
+                            active={isActive === 1} 
+                            x={c} 
+                            y={r} 
+                        />
+                    ))
+                ))}
+            </div>
+        </div>
+    );
+}`,
+        props: []
+    },
+    {
+        id: 'gravity',
+        name: 'Gravity',
+        index: 30,
+        description: 'A physics-based layout where UI elements fall, stack, and collide using real-time rigid body physics. Fully interactive: grab, throw, and watch them settle.',
+        tags: ['physics', 'matter-js', 'gravity', 'interactive', 'playground', 'collision'],
+        category: 'interaction',
+        previewConfig: { gravityStrength: 1, wallBounciness: 0.8 },
+        dependencies: ['matter-js', 'react', 'framer-motion'],
+        usage: `import { Gravity } from '@/components/ui';
+
+// Basic usage
+<Gravity />
+
+// Custom configuration
+<Gravity
+    config={{
+        gravityStrength: 2,
+        interactive: true,
+        debug: false
+    }}
+/>`,
+        fullCode: `"use client";
+
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import Matter from "matter-js";
+import { motion } from "framer-motion";
+import { Loader2, RefreshCcw } from "lucide-react";
+
+// ============================================
+// TYPES
+// ============================================
+
+export interface GravityItem {
+    id: string;
+    type: 'text' | 'image' | 'video' | 'shape';
+    content: string | React.ReactNode;
+    className?: string;
+    width?: number;
+    height?: number;
+    initialX?: number;
+    initialY?: number;
+    rotation?: number;
+}
+
+export interface GravityConfig {
+    gravityStrength: number;
+    gravityX: number;
+    gravityY: number;
+    wallBounciness: number; // 0-1
+    itemBounciness: number; // 0-1
+    friction: number;
+    frictionAir: number;
+    interaction: boolean;
+    autoSpawnRate: number; // 0 = disabled
+    debug: boolean;
+}
+
+export interface GravityProps {
+    items?: GravityItem[];
+    config?: Partial<GravityConfig>;
+    className?: string;
+    children?: React.ReactNode;
+}
+
+// ============================================
+// DEFAULT DATA
+// ============================================
+
+const defaultItems: GravityItem[] = [
+    { id: '1', type: 'text', content: 'Creativity', width: 200, height: 80, className: 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white font-bold text-xl rounded-2xl flex items-center justify-center shadow-lg' },
+    { id: '2', type: 'text', content: 'Physics', width: 160, height: 60, className: 'bg-white dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 text-foreground font-medium text-lg rounded-full flex items-center justify-center shadow-sm' },
+    { id: '3', type: 'text', content: 'Interactive', width: 220, height: 120, className: 'bg-[#FF6B6B] text-white font-black text-3xl rounded-[2rem] flex items-center justify-center shadow-xl rotate-12' },
+    { id: '4', type: 'text', content: 'Web', width: 100, height: 100, className: 'bg-blue-400 text-white font-bold text-lg rounded-full flex items-center justify-center shadow-md' },
+    { id: '5', type: 'image', content: 'Design', width: 180, height: 240, className: 'bg-zinc-900 border border-zinc-800 text-zinc-400 p-6 rounded-xl flex flex-col gap-4 shadow-2xl' },
+    { id: '6', type: 'shape', content: '', width: 80, height: 80, className: 'bg-yellow-400 rounded-lg transform rotate-45 shadow-lg border-4 border-yellow-200' },
+    { id: '7', type: 'text', content: 'Drag Me', width: 140, height: 50, className: 'bg-black text-white rounded-full flex items-center justify-center font-mono text-sm border-2 border-white/20' },
+];
+
+const defaultConfig: GravityConfig = {
+    gravityStrength: 1,
+    gravityX: 0,
+    gravityY: 1,
+    wallBounciness: 0.8,
+    itemBounciness: 0.6,
+    friction: 0.05,
+    frictionAir: 0.02,
+    interaction: true,
+    autoSpawnRate: 0,
+    debug: false,
+};
+
+// ============================================
+// GRAVITY COMPONENT
+// ============================================
+
+export function Gravity({
+    items = defaultItems,
+    config: userConfig,
+    className = "",
+    children
+}: GravityProps) {
+    const config = { ...defaultConfig, ...userConfig };
+
+    // Refs
+    const containerRef = useRef<HTMLDivElement>(null);
+    const sceneRef = useRef<any>(null); // Matter.js engine instance store
+    const engineRef = useRef<Matter.Engine>(null);
+    const renderRef = useRef<Matter.Render>(null);
+    const runnerRef = useRef<any>(null);
+    const bodiesMapRef = useRef<Map<string, Matter.Body>>(new Map());
+    const elementsRef = useRef<Map<string, HTMLDivElement>>(new Map());
+    const requestRef = useRef<number>();
+    const constraintsRef = useRef<any>(null);
+
+    const [isMounted, setIsMounted] = useState(false);
+    const [renderIds, setRenderIds] = useState<string[]>([]);
+
+    // Initialize Physics World
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        // 1. Setup Matter.js
+        const Engine = Matter.Engine,
+            Render = Matter.Render,
+            Runner = Matter.Runner,
+            World = Matter.World,
+            Bodies = Matter.Bodies,
+            Mouse = Matter.Mouse,
+            MouseConstraint = Matter.MouseConstraint,
+            Composite = Matter.Composite;
+
+        const engine = Engine.create();
+        engineRef.current = engine;
+
+        // Disable sleeping for interaction
+        engine.enableSleeping = false;
+
+        // Set Gravity
+        engine.world.gravity.y = config.gravityY * config.gravityStrength;
+        engine.world.gravity.x = config.gravityX * config.gravityStrength;
+
+        // 2. Create Render (Optional, for debug/mouse interaction usually)
+        // We use a transparent canvas for mouse events primarily
+        const render = Render.create({
+            element: containerRef.current,
+            engine: engine,
+            options: {
+                width: containerRef.current.clientWidth,
+                height: containerRef.current.clientHeight,
+                background: 'transparent',
+                wireframes: false, // We only show wireframes in debug mode
+                showAngleIndicator: config.debug,
+            }
+        });
+
+        // If not debug, we hide the canvas visually with code below or CSS opacity usually
+        // But we need it for MouseConstraint
+        render.canvas.style.position = 'absolute';
+        render.canvas.style.top = '0';
+        render.canvas.style.left = '0';
+        render.canvas.style.pointerEvents = 'none'; // We'll handle custom events or let it pass through
+        // Actually, for Matter.js MouseConstraint to work, the canvas needs pointer events.
+        // But we want the DOM elements to be draggable.
+        // Strategy: Use the canvas for physics mouse interaction, but set z-index higher?
+        // OR: Map raw DOM events to physics bodies manually.
+
+        // Let's use Matter.MouseConstraint with the canvas.
+        // To make DOM elements clickable, we can't block them with the canvas.
+        // So we won't use the canvas for input. We'll attach events to the container.
+
+        renderRef.current = render;
+
+        // 3. Create Walls
+        const updateWalls = () => {
+            if (!containerRef.current || !engine) return;
+            const width = containerRef.current.clientWidth;
+            const height = containerRef.current.clientHeight;
+            const wallThickness = 100;
+
+            const ground = Bodies.rectangle(width / 2, height + wallThickness / 2, width + 200, wallThickness, {
+                isStatic: true,
+                render: { visible: config.debug },
+                friction: 0.1,
+                restitution: config.wallBounciness
+            });
+            const leftWall = Bodies.rectangle(0 - wallThickness / 2, height / 2, wallThickness, height * 2, {
+                isStatic: true,
+                render: { visible: config.debug },
+                friction: 0.1,
+                restitution: config.wallBounciness
+            });
+            const rightWall = Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height * 2, {
+                isStatic: true,
+                render: { visible: config.debug },
+                friction: 0.1,
+                restitution: config.wallBounciness
+            });
+            // No ceiling usually, let them fly high
+
+            // Remove old walls if resizing
+            const bodies = Composite.allBodies(engine.world);
+            bodies.forEach(b => {
+                if (b.isStatic && (b.label === 'Wall')) World.remove(engine.world, b);
+            });
+
+            ground.label = 'Wall';
+            leftWall.label = 'Wall';
+            rightWall.label = 'Wall';
+
+            World.add(engine.world, [ground, leftWall, rightWall]);
+        };
+
+        updateWalls();
+
+        // 4. Runner
+        const runner = Runner.create();
+        runnerRef.current = runner;
+        Runner.run(runner, engine);
+
+        // 5. Render start (only if debug)
+        if (config.debug) {
+            Render.run(render);
+        }
+
+        // 6. Handle Interaction (Custom Mouse Controller)
+        // We implement a custom mouse controller because we are syncing DOM elements.
+        const mouse = Mouse.create(containerRef.current);
+        const mouseConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: {
+                    visible: config.debug
+                }
+            }
+        });
+
+        // We DO NOT add mouseConstraint to world yet, because it interferes with text selection if not careful.
+        // Actually, for "Gravity" grab and throw, we want it.
+        World.add(engine.world, mouseConstraint);
+
+        // Fix scrolling issue with Matter.js blocking events
+        // mouse.element.removeEventListener("mousewheel", mouse.mousewheel);
+        // mouse.element.removeEventListener("DOMMouseScroll", mouse.mousewheel);
+
+        setIsMounted(true);
+
+        // Cleanup
+        return () => {
+            Render.stop(render);
+            Runner.stop(runner);
+            if (engineRef.current) Matter.Engine.clear(engineRef.current);
+            if (render.canvas) render.canvas.remove();
+        };
+    }, []);
+
+    // Handle Resize
+    useEffect(() => {
+        const handleResize = () => {
+            if (!containerRef.current || !engineRef.current) return;
+            // Recreate walls
+            const width = containerRef.current.clientWidth;
+            const height = containerRef.current.clientHeight;
+            const World = Matter.World;
+            const Bodies = Matter.Bodies;
+            const Composite = Matter.Composite;
+
+            // Remove old walls
+            const bodies = Composite.allBodies(engineRef.current.world);
+            bodies.forEach(b => {
+                if (b.label === 'Wall') World.remove(engineRef.current.world, b);
+            });
+
+            const wallThickness = 100;
+            const ground = Bodies.rectangle(width / 2, height + wallThickness / 2, width + 200, wallThickness, { isStatic: true, restitution: config.wallBounciness, label: 'Wall' });
+            const leftWall = Bodies.rectangle(0 - wallThickness / 2, height / 2, wallThickness, height * 2, { isStatic: true, restitution: config.wallBounciness, label: 'Wall' });
+            const rightWall = Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height * 2, { isStatic: true, restitution: config.wallBounciness, label: 'Wall' });
+
+            World.add(engineRef.current.world, [ground, leftWall, rightWall]);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [config.wallBounciness]);
+
+    // Update Bodies when items change
+    useEffect(() => {
+        if (!engineRef.current || !containerRef.current) return;
+
+        const World = Matter.World;
+        const Bodies = Matter.Bodies;
+        const currentIds = new Set(items.map(i => i.id));
+
+        // Remove bodies that are no longer in items
+        items.forEach(item => {
+            if (!bodiesMapRef.current.has(item.id)) {
+                // Create new body
+                const width = item.width || 100;
+                const height = item.height || 100;
+
+                // Random position if not specified
+                const x = item.initialX ?? (Math.random() * (containerRef.current!.clientWidth - width) + width / 2);
+                const y = item.initialY ?? (-height - Math.random() * 500); // Start above screen
+
+                const body = Bodies.rectangle(x, y, width, height, {
+                    angle: item.rotation ? item.rotation * (Math.PI / 180) : (Math.random() - 0.5) * 0.5,
+                    restitution: config.itemBounciness,
+                    friction: config.friction,
+                    frictionAir: config.frictionAir,
+                    label: item.id
+                });
+
+                World.add(engineRef.current!.world, body);
+                bodiesMapRef.current.set(item.id, body);
+            } else {
+                // Update existing body properties if config changed
+                // (Optional optimization: only if changed)
+                const body = bodiesMapRef.current.get(item.id);
+                if (body) {
+                    body.restitution = config.itemBounciness;
+                    body.friction = config.friction;
+                    body.frictionAir = config.frictionAir;
+                }
+            }
+        });
+
+        // Remove old bodies
+        bodiesMapRef.current.forEach((body, id) => {
+            if (!currentIds.has(id)) {
+                World.remove(engineRef.current!.world, body);
+                bodiesMapRef.current.delete(id);
+            }
+        });
+
+        setRenderIds(items.map(i => i.id));
+
+    }, [items, config.itemBounciness, config.friction, config.frictionAir]);
+
+
+    // Animation Loop
+    useEffect(() => {
+        const loop = () => {
+            if (!engineRef.current) return;
+
+            // Sync DOM elements to Physics Bodies
+            bodiesMapRef.current.forEach((body, id) => {
+                const element = elementsRef.current.get(id);
+                if (element) {
+                    const { x, y } = body.position;
+                    // We translate from center (Matter.js) to top-left (DOM)
+                    // But actually, we set transform origin to center in CSS probably
+                    // Or we just translate.
+
+                    // Optimization: use translate3d for GPU
+                    element.style.transform = \`translate3d(\${x - (itemMap.get(id)?.width || 100)/2}px, \${y - (itemMap.get(id)?.height || 100)/2}px, 0) rotate(\${body.angle}rad)\`;
+                    element.style.visibility = 'visible'; // Show after first frame to avoid jump
+                }
+            });
+            
+            requestRef.current = requestAnimationFrame(loop);
+        };
+        
+        // Helper map for width/height in loop (avoid closure staleness)
+        const itemMap = new Map(items.map(i => [i.id, i]));
+        
+        requestRef.current = requestAnimationFrame(loop);
+        return () => {
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        };
+    }, [items]); // Re-bind loop if items change (to update map)
+    
+    // Add Element Ref Helper
+    const addToRefs = (el: HTMLDivElement | null, id: string) => {
+        if (el && !elementsRef.current.has(id)) {
+            elementsRef.current.set(id, el);
+        } else if (!el && elementsRef.current.has(id)) {
+            elementsRef.current.delete(id);
+        }
+    };
+    
+    const resetGravity = () => {
+        if (!engineRef.current || !containerRef.current) return;
+        
+        // Reposition all bodies to top
+        bodiesMapRef.current.forEach((body) => {
+             const x = Math.random() * (containerRef.current!.clientWidth - 100) + 50;
+             const y = -Math.random() * 1000 - 100;
+             
+             Matter.Body.setPosition(body, { x, y });
+             Matter.Body.setVelocity(body, { x: 0, y: 0 });
+             Matter.Body.setAngularVelocity(body, 0);
+        });
+    };
+
+    return (
+        <div 
+            className={\`relative w-full h-full overflow-hidden bg-zinc-50 dark:bg-zinc-950 \${className}\`} 
+            ref={containerRef}
+            style={{ touchAction: 'none' }} // Prevent scrolling on mobile while interacting
+        >
+            {/* Reset Button */}
+            <button 
+                onClick={resetGravity}
+                className="absolute top-4 right-4 z-50 p-3 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur-md shadow-lg hover:scale-110 transition-all active:scale-95 group border border-zinc-200 dark:border-zinc-800"
+            >
+                <RefreshCcw className="w-5 h-5 text-zinc-600 dark:text-zinc-300 group-hover:rotate-180 transition-transform duration-500" />
+            </button>
+            
+            {/* Items */}
+            {items.map((item) => (
+                <div
+                    key={item.id}
+                    ref={(el) => addToRefs(el, item.id)}
+                    className={\`absolute top-0 left-0 hover:z-50 cursor-grab active:cursor-grabbing \${item.className}\`}
+                    style={{
+                        width: item.width,
+                        height: item.height,
+                        visibility: 'hidden', // Hidden until physics kicks in
+                        willChange: 'transform',
+                        userSelect: 'none'
+                    }}
+                >
+                    {item.content || item.id}
+                </div>
+            ))}
+            
+            {/* Helper Text */}
+            <div className="absolute bottom-6 left-0 w-full text-center pointer-events-none opacity-40">
+                <p className="text-sm font-medium font-mono text-zinc-500">GRAB & THROW</p>
+            </div>
+        </div>
+    );
+}
+
+export default Gravity;`,
+        props: [
+            { name: 'items', type: 'GravityItem[]', default: 'defaultItems', description: 'Array of items to render as physics bodies' },
+            { name: 'config', type: 'GravityConfig', default: '{}', description: 'Physics configuration' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
+    },
+    {
+        id: 'pixel-simulation',
+        name: 'Pixel Simulation',
+        index: 31,
+        description: 'A voxel-based 3D renderer that visualizes shapes using a grid of dynamic pixels. Features canvas-based rendering with customizable resolution, gap, and color modes.',
+        tags: ['pixel', '3d', 'voxel', 'canvas', 'simulation', 'retro'],
+        category: 'animation',
+        previewConfig: {
+            shape: 'torus',
+            pixelSize: 8,
+            gap: 2,
+        },
+        dependencies: ['react'],
+        usage: `import { PixelSimulation } from '@/components/ui';
+
+// Basic usage
+<PixelSimulation />
+
+// With custom configuration
+<PixelSimulation
+    config={{
+        shape: 'torus',
+        pixelSize: 8,
+        gap: 2,
+        rotationX: 0,
+        rotationY: 0,
+        colorMode: 'depth',
+        color1: '#4F46E5', // Indigo
+        color2: '#EC4899', // Pink
+        speed: 2,
+    }}
+    autoPlay={true}
+/>`,
+        fullCode: `"use client";
+
+import React, { useEffect, useRef, useState } from 'react';
+
+// ============================================
+// TYPES & INTERFACES
+// ============================================
+
+export type PixelShape = 'torus' | 'cube';
+
+export type ColorMode = 'monochrome' | 'depth' | 'normal' | 'rainbow';
+
+export interface PixelSimulationConfig {
+    shape: PixelShape;
+    pixelSize: number; // Size of each pixel in px
+    gap: number;       // Gap between pixels in px
+    speed: number;
+    rotationX: number;
+    rotationY: number;
+    colorMode: ColorMode;
+    color1: string;    // Primary color (or near color)
+    color2: string;    // Secondary color (or far color)
+}
+
+export interface PixelSimulationProps {
+    config?: Partial<PixelSimulationConfig>;
+    className?: string;
+    autoPlay?: boolean;
+}
+
+// ============================================
+// DEFAULT CONFIG
+// ============================================
+
+const defaultConfig: PixelSimulationConfig = {
+    shape: 'torus',
+    pixelSize: 8,
+    gap: 1,
+    speed: 4,
+    rotationX: 0,
+    rotationY: 0,
+    colorMode: 'depth',
+    color1: '#6366f1', // Indigo-500
+    color2: '#a855f7', // Purple-500
+};
+
+// ============================================
+// HELPER: COLOR INTERPOLATION
+// ============================================
+
+const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+};
+
+const lerpColor = (c1: {r:number, g:number, b:number}, c2: {r:number, g:number, b:number}, t: number) => {
+    const r = Math.round(c1.r + (c2.r - c1.r) * t);
+    const g = Math.round(c1.g + (c2.g - c1.g) * t);
+    const b = Math.round(c1.b + (c2.b - c1.b) * t);
+    return \`rgb(\${r}, \${g}, \${b})\`;
+};
+
+// ============================================
+// PIXEL RENDERER COMPONENT
+// ============================================
+
+export function PixelSimulation({
+    config: userConfig,
+    className = "",
+    autoPlay = true
+}: PixelSimulationProps) {
+    const config = { ...defaultConfig, ...userConfig };
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const animationRef = useRef<number>(0);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Rotation state
+    const A = useRef(0); // X Rotation
+    const B = useRef(0); // Y Rotation
+
+    // Dimensions state
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+    useEffect(() => {
+        const updateDimensions = () => {
+            if (containerRef.current) {
+                const { clientWidth, clientHeight } = containerRef.current;
+                setDimensions({ width: clientWidth, height: clientHeight });
+            }
+        };
+
+        const resizeObserver = new ResizeObserver(updateDimensions);
+        if (containerRef.current) {
+            resizeObserver.observe(containerRef.current);
+        }
+        
+        // Initial call
+        updateDimensions();
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, []);
+
+    const renderFrame = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const { width, height } = dimensions;
+        if (width === 0 || height === 0) return;
+        
+        // Handle high-DPI displays
+        const dpr = window.devicePixelRatio || 1;
+        if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.scale(dpr, dpr);
+        }
+
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+
+        // Parameters
+        const pixelSize = config.pixelSize;
+        const gap = config.gap;
+        const cellSize = pixelSize + gap;
+        
+        const cols = Math.ceil(width / cellSize);
+        const rows = Math.ceil(height / cellSize);
+        
+        // Z-Buffer (Depth Buffer)
+        // Store simple depth value (1/z) for each cell
+        const zBuffer = new TypedFloat32Array(cols * rows);
+        
+        const K1 = Math.min(width, height) * 0.7; // Scale factor
+        
+        // Update Rotation
+        if (autoPlay) {
+            A.current += 0.04 * (config.speed / 4);
+            B.current += 0.02 * (config.speed / 4);
+        } else {
+            A.current = config.rotationX;
+            B.current = config.rotationY;
+        }
+
+        const cA = Math.cos(A.current);
+        const sA = Math.sin(A.current);
+        const cB = Math.cos(B.current);
+        const sB = Math.sin(B.current);
+
+        // Pre-compute colors
+        const rgb1 = hexToRgb(config.color1);
+        const rgb2 = hexToRgb(config.color2);
+
+        // Helper to draw a pixel
+        const drawPixel = (x: number, y: number, z: number, lum: number) => {
+            // Screen coords to Grid coords
+            const col = Math.floor(x / cellSize);
+            const row = Math.floor(y / cellSize);
+
+            if (col >= 0 && col < cols && row >= 0 && row < rows) {
+                const idx = row * cols + col;
+                const invDepth = 1 / z;
+                
+                if (invDepth > zBuffer[idx]) {
+                    zBuffer[idx] = invDepth;
+                    
+                    // Render Pixel Position
+                    const pxX = col * cellSize + gap/2;
+                    const pxY = row * cellSize + gap/2;
+                    
+                    // Determine Color
+                    let color = 'white';
+                    
+                    if (config.colorMode === 'monochrome') {
+                         // Closer = Brighter + Lum
+                         // invDepth varies ~0.1 (far) to ~0.3 (near)
+                         const brightness = Math.min(1, Math.max(0.1, invDepth * 3 * lum)); 
+                         color = \`rgba(\${rgb1.r}, \${rgb1.g}, \${rgb1.b}, \${brightness})\`;
+                    } 
+                    else if (config.colorMode === 'depth') {
+                        // Depth mix
+                        // Norm depth approx 0.1 to 0.4
+                        // T near 1 = bright/close, T near 0 = dark/far
+                        const t = Math.min(1, Math.max(0, (invDepth - 0.1) * 3));
+                        color = lerpColor(rgb2, rgb1, t);
+                    } 
+                    else if (config.colorMode === 'normal') {
+                        // Use lum (normal-based lighting)
+                        // This gives that "shaded" look
+                        const t = Math.min(1, Math.max(0, lum));
+                        color = lerpColor(rgb2, rgb1, t);
+                    } 
+                    else if (config.colorMode === 'rainbow') {
+                         const hue = (col * 2 + row * 2 + Date.now() * 0.1) % 360;
+                         color = \`hsl(\${hue}, 70%, 60%)\`;
+                    }
+
+                    // Actual Draw
+                    ctx.fillStyle = color;
+                    
+                    // Optional: Draw smaller pixel if further away?
+                    // const size = pixelSize * (invDepth * 5); // Example dynamic size
+                    // ctx.fillRect(pxX, pxY, size, size);
+                    
+                    ctx.fillRect(pxX, pxY, pixelSize, pixelSize);
+                }
+            }
+        };
+
+        // RENDER SHAPES
+        if (config.shape === 'torus') {
+            // Torus Logic
+             // R1=1, R2=2
+             for (let j = 0; j < 6.28; j += 0.04) {
+                const ct = Math.cos(j);
+                const st = Math.sin(j);
+                for (let i = 0; i < 6.28; i += 0.02) {
+                    const sp = Math.sin(i);
+                    const cp = Math.cos(i);
+                    const h = ct + 2; // R2
+                    const D = 1 / (sp * h * sA + st * cA + 5); // 1/z
+                    const t = sp * h * cA - st * sA;
+
+                    const x = (width / 2) + K1 * D * (cp * h * cB - t * sB);
+                    const y = (height / 2) + (K1) * D * (cp * h * sB + t * cB);
+                    
+                    // Luminance
+                    // N is normal dot light
+                    const N = ((st * sA - sp * ct * cA) * cB - sp * ct * sA - st * cA - cp * ct * sB);
+                    const lum = Math.max(0.1, N); 
+
+                    drawPixel(x, y, 1/D, lum);
+                }
+            }
+        } 
+        else if (config.shape === 'cube') {
+             // Cube Logic
+             const size = 1.2;
+             const step = 0.08; 
+             
+             // Draw Face Helper
+             const drawFace = (
+                 uMin: number, uMax: number, 
+                 vMin: number, vMax: number, 
+                 fixedVal: number, 
+                 coordIdx: 0|1|2, 
+                 nx: number, ny: number, nz: number
+             ) => {
+                 for (let u = uMin; u <= uMax; u += step) {
+                     for (let v = vMin; v <= vMax; v += step) {
+                        let cx = 0, cy = 0, cz = 0;
+                        // Map uv to coords
+                        if(coordIdx === 0) { cx=fixedVal; cy=u; cz=v; }
+                        else if(coordIdx === 1) { cx=u; cy=fixedVal; cz=v; }
+                        else if(coordIdx === 2) { cx=u; cy=v; cz=fixedVal; }
+
+                        // Rotate
+                        // Corresponds to Torus rotation matrices for consistency
+                        
+                        // X rotation (A)
+                        let y = cy * cA - cz * sA;
+                        let z = cy * sA + cz * cA;
+                        
+                        // Y rotation (B)
+                        let xFinal = cx * cB - z * sB;
+                        let zFinal = cx * sB + z * cB;
+
+                        const z_depth = zFinal + 3.5; // Offset camera
+                        if (z_depth <= 0) continue;
+                        
+                        const ooz = 1 / z_depth;
+                        const x = (width / 2) + K1 * ooz * xFinal;
+                        const yScreen = (height / 2) + K1 * ooz * y;
+
+                        // Normal rotation for lighting
+                        // X rot
+                        let ny1 = ny * cA - nz * sA;
+                        let nz1 = ny * sA + nz * cA;
+                        // Y rot
+                        let nx1 = nx * cB - nz1 * sB;
+                        let nz2 = nx * sB + nz1 * cB;
+
+                        // Light vector (0, 0, -1) => facing camera
+                        // Dot product = nx1*0 + ny1*0 + nz2*(-1) = -nz2
+                        const lum = Math.max(0.1, -nz2); 
+                        
+                        drawPixel(x, yScreen, z_depth, lum);
+                     }
+                 }
+             };
+
+             // Draw 6 faces
+             // Back/Front
+             drawFace(-size, size, -size, size, -size, 2, 0, 0, -1); 
+             drawFace(-size, size, -size, size, size, 2, 0, 0, 1);
+             // Top/Bottom
+             drawFace(-size, size, -size, size, -size, 1, 0, -1, 0); 
+             drawFace(-size, size, -size, size, size, 1, 0, 1, 0);
+             // Left/Right
+             drawFace(-size, size, -size, size, -size, 0, -1, 0, 0); 
+             drawFace(-size, size, -size, size, size, 0, 1, 0, 0);
+        }
+
+        if (autoPlay) {
+            animationRef.current = requestAnimationFrame(renderFrame);
+        }
+    };
+
+    useEffect(() => {
+        // Start loop
+        renderFrame();
+        return () => {
+             if (animationRef.current) cancelAnimationFrame(animationRef.current);
+        };
+    }, [config.shape, config.pixelSize, config.gap, config.speed, config.rotationX, config.rotationY, config.colorMode, config.color1, config.color2, autoPlay, dimensions]);
+
+    return (
+        <div ref={containerRef} className={\`w-full h-full relative overflow-hidden \${className}\`}>
+             <canvas 
+                ref={canvasRef}
+                className="block w-full h-full"
+                style={{ imageRendering: 'pixelated' }}
+             />
+        </div>
+    );
+}
+
+// Float32Array constructor shim for safety if needed, though standard
+const TypedFloat32Array = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
+
+export default PixelSimulation;`,
+        props: [
+            { name: 'config', type: 'Partial<PixelSimulationConfig>', default: '{}', description: 'Appearance and behavior configuration' },
+            { name: 'autoPlay', type: 'boolean', default: 'true', description: 'Enable automatic rotation' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
+    },    // More components will be added here
 ];
 
 // Get component by ID

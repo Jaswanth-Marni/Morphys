@@ -35,6 +35,10 @@ const componentModuleMap: Record<string, string> = {
     'frosted-glass': 'FrostedGlass',
     'text-reveal': 'TextReveal',
     'text-reveal-2': 'TextReveal2',
+    'crt-glitch': 'CRTGlitch',
+    'flip-clock': 'FlipClock',
+    'gravity': 'Gravity',
+    'pixel-simulation': 'PixelSimulation',
 };
 
 // Prefetch cache to avoid duplicate prefetches

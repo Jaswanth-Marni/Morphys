@@ -702,6 +702,130 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'delay', type: 'number', default: '0', description: 'Delay before animation starts' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
+    },
+    {
+        id: 'crt-glitch',
+        name: 'CRT Glitch',
+        index: 28,
+        description: 'A realistic CRT TV and VHS glitch effect with static noise, scan lines, RGB chromatic aberration, and random glitch distortions.',
+        tags: ['glitch', 'crt', 'vhs', 'retro', 'noise', 'distortion', 'effect'],
+        category: 'effect',
+        previewConfig: { text: 'GLITCH', noiseIntensity: 0.15, glitchFrequency: 0.3 },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { CRTGlitch } from '@/components/ui';
+
+// Basic usage
+<CRTGlitch />
+
+// With custom configuration
+<CRTGlitch
+    config={{
+        text: "ERROR 404",
+        noiseIntensity: 0.2,
+        scanlineIntensity: 0.5,
+        rgbShiftIntensity: 0.8,
+        glitchFrequency: 0.5,
+        colorTint: 'green',
+        curvedScreen: true
+    }}
+/>`,
+        props: [
+            { name: 'config.text', type: 'string', default: "'MORPHYS'", description: 'Text to display' },
+            { name: 'config.noiseIntensity', type: 'number', default: '0.15', description: 'Static noise amount (0-1)' },
+            { name: 'config.scanlineIntensity', type: 'number', default: '0.4', description: 'Scan line visibility (0-1)' },
+            { name: 'config.rgbShiftIntensity', type: 'number', default: '0.6', description: 'RGB chromatic aberration (0-1)' },
+            { name: 'config.glitchFrequency', type: 'number', default: '0.3', description: 'How often glitches occur (0-1)' },
+            { name: 'config.flickerIntensity', type: 'number', default: '0.1', description: 'Screen flicker amount (0-1)' },
+            { name: 'config.vhsTracking', type: 'boolean', default: 'true', description: 'Enable VHS tracking distortion' },
+            { name: 'config.phosphorGlow', type: 'boolean', default: 'true', description: 'Enable CRT phosphor bloom' },
+            { name: 'config.curvedScreen', type: 'boolean', default: 'true', description: 'Enable barrel distortion effect' },
+            { name: 'config.colorTint', type: "'green' | 'amber' | 'blue' | 'none'", default: "'none'", description: 'Retro monitor color tint' },
+            { name: 'config.autoGlitch', type: 'boolean', default: 'true', description: 'Enable automatic random glitches' },
+            { name: 'config.hoverTrigger', type: 'boolean', default: 'true', description: 'Trigger glitches on hover' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
+    },
+    {
+        id: 'flip-clock',
+        name: 'Flip Clock',
+        index: 29,
+        description: 'A kinetic flip-dot style clock where numbers are formed by a grid of individually flipping pixels, creating a mechanical retro aesthetic. Features rounded matrix numbers and wave-based flip animations.',
+        tags: ['clock', 'time', 'flip', 'kinetic', 'retro', 'matrix'],
+        category: 'animation',
+        previewConfig: { theme: 'dark' },
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { FlipClock } from '@/components/ui';
+
+// Basic usage
+<FlipClock />`,
+        props: []
+    },
+    {
+        id: 'gravity',
+        name: 'Gravity',
+        index: 30,
+        description: 'A physics-based layout where UI elements fall, stack, and collide using real-time rigid body physics. Fully interactive: grab, throw, and watch them settle.',
+        tags: ['physics', 'matter-js', 'gravity', 'interactive', 'playground', 'collision'],
+        category: 'interaction',
+        previewConfig: { gravityStrength: 1, wallBounciness: 0.8 },
+        dependencies: ['matter-js', 'react', 'framer-motion'],
+        usage: `import { Gravity } from '@/components/ui';
+
+// Basic usage
+<Gravity />
+
+// Custom configuration
+<Gravity
+    config={{
+        gravityStrength: 2,
+        interactive: true,
+        debug: false
+    }}
+/>`,
+        props: [
+            { name: 'items', type: 'GravityItem[]', default: 'defaultItems', description: 'Array of items to render as physics bodies' },
+            { name: 'config', type: 'GravityConfig', default: '{}', description: 'Physics configuration' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
+    },
+    {
+        id: 'pixel-simulation',
+        name: 'Pixel Simulation',
+        index: 31,
+        description: 'A voxel-based 3D renderer that visualizes shapes using a grid of dynamic pixels. Features canvas-based rendering with customizable resolution, gap, and color modes.',
+        tags: ['pixel', '3d', 'voxel', 'canvas', 'simulation', 'retro'],
+        category: 'animation',
+        previewConfig: {
+            shape: 'car',
+            pixelSize: 8,
+            gap: 2,
+        },
+        dependencies: ['react'],
+        usage: `import { PixelSimulation } from '@/components/ui';
+
+// Basic usage
+<PixelSimulation />
+
+// With custom configuration
+<PixelSimulation
+    config={{
+        shape: 'car',
+        pixelSize: 8,
+        gap: 2,
+        rotationX: 0,
+        rotationY: 0,
+        colorMode: 'depth',
+        color1: '#4F46E5', // Indigo
+        color2: '#EC4899', // Pink
+        speed: 2,
+    }}
+    autoPlay={true}
+/>`,
+        props: [
+            { name: 'config', type: 'Partial<PixelSimulationConfig>', default: '{}', description: 'Appearance and behavior configuration' },
+            { name: 'autoPlay', type: 'boolean', default: 'true', description: 'Enable automatic rotation' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
     }
 ];
 

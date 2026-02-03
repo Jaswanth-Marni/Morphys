@@ -1,8 +1,60 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+
+// Lazy Loader Component with Hysteresis
+const PreviewLazyLoader = ({ children }: { children: React.ReactNode }) => {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { margin: "200px 0px 200px 0px", once: false });
+    const [shouldRender, setShouldRender] = useState(false);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+        if (isInView) {
+            // Mount after delay to ensure user has stopped/slowed down
+            if (!shouldRender) {
+                timeoutRef.current = setTimeout(() => {
+                    setShouldRender(true);
+                }, 600); // Increased delay
+            }
+        } else {
+            // Unmount after a long delay (hysteresis) to prevent thrashing
+            if (shouldRender) {
+                timeoutRef.current = setTimeout(() => {
+                    setShouldRender(false);
+                }, 4000); // Keep alive for 4s after leaving view
+            }
+        }
+
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, [isInView, shouldRender]);
+
+    return (
+        <div ref={ref} className="w-full h-full flex items-center justify-center">
+            <AnimatePresence>
+                {shouldRender && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="w-full h-full flex items-center justify-center"
+                    >
+                        {children}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
 import Link from "next/link";
 import { componentsDataLite as componentsData } from "@/data/componentsDataLite";
+import { GlobalLoader } from "./GlobalLoader";
 import { FlipGridPreview } from "./FlipGrid";
 import { AsciiSimulationPreview } from "./AsciiSimulation";
 import { LiquidMorphPreview } from "./LiquidMorph";
@@ -30,6 +82,10 @@ import { ExpandableStrips } from "./ExpandableStrips";
 import { FrostedGlass } from "./FrostedGlass";
 import TextReveal from "./TextReveal";
 import TextReveal2 from "./TextReveal2";
+import { CRTGlitch } from "./CRTGlitch";
+import { FlipClock } from "./FlipClock";
+import { Gravity } from "./Gravity"; // Import Gravity
+import { PixelSimulation } from "./PixelSimulation";
 
 // Preview Wrappers
 const TextPressurePreview = () => (
@@ -90,6 +146,30 @@ const TextReveal2Preview = () => (
     </div>
 );
 
+const CRTGlitchPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden relative rounded-[20px]">
+        <CRTGlitch config={{ text: "MORPHYS", fontSize: 48, curvedScreen: false, noiseIntensity: 0.12, glitchFrequency: 0.4 }} containerClassName="!min-h-0 !bg-transparent" />
+    </div>
+);
+
+const FlipClockPreview = () => (
+    <div className="w-full h-full bg-black overflow-hidden relative">
+        <FlipClock />
+    </div>
+);
+
+const GravityPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
+        <Gravity text="MORPHYS" config={{ maxFontSize: 60, minFontSize: 40 }} />
+    </div>
+);
+
+const PixelSimulationPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <PixelSimulation config={{ shape: 'car', pixelSize: 3, rotationX: 0, rotationY: -0.6 }} autoPlay={false} />
+    </div>
+);
+
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -119,13 +199,78 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'frosted-glass': FrostedGlassPreview,
     'text-reveal': TextRevealPreview,
     'text-reveal-2': TextReveal2Preview,
+    'crt-glitch': CRTGlitchPreview,
+    'flip-clock': FlipClockPreview,
+    'gravity': GravityPreview, // Map Gravity
+    'pixel-simulation': PixelSimulationPreview,
 };
 
 export function NormalComponents() {
+    const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+    const [isSorting, setIsSorting] = useState(false);
+
+    const handleSort = (order: 'newest' | 'oldest') => {
+        if (order === sortOrder) return;
+        setIsSorting(true);
+
+        // Wait for blur to enter
+        setTimeout(() => {
+            setSortOrder(order);
+            // Wait for layout to settle behind the blur
+            setTimeout(() => {
+                setIsSorting(false);
+            }, 800);
+        }, 400);
+    };
+
+    const sortedComponents = [...componentsData].sort((a, b) => {
+        if (sortOrder === 'newest') {
+            return b.index - a.index;
+        } else {
+            return a.index - b.index;
+        }
+    });
+
     return (
         <div className="w-full min-h-full flex flex-col items-center justify-start px-4 md:px-8 pb-12 mt-8 md:mt-20">
+            {/* Full Screen Blur Loading Overlay */}
+            {/* Full Screen Blur Loading Overlay */}
+            <AnimatePresence>
+                {isSorting && <GlobalLoader />}
+            </AnimatePresence>
+
+            <div className="w-full max-w-7xl mb-8 flex justify-end">
+                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md rounded-full p-1 pl-4 border border-white/10 shadow-sm">
+                    <span className="text-xs font-medium text-foreground/50 uppercase tracking-wider">Sort</span>
+                    <div className="flex bg-black/20 rounded-full p-1">
+                        <button
+                            onClick={() => handleSort('newest')}
+                            className={`
+                                px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-300
+                                ${sortOrder === 'newest'
+                                    ? 'bg-white text-black shadow-sm scale-100'
+                                    : 'text-foreground/50 hover:text-foreground/80 scale-95 hover:scale-100'}
+                            `}
+                        >
+                            Newest
+                        </button>
+                        <button
+                            onClick={() => handleSort('oldest')}
+                            className={`
+                                px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-300
+                                ${sortOrder === 'oldest'
+                                    ? 'bg-white text-black shadow-sm scale-100'
+                                    : 'text-foreground/50 hover:text-foreground/80 scale-95 hover:scale-100'}
+                            `}
+                        >
+                            Oldest
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full max-w-7xl">
-                {componentsData.map((component, i) => {
+                {sortedComponents.map((component, i) => {
                     const PreviewComponent = componentPreviews[component.id];
 
                     return (
@@ -202,7 +347,9 @@ export function NormalComponents() {
                                         component-sandbox-border
                                     ">
                                         {PreviewComponent ? (
-                                            <PreviewComponent />
+                                            <PreviewLazyLoader>
+                                                <PreviewComponent />
+                                            </PreviewLazyLoader>
                                         ) : (
                                             <span className="text-foreground/30 text-sm">
                                                 Preview coming soon
