@@ -57,7 +57,7 @@ function OutlineItem({ text, font }: { text: string; font: string }) {
 
     return (
         <div
-            className="flex flex-wrap justify-center items-center select-none cursor-pointer"
+            className="flex flex-nowrap justify-center items-center select-none cursor-pointer"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >

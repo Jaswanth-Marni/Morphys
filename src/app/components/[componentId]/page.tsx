@@ -200,6 +200,16 @@ const HoverImageList = dynamic(() => import("@/components/ui/HoverImageList").th
     ssr: false
 });
 
+const ScrollSkew = dynamic(() => import("@/components/ui/ScrollSkew").then(mod => ({ default: mod.ScrollSkew })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const LiquidReveal = dynamic(() => import("@/components/ui/LiquidReveal").then(mod => ({ default: mod.LiquidReveal })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -322,6 +332,8 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'running-outline': RunningOutline as React.ComponentType<{ config?: any }>,
     'synthwave-lines': SynthwaveLines as React.ComponentType<{ config?: any }>,
     'hover-image-list': HoverImageList as React.ComponentType<{ config?: any }>,
+    'scroll-skew': ScrollSkew as React.ComponentType<{ config?: any }>,
+    'liquid-reveal': LiquidReveal as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -705,6 +717,41 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         <div className="grid grid-cols-2 gap-3">
                                             <NumberControl label="Intensity" value={Math.round(config.intensity * 10)} min={0} max={50} onChange={(val) => onConfigChange('intensity', val / 10)} />
                                             <NumberControl label="Radius" value={Math.round(config.radius * 10)} min={1} max={30} onChange={(val) => onConfigChange('radius', val / 10)} />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'liquid-reveal' ? (
+                                // LIQUID REVEAL CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Overlay Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.text || "reveal."}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                            />
+                                        </div>
+                                        <div className="mt-3">
+                                            <span className="text-xs text-foreground/40 mb-1 block">Image URL</span>
+                                            <input
+                                                type="text"
+                                                value={config.imageUrl || ""}
+                                                placeholder="https://..."
+                                                onChange={(e) => onConfigChange('imageUrl', e.target.value)}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                            />
+                                        </div>
+                                        <div className="mt-4 flex items-center justify-between">
+                                            <span className="text-sm text-foreground/60">Animation</span>
+                                            <button
+                                                onClick={() => onConfigChange('enableAnimation', config.enableAnimation === false ? true : false)}
+                                                className={`w-12 h-6 rounded-full relative transition-colors ${config.enableAnimation !== false ? 'bg-foreground' : 'bg-foreground/20'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${config.enableAnimation !== false ? 'left-7' : 'left-1'}`} />
+                                            </button>
                                         </div>
                                     </div>
                                 </>

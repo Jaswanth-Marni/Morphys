@@ -51,7 +51,7 @@ const defaultItems: HoverImageListItem[] = [
 
 const HoverHeading = ({ text }: { text: string }) => {
     return (
-        <h2 className="relative z-30 mix-blend-difference overflow-hidden text-4xl md:text-6xl font-kugile tracking-tighter text-zinc-100 transition-colors group-hover:text-zinc-400 leading-tight">
+        <h2 className="relative z-30 overflow-hidden text-4xl md:text-6xl font-kugile tracking-tighter text-foreground transition-colors group-hover:text-muted-foreground leading-tight">
             <span className="relative block pt-3 pb-1">
                 {text.split("").map((char, i) => (
                     <motion.span
@@ -167,7 +167,7 @@ export function HoverImageList({
                         whileHover="hover"
                     >
                         <HoverHeading text={item.text} />
-                        <span className="text-sm md:text-lg font-light text-zinc-400 group-hover:text-zinc-600 transition-colors relative z-30 mix-blend-difference">
+                        <span className="text-sm md:text-lg font-light text-muted-foreground group-hover:text-foreground transition-colors relative z-30">
                             {item.subtext}
                         </span>
                     </motion.div>

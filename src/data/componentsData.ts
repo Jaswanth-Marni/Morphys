@@ -3636,6 +3636,300 @@ export function HoverImageList({
             { name: 'items', type: 'HoverImageListItem[]', default: 'defaultItems', description: 'Array of items with text and images' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
         ]
+    },
+    {
+        id: 'scroll-skew',
+        name: 'Scroll Skew',
+        index: 35,
+        description: 'A velocity-based scrolling marquee where text direction and slant react to scroll speed. Features smooth physics-based skew deformation using Framer Motion.',
+        tags: ['scroll', 'skew', 'text', 'velocity', 'marquee', 'animation', 'typography', 'skew-scroll', 'parallax'],
+        category: 'animation',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { ScrollSkew } from '@/components/ui';
+
+<ScrollSkew />`,
+        fullCode: `"use client";
+
+import { useRef } from "react";
+import {
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+  useVelocity,
+  useAnimationFrame,
+  useMotionValue,
+} from "framer-motion";
+
+// Utility function for wrapping
+const wrap = (min: number, max: number, v: number) => {
+  const rangeSize = max - min;
+  return ((((v - min) % rangeSize) + rangeSize) % rangeSize) + min;
+};
+
+interface ParallaxTextProps {
+  children: string;
+  baseVelocity?: number;
+  className?: string;
+}
+
+function ParallaxText({ children, baseVelocity = 5, className = "" }: ParallaxTextProps) {
+  const baseX = useMotionValue(0);
+  const { scrollY } = useScroll();
+  const scrollVelocity = useVelocity(scrollY);
+  const smoothVelocity = useSpring(scrollVelocity, {
+    damping: 50,
+    stiffness: 400
+  });
+
+  // Skew based on velocity
+  // Velocity range: -1000 to 1000
+  // Skew range: 30deg to -30deg (inverse relation for natural feel)
+  const skewX = useTransform(smoothVelocity, [-1000, 1000], [30, -30]);
+  
+  const velocityFactor = useTransform(smoothVelocity, [0, 1000], [0, 5], {
+    clamp: false
+  });
+
+  // Calculate x position
+  // Wrap between 0 and -25% (assuming 4 visual groups, or 8 items wrapping every 2)
+  // Adjust range based on content length. For reliability, stick to large duplicate counts.
+  const x = useTransform(baseX, (v) => \`\${wrap(0, -25, v)}%\`);
+
+  const directionFactor = useRef<number>(1);
+  
+  useAnimationFrame((t, delta) => {
+    let moveBy = directionFactor.current * baseVelocity * (delta / 1000);
+
+    // Switch direction based on scroll direction
+    if (velocityFactor.get() < 0) {
+      directionFactor.current = -1;
+    } else if (velocityFactor.get() > 0) {
+      directionFactor.current = 1;
+    }
+
+    moveBy += directionFactor.current * moveBy * velocityFactor.get();
+
+    baseX.set(baseX.get() + moveBy);
+  });
+
+  return (
+    <div className="parallax overflow-hidden m-0 flex flex-nowrap whitespace-nowrap leading-none relative w-full">
+      <motion.div 
+        className={\`font-vank flex flex-nowrap whitespace-nowrap \${className}\`}
+        style={{ x, skewX }}
+      >
+        {/* Repeat content 8 times to ensure seamless infinite scroll */}
+        {[...Array(8)].map((_, i) => (
+            <span key={i} className="block mr-12">{children}</span>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+export function ScrollSkew() {
+  return (
+    <div className="w-full h-full min-h-[500px] bg-[#080808] py-24 flex flex-col justify-center items-center overflow-hidden gap-12 text-[#ededed]">
+      <ParallaxText baseVelocity={3} className="text-8xl md:text-9xl uppercase font-normal">
+        Velocity Based Skew
+      </ParallaxText>
+      <ParallaxText baseVelocity={-3} className="text-8xl md:text-9xl uppercase font-normal text-transparent stroke-text">
+        Scroll To Deform
+      </ParallaxText>
+      
+      <style jsx>{\`
+        .stroke-text {
+          -webkit-text-stroke: 2px #ededed;
+          color: transparent;
+        }
+      \`}</style>
+    </div>
+  );
+}
+
+export default ScrollSkew;`,
+        props: [
+            { name: 'baseVelocity', type: 'number', default: '5', description: 'Base scrolling speed' },
+            { name: 'children', type: 'string', default: 'Text', description: 'Text to display' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
+    },
+    {
+        id: 'liquid-reveal',
+        name: 'Liquid Reveal',
+        index: 36,
+        description: 'A WebGL shader component that uses high-frequency sine waves to create a liquid distortion effect, revealing an image on hover or scroll. Features chromatic aberration and smooth physics.',
+        tags: ['webgl', 'shader', 'liquid', 'distortion', 'reveal', 'react-three-fiber', '3d'],
+        category: 'animation',
+        previewConfig: {},
+        dependencies: ['@react-three/fiber', '@react-three/drei', 'three', 'react'],
+        usage: `import { LiquidReveal } from '@/components/ui';
+
+<LiquidReveal />`,
+        fullCode: `"use client";
+
+import React, { useRef, useMemo, useEffect, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useTexture } from "@react-three/drei";
+import * as THREE from "three";
+
+// ============================================
+// SHADERS
+// ============================================
+
+const vertexShader = \`
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+\`;
+
+const fragmentShader = \`
+uniform float uTime;
+uniform float uProgress; // 0.0 (distorted) -> 1.0 (clear)
+uniform sampler2D uTexture;
+varying vec2 vUv;
+
+void main() {
+    vec2 uv = vUv;
+    
+    // Calculate distortion amount (inverse of progress)
+    // cubic-bezier easing for smoother finish
+    float smoothProgress = smoothstep(0.0, 1.0, uProgress);
+    float distortion = 1.0 - smoothProgress;
+    
+    // High frequency waves for liquid ripple effect
+    // We combine multiple sine waves for complexity
+    float wave1 = sin(uv.y * 20.0 + uTime * 3.0);
+    float wave2 = cos(uv.x * 15.0 + uTime * 2.0);
+    float wave3 = sin(uv.y * 5.0 + uTime * 1.5);
+    
+    float totalWave = (wave1 + wave2 + wave3) * distortion * 0.05;
+    
+    // Apply distortion to UV coordinates
+    // We distort both X and Y for a "blob" feel, or just one axis for a "slide" feel
+    vec2 distortedUV = uv + vec2(totalWave * 0.5, totalWave);
+    
+    // RGB Shift (Chromatic Aberration) proportional to distortion
+    float rgbShiftAmount = 0.03 * distortion;
+    
+    float r = texture2D(uTexture, distortedUV + vec2(rgbShiftAmount, 0.0)).r;
+    float g = texture2D(uTexture, distortedUV).g;
+    float b = texture2D(uTexture, distortedUV - vec2(rgbShiftAmount, 0.0)).b;
+    
+    gl_FragColor = vec4(r, g, b, 1.0);
+}
+\`;
+
+// ============================================
+// COMPONENT
+// ============================================
+
+interface LiquidImageProps {
+    imageUrl: string;
+    isHovered: boolean;
+}
+
+const LiquidImage = ({ imageUrl, isHovered }: LiquidImageProps) => {
+    const meshRef = useRef<THREE.Mesh>(null);
+    
+    // Load texture
+    const texture = useTexture(imageUrl);
+    
+    // Handle texture encoding for correct colors
+    useEffect(() => {
+        if (texture) {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.wrapS = THREE.MirroredRepeatWrapping;
+            texture.wrapT = THREE.MirroredRepeatWrapping;
+        }
+    }, [texture]);
+
+    // Uniforms
+    const uniforms = useMemo(
+        () => ({
+            uTime: { value: 0 },
+            uProgress: { value: 0 },
+            uTexture: { value: texture },
+        }),
+        [texture]
+    );
+    
+    // Ref for easy access in loop
+    const hoveredRef = useRef(isHovered);
+    useEffect(() => {
+        hoveredRef.current = isHovered;
+    }, [isHovered]);
+
+    useFrame((state, delta) => {
+        if (meshRef.current) {
+            const material = meshRef.current.material as THREE.ShaderMaterial;
+            
+            // Update time
+            material.uniforms.uTime.value += delta;
+            
+            // Determine target progress
+            const target = hoveredRef.current ? 1.0 : 0.0;
+            
+            // Smooth interpolation (Lerp)
+            // Speed factor 3.0 gives a nice responsive feel
+            material.uniforms.uProgress.value = THREE.MathUtils.lerp(
+                material.uniforms.uProgress.value,
+                target,
+                delta * 3.0
+            );
+        }
+    });
+
+    return (
+        <mesh ref={meshRef} scale={[1, 1, 1]}>
+            <planeGeometry args={[6, 4, 32, 32]} />
+            <shaderMaterial
+                vertexShader={vertexShader}
+                fragmentShader={fragmentShader}
+                uniforms={uniforms}
+                transparent={true}
+            />
+        </mesh>
+    );
+};
+
+export const LiquidReveal = () => {
+    const [isHovered, setIsHovered] = useState(false);
+
+    return (
+        <div 
+            className="w-full h-full min-h-[500px] bg-[#000] flex flex-col items-center justify-center relative overflow-hidden group cursor-pointer"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+             <div className="absolute inset-0 z-0">
+                <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+                    <React.Suspense fallback={null}>
+                        <LiquidImage 
+                            imageUrl="https://images.unsplash.com/photo-1560790671-b76ca4de55ef?q=80&w=2574&auto=format&fit=crop" 
+                            isHovered={isHovered}
+                        />
+                    </React.Suspense>
+                </Canvas>
+            </div>
+            
+            <div className={\`pointer-events-none relative z-10 text-white text-center transition-all duration-700 transform \${isHovered ? 'translate-y-8 opacity-0 blur-sm' : 'translate-y-0 opacity-100 blur-0'}\`}>
+                <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-4 mix-blend-difference">reveal.</h2>
+                <p className="text-zinc-400 font-light tracking-widest text-sm uppercase">Hover to undistort</p>
+            </div>
+        </div>
+    );
+};
+
+export default LiquidReveal;`,
+        props: [
+            { name: 'imageUrl', type: 'string', default: 'undefined', description: 'URL of the image to reveal' },
+            { name: 'isHovered', type: 'boolean', default: 'false', description: 'Control hover state externally' }
+        ]
     }
 ];
 

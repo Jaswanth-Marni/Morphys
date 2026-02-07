@@ -42,6 +42,8 @@ const componentModuleMap: Record<string, string> = {
     'running-outline': 'RunningOutline',
     'synthwave-lines': 'SynthwaveLines',
     'hover-image-list': 'HoverImageList',
+    'scroll-skew': 'ScrollSkew',
+    'liquid-reveal': 'LiquidReveal',
 };
 
 // Prefetch cache to avoid duplicate prefetches

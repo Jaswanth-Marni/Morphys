@@ -319,6 +319,15 @@ export const componentMetadata: ComponentMetadata[] = [
         category: 'interaction',
         dependencies: ['framer-motion', 'react'],
     },
+    {
+        id: 'scroll-skew',
+        name: 'Scroll Skew',
+        index: 35,
+        description: 'A velocity-based scrolling marquee where text direction and slant react to scroll speed. Features smooth physics-based skew deformation using Framer Motion.',
+        tags: ['scroll', 'skew', 'text', 'velocity', 'marquee', 'animation', 'typography', 'skew-scroll', 'parallax'],
+        category: 'animation',
+        dependencies: ['framer-motion', 'react'],
+    },
 ];
 
 // Fast lookup by ID

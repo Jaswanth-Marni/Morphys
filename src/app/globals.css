@@ -57,6 +57,21 @@
   font-weight: 400;
 }
 
+/* Vank Font */
+@font-face {
+  font-family: 'Vank';
+  src: url('/GC-Vank-Demo-BF68cbc1199c7fb.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Vank font class */
+.font-vank {
+  font-family: 'Vank', sans-serif;
+  font-weight: normal;
+}
+
 /* Thunder font class */
 .font-thunder {
   font-family: 'Thunder', sans-serif;

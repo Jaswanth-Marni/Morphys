@@ -912,6 +912,41 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'items', type: 'HoverImageListItem[]', default: 'defaultItems', description: 'Array of items with text and images' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
         ]
+    },
+    {
+        id: 'scroll-skew',
+        name: 'Scroll Skew',
+        index: 35,
+        description: 'A velocity-based scrolling marquee where text direction and slant react to scroll speed. Features smooth physics-based skew deformation using Framer Motion.',
+        tags: ['scroll', 'skew', 'text', 'velocity', 'marquee', 'animation', 'typography', 'skew-scroll', 'parallax'],
+        category: 'animation',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { ScrollSkew } from '@/components/ui';
+
+<ScrollSkew />`,
+        props: [
+            { name: 'baseVelocity', type: 'number', default: '5', description: 'Base scrolling speed' },
+            { name: 'children', type: 'string', default: 'Text', description: 'Text to display' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
+    },
+    {
+        id: 'liquid-reveal',
+        name: 'Liquid Reveal',
+        index: 36,
+        description: 'A WebGL shader component that uses high-frequency sine waves to create a liquid distortion effect, revealing an image on hover or scroll. Features chromatic aberration and smooth physics.',
+        tags: ['webgl', 'shader', 'liquid', 'distortion', 'reveal', 'react-three-fiber', '3d'],
+        category: 'animation',
+        previewConfig: {},
+        dependencies: ['@react-three/fiber', '@react-three/drei', 'three', 'react'],
+        usage: `import { LiquidReveal } from '@/components/ui';
+
+<LiquidReveal />`,
+        props: [
+            { name: 'imageUrl', type: 'string', default: 'undefined', description: 'URL of the image to reveal' },
+            { name: 'isHovered', type: 'boolean', default: 'false', description: 'Control hover state externally' }
+        ]
     }
 ];
 

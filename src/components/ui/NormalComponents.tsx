@@ -89,6 +89,8 @@ import { PixelSimulation } from "./PixelSimulation";
 import { RunningOutline } from "./RunningOutline";
 import { SynthwaveLines } from "./SynthwaveLines";
 import { HoverImageList } from "./HoverImageList";
+import { ScrollSkew } from "./ScrollSkew";
+import { LiquidReveal } from "./LiquidReveal";
 
 // Preview Wrappers
 const TextPressurePreview = () => (
@@ -175,24 +177,42 @@ const PixelSimulationPreview = () => (
 
 const RunningOutlinePreview = () => (
     <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
-        <RunningOutline config={{
-            words: [
-                { text: "HOVER", font: "font-thunder" }
-            ]
-        }} />
+        <div className="scale-[0.5] origin-center">
+            <RunningOutline config={{
+                words: [
+                    { text: "HOVER", font: "font-thunder" }
+                ]
+            }} />
+        </div>
     </div>
 );
 
 const SynthwaveLinesPreview = () => (
-    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px] bg-black">
-        <SynthwaveLines config={{ lineCount: 6, color: "rgba(255, 255, 255, 0.8)" }} />
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <SynthwaveLines config={{ lineCount: 6 }} />
     </div>
 );
 
 const HoverImageListPreview = () => (
-    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px] bg-neutral-900 border border-neutral-800">
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
         <div className="scale-[0.4] origin-center w-full">
             <HoverImageList className="!py-0" />
+        </div>
+    </div>
+);
+
+const ScrollSkewPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
+        <div className="scale-[0.5] w-[200%] origin-center">
+            <ScrollSkew />
+        </div>
+    </div>
+);
+
+const LiquidRevealPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="scale-[0.5] origin-center w-[200%] h-[200%]">
+            <LiquidReveal />
         </div>
     </div>
 );
@@ -233,6 +253,8 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'running-outline': RunningOutlinePreview,
     'synthwave-lines': SynthwaveLinesPreview,
     'hover-image-list': HoverImageListPreview,
+    'scroll-skew': ScrollSkewPreview,
+    'liquid-reveal': LiquidRevealPreview,
 };
 
 export function NormalComponents() {
