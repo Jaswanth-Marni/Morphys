@@ -45,9 +45,9 @@ export function StyleSpecificComponents() {
                         }}
                         onMouseEnter={() => handleHover(style.title)}
                         onMouseLeave={() => handleHover(null)}
-                        className="group relative aspect-[3/5] w-14 xs:w-16 sm:w-20 md:w-28 overflow-hidden rounded-xl border border-white/10 bg-white/5 cursor-pointer"
+                        className="group relative aspect-[3/5] w-14 xs:w-16 sm:w-20 md:w-28 overflow-hidden cursor-pointer"
                     >
-                        {/* Image Background */}
+                        {/* Image */}
                         <div className="absolute inset-0">
                             <Image
                                 src={style.image}
@@ -57,9 +57,6 @@ export function StyleSpecificComponents() {
                                 sizes="(max-width: 768px) 33vw, (max-width: 1200px) 20vw, 10vw"
                             />
                         </div>
-
-                        {/* Hover visual cue */}
-                        <div className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-white/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     </motion.div>
                 ))}
             </div>

@@ -826,6 +826,92 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'autoPlay', type: 'boolean', default: 'true', description: 'Enable automatic rotation' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
+    },
+    {
+        id: 'running-outline',
+        name: 'Running Outline',
+        index: 32,
+        description: 'Vertical stack of text that transforms into a running dotted outline loop with an italic style shift on hover.',
+        tags: ['text', 'outline', 'animation', 'hover', 'typography', 'svg'],
+        category: 'animation',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { RunningOutline } from '@/components/ui';
+
+// Basic usage
+<RunningOutline />
+
+// With custom word
+<RunningOutline
+    config={{
+        words: [
+            { text: "HELLO", font: "font-sans" }
+        ],
+        color: "#ff0000"
+    }}
+/>`,
+        props: [
+            { name: 'config', type: 'RunningOutlineConfig', default: '{}', description: 'Configuration object' },
+            { name: 'containerClassName', type: 'string', default: "''", description: 'Class for the container' },
+        ]
+    },
+    {
+        id: 'synthwave-lines',
+        name: 'Synthwave Lines',
+        index: 33,
+        description: 'Interactive background lines with arrival impact, wave morphing, and elastic cursor physics. Features a dramatic arrival sequence and smooth elastic interaction.',
+        tags: ['background', 'lines', 'physics', 'interactive', 'canvas', 'synthwave'],
+        category: 'animation',
+        previewConfig: {
+            lineCount: 10
+        },
+        dependencies: ['react'],
+        usage: `import { SynthwaveLines } from '@/components/ui';
+
+// Basic usage
+<SynthwaveLines />
+
+// Custom configuration
+<SynthwaveLines
+    config={{
+        lineCount: 15,
+        color: 'var(--foreground)'
+    }}
+/>`,
+        props: [
+            { name: 'config', type: 'Partial<SynthwaveLinesConfig>', default: '{}', description: 'Configuration object' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
+    },
+    {
+        id: 'hover-image-list',
+        name: 'Hover Image List',
+        index: 34,
+        description: 'A minimal list component where hovering over items reveals a following image. Features smooth spring-based cursor tracking and layout based on the user\'s provided screenshot.',
+        tags: ['list', 'hover', 'image', 'reveal', 'cursor', 'follow', 'spring', 'framer-motion'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { HoverImageList } from '@/components/ui';
+
+// Basic usage
+<HoverImageList />
+
+// With custom items
+<HoverImageList
+    items={[
+        {
+            id: 1,
+            text: "ITEM 1",
+            subtext: "01",
+            image: "https://example.com/image.jpg"
+        }
+    ]}
+/>`,
+        props: [
+            { name: 'items', type: 'HoverImageListItem[]', default: 'defaultItems', description: 'Array of items with text and images' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
     }
 ];
 

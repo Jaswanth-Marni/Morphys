@@ -39,6 +39,9 @@ const componentModuleMap: Record<string, string> = {
     'flip-clock': 'FlipClock',
     'gravity': 'Gravity',
     'pixel-simulation': 'PixelSimulation',
+    'running-outline': 'RunningOutline',
+    'synthwave-lines': 'SynthwaveLines',
+    'hover-image-list': 'HoverImageList',
 };
 
 // Prefetch cache to avoid duplicate prefetches

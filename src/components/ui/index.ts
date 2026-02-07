@@ -25,6 +25,7 @@ export * from './CRTGlitch';
 export * from './FlipClock';
 export * from './Gravity';
 export * from './PixelSimulation';
+export * from './SynthwaveLines';
 
 
 // Infinite Canvas components
@@ -34,3 +35,5 @@ export { PositionIndicator } from "./PositionIndicator";
 export { StyleDetailSection } from "./StyleDetailSection";
 export { TransitionProvider } from "./TransitionProvider";
 export { CanvasOverlay } from "./CanvasOverlay";
+export { HoverImageList } from "./HoverImageList";
+export { RunningOutline } from "./RunningOutline";

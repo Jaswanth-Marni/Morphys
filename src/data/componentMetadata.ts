@@ -292,6 +292,33 @@ export const componentMetadata: ComponentMetadata[] = [
         category: 'animation',
         dependencies: ['react'],
     },
+    {
+        id: 'running-outline',
+        name: 'Running Outline',
+        index: 32,
+        description: 'An animated outline text component where the stroke runs along the text path with random directions and synchronized timing.',
+        tags: ['text', 'outline', 'animation', 'svg'],
+        category: 'animation',
+        dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'synthwave-lines',
+        name: 'Synthwave Lines',
+        index: 33,
+        description: 'Interactive background lines with arrival impact, wave morphing, and elastic cursor physics. Features a dramatic arrival sequence and smooth elastic interaction.',
+        tags: ['background', 'lines', 'physics', 'interactive', 'canvas', 'synthwave'],
+        category: 'animation',
+        dependencies: ['react'],
+    },
+    {
+        id: 'hover-image-list',
+        name: 'Hover Image List',
+        index: 34,
+        description: 'A minimal list component where hovering over items reveals a following image. Features smooth spring-based cursor tracking and layout based on the user\'s provided screenshot.',
+        tags: ['list', 'hover', 'image', 'reveal', 'cursor', 'follow', 'spring', 'framer-motion'],
+        category: 'interaction',
+        dependencies: ['framer-motion', 'react'],
+    },
 ];
 
 // Fast lookup by ID

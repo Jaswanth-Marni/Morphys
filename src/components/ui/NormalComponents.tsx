@@ -86,6 +86,9 @@ import { CRTGlitch } from "./CRTGlitch";
 import { FlipClock } from "./FlipClock";
 import { Gravity } from "./Gravity"; // Import Gravity
 import { PixelSimulation } from "./PixelSimulation";
+import { RunningOutline } from "./RunningOutline";
+import { SynthwaveLines } from "./SynthwaveLines";
+import { HoverImageList } from "./HoverImageList";
 
 // Preview Wrappers
 const TextPressurePreview = () => (
@@ -170,6 +173,30 @@ const PixelSimulationPreview = () => (
     </div>
 );
 
+const RunningOutlinePreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
+        <RunningOutline config={{
+            words: [
+                { text: "HOVER", font: "font-thunder" }
+            ]
+        }} />
+    </div>
+);
+
+const SynthwaveLinesPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px] bg-black">
+        <SynthwaveLines config={{ lineCount: 6, color: "rgba(255, 255, 255, 0.8)" }} />
+    </div>
+);
+
+const HoverImageListPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px] bg-neutral-900 border border-neutral-800">
+        <div className="scale-[0.4] origin-center w-full">
+            <HoverImageList className="!py-0" />
+        </div>
+    </div>
+);
+
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -203,6 +230,9 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'flip-clock': FlipClockPreview,
     'gravity': GravityPreview, // Map Gravity
     'pixel-simulation': PixelSimulationPreview,
+    'running-outline': RunningOutlinePreview,
+    'synthwave-lines': SynthwaveLinesPreview,
+    'hover-image-list': HoverImageListPreview,
 };
 
 export function NormalComponents() {

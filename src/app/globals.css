@@ -48,6 +48,7 @@
 /* Logo font class */
 .font-logo {
   font-family: 'Andora', sans-serif;
+  font-weight: normal;
 }
 
 /* Kugile font class */
@@ -59,16 +60,20 @@
 /* Thunder font class */
 .font-thunder {
   font-family: 'Thunder', sans-serif;
+  font-weight: 900;
 }
 
 /* Victory Striker class */
 .font-victory {
   font-family: 'Victory Striker', sans-serif;
+  font-weight: 400;
 }
 
 /* Heading font class - using Clash Display variable font */
 .font-heading {
   font-family: 'Clash Display Variable', 'Clash Display', sans-serif;
+  font-weight: 700;
+  font-variation-settings: 'wght' 700;
 }
 
 /* Body font class - Satoshi pairs beautifully with Clash Display */

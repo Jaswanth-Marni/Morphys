@@ -2911,7 +2911,732 @@ export default PixelSimulation;`,
             { name: 'autoPlay', type: 'boolean', default: 'true', description: 'Enable automatic rotation' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
-    },    // More components will be added here
+    },
+    {
+        id: 'running-outline',
+        name: 'Running Outline',
+        index: 30, // Assuming a safe high index
+        description: 'An animated outline text component where the stroke runs along the text path with random directions and synchronized timing.',
+        tags: ['text', 'outline', 'animation', 'svg'],
+        category: 'animation',
+        previewConfig: {
+            words: [{ text: "OUTLINE", font: "font-thunder" }],
+            color: "var(--foreground)"
+        },
+        usage: `import { RunningOutline } from '@/components/ui';
+
+// Basic usage
+<RunningOutline />
+
+// With custom configuration
+<RunningOutline
+    config={{
+        words: [{ text: "MORPHYS", font: "font-thunder" }],
+        color: "#ffffff",
+        gap: 20
+    }}
+/>`,
+        fullCode: `"use client";
+
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+interface RunningOutlineConfig {
+    words?: Item[];
+    color?: string;
+    gap?: number;
+}
+
+interface Item {
+    text: string;
+    font: string;
+}
+
+interface RunningOutlineProps {
+    config?: RunningOutlineConfig;
+    containerClassName?: string;
+}
+
+const defaultWords: Item[] = [
+    { text: "OUTLINE", font: "font-thunder" }
+];
+
+export function RunningOutline({ config = {}, containerClassName = "" }: RunningOutlineProps) {
+    const items = config.words || defaultWords;
+    const customColor = config.color; // Allow overriding the color via config
+    const gap = config.gap || 20;
+
+    return (
+        <div
+            className={\`w-full h-full flex flex-col items-center justify-center bg-transparent text-foreground \${containerClassName}\`}
+            style={{
+                gap,
+                color: customColor // This sets 'currentColor' for children
+            }}
+        >
+            {items.map((item, i) => (
+                <OutlineItem key={i} text={item.text} font={item.font} />
+            ))}
+        </div>
+    );
+}
+
+function OutlineItem({ text, font }: { text: string; font: string }) {
+    // Split text into array of characters, preserving spaces
+    const chars = Array.from(text);
+    const [isHovered, setIsHovered] = useState(false);
+
+    // Determine font size based on font family
+    // Kugile stays smaller, others get much bigger
+    const isKugile = font.includes('kugile');
+    const textSizeClass = isKugile
+        ? "text-9xl md:text-[10rem]"
+        : "text-[10rem] md:text-[15rem] leading-[0.8]";
+
+    return (
+        <div
+            className="flex flex-wrap justify-center items-center select-none cursor-pointer"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            {chars.map((char, i) => (
+                <LetterItem
+                    key={i}
+                    char={char}
+                    font={font}
+                    textSizeClass={textSizeClass}
+                    isHovered={isHovered}
+                />
+            ))}
+        </div>
+    );
+}
+
+function LetterItem({ char, font, textSizeClass, isHovered }: { char: string; font: string; textSizeClass: string; isHovered: boolean }) {
+    const id = React.useId();
+    const maskId = \`mask-\${id.replace(/:/g, "")}\`;
+
+    // Randomize animation params per letter
+    const animationParams = React.useMemo(() => {
+        const direction = Math.random() > 0.5 ? 1 : -1;
+        // Fixed duration for synchronized movement
+        const duration = 10;
+
+        // Longer lines (60px), not thicker
+        const dashArray = "60 20";
+
+        // Distance covers the bigger size
+        const distance = 250 * direction;
+
+        return { duration, dashArray, distance };
+    }, []);
+
+    // Handle space character
+    if (char === " ") {
+        return <span className={\`\${textSizeClass} opacity-0\`}>&nbsp;</span>;
+    }
+
+    return (
+        <div className="relative flex items-center justify-center">
+            {/* Invisible text for layout */}
+            <span className={\`\${font} \${textSizeClass} opacity-0 pointer-events-none\`}>
+                {char}
+            </span>
+
+            {/* Absolute SVG for effect */}
+            <svg
+                className="absolute inset-0 w-full h-full overflow-visible"
+            >
+                <defs>
+                    <mask id={maskId}>
+                        <motion.text
+                            x="50%"
+                            y="50%"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            // Use same font classes to match layout
+                            className={\`\${font} \${textSizeClass} uppercase\`}
+                            initial={{
+                                strokeDasharray: "0 0",
+                                strokeWidth: 0,
+                                fill: "white"
+                            }}
+                            animate={{
+                                strokeWidth: isHovered ? 4 : 0, // Medium thickness lines
+                                strokeDasharray: isHovered ? animationParams.dashArray : "0 0",
+                                fontStyle: isHovered ? "italic" : "normal",
+                                strokeDashoffset: isHovered ? [0, animationParams.distance, 0] : 0,
+                                fill: isHovered ? "black" : "white"
+                            }}
+                            transition={{
+                                strokeDashoffset: {
+                                    repeat: Infinity,
+                                    // Use the cubic bezier for the dramatic slow-down effect
+                                    ease: [
+                                        [0.215, 0.61, 0.355, 1],
+                                        [0.215, 0.61, 0.355, 1]
+                                    ],
+                                    duration: animationParams.duration,
+                                    times: [0, 0.5, 1]
+                                },
+                                // Instant transitions for state changes
+                                fill: { duration: 0 },
+                                strokeWidth: { duration: 0 },
+                                strokeDasharray: { duration: 0 },
+                                fontStyle: { duration: 0 }
+                            }}
+                            style={{
+                                stroke: "white",
+                                paintOrder: "stroke fill"
+                            }}
+                        >
+                            {char}
+                        </motion.text>
+                    </mask>
+                </defs>
+
+                <rect
+                    x="-20%"
+                    y="-20%"
+                    width="140%"
+                    height="140%"
+                    fill="currentColor"
+                    mask={\`url(#\${maskId})\`}
+                />
+            </svg>
+        </div>
+    );
+}`,
+        dependencies: ['framer-motion', 'react'],
+        props: [
+            { name: 'config', type: 'RunningOutlineConfig', default: '{}', description: 'Configuration object' },
+            { name: 'containerClassName', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
+    },
+    {
+        id: 'synthwave-lines',
+        name: 'Synthwave Lines',
+        index: 29,
+        description: 'Interactive background lines with arrival impact, wave morphing, and elastic cursor physics. Features a dramatic arrival sequence and smooth elastic interaction.',
+        tags: ['background', 'lines', 'physics', 'interactive', 'canvas', 'synthwave'],
+        category: 'animation',
+        previewConfig: {
+            lineCount: 10,
+            color: 'rgba(255, 255, 255, 0.8)'
+        },
+        dependencies: ['react'],
+        usage: `import { SynthwaveLines } from '@/components/ui';
+
+// Basic usage
+<SynthwaveLines />
+
+// Custom configuration
+<SynthwaveLines
+    config={{
+        lineCount: 15,
+        color: 'var(--foreground)'
+    }}
+/>`,
+        fullCode: `"use client";
+
+import React, { useRef, useEffect, useState } from 'react';
+
+interface SynthwaveLinesProps {
+    className?: string;
+    config?: {
+        lineCount?: number;
+        color?: string;
+    };
+}
+
+interface Line {
+    y: number; // Percentage 0-1
+    direction: -1 | 1;
+    progress: number; // 0 to 1 (arrival)
+    phase: 'arrival' | 'impact' | 'wave' | 'idle';
+    
+    // Wave animation params
+    waveAmp: number;
+    waveFreq: number;
+    wavePhase: number;
+
+    // Interaction params
+    spring: {
+        pos: number;
+        vel: number;
+        target: number;
+    };
+    mouseX: number; // X position of the bend
+    isHovered: boolean;
+}
+
+export function SynthwaveLines({ className = "", config = {} }: SynthwaveLinesProps) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const linesRef = useRef<Line[]>([]);
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const mouseRef = useRef({ x: -1000, y: -1000, vx: 0, vy: 0, lastX: 0, lastY: 0 });
+
+    const CONF = {
+        lineCount: config.lineCount || 10,
+        color: config.color || 'rgba(255, 255, 255, 0.8)',
+        springStiffness: 0.1,
+        springDamping: 0.85,
+        hoverThreshold: 30, // px
+    };
+
+    // Initialize Lines
+    useEffect(() => {
+        linesRef.current = Array.from({ length: CONF.lineCount }).map((_, i) => ({
+            y: (i + 0.5) / CONF.lineCount,
+            direction: Math.random() > 0.5 ? 1 : -1,
+            progress: 0,
+            phase: 'arrival' as const,
+            waveAmp: 0,
+            waveFreq: 0.01 + Math.random() * 0.02,
+            wavePhase: Math.random() * Math.PI * 2,
+            spring: { pos: 0, vel: 0, target: 0 },
+            mouseX: 0,
+            isHovered: false
+        }));
+    }, [CONF.lineCount]);
+
+    useEffect(() => {
+        const updateDimensions = () => {
+            if (containerRef.current) {
+                const { clientWidth, clientHeight } = containerRef.current;
+                setDimensions({ width: clientWidth, height: clientHeight });
+                if (canvasRef.current) {
+                    canvasRef.current.width = clientWidth;
+                    canvasRef.current.height = clientHeight;
+                }
+            }
+        };
+
+        window.addEventListener('resize', updateDimensions);
+        updateDimensions();
+        return () => window.removeEventListener('resize', updateDimensions);
+    }, []);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        let animationId: number;
+        const lines = linesRef.current;
+
+        const updateMouse = (e: MouseEvent) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            mouseRef.current.vx = x - mouseRef.current.lastX;
+            mouseRef.current.vy = y - mouseRef.current.lastY;
+            mouseRef.current.lastX = x;
+            mouseRef.current.lastY = y;
+            mouseRef.current.x = x;
+            mouseRef.current.y = y;
+        };
+        
+        const handleMouseLeave = () => {
+             mouseRef.current.x = -1000;
+             mouseRef.current.y = -1000;
+        };
+
+        window.addEventListener('mousemove', updateMouse);
+        canvas.addEventListener('mouseleave', handleMouseLeave);
+
+        const render = () => {
+            const { width, height } = dimensions;
+            ctx.clearRect(0, 0, width, height);
+
+            // Update lines
+            lines.forEach((line) => {
+                const baseY = line.y * height;
+                const speed = 0.01 + Math.random() * 0.005;
+
+                // --- PHASE 1: ARRIVAL ---
+                if (line.phase === 'arrival') {
+                    line.progress += speed;
+                    if (line.progress >= 1) {
+                        line.progress = 1;
+                        line.phase = 'impact';
+                    }
+                } 
+                // --- PHASE 2: IMPACT ---
+                else if (line.phase === 'impact') {
+                    // Quick recoil effect handled by spring or simply transition to wave
+                    // Let's set a small initial waveAmp as impact
+                    line.waveAmp = 20; 
+                    line.phase = 'wave';
+                }
+                // --- PHASE 3: WAVE MORPH ---
+                else if (line.phase === 'wave') {
+                    // Dampen the initial impact wave
+                    line.waveAmp *= 0.95;
+                    line.wavePhase += 0.1;
+                    
+                    // Transition to synth wave
+                    // Target is slightly wavy
+                    // Then eventually go to idle (straight)
+                    if (Math.abs(line.waveAmp) < 0.5) {
+                        line.waveAmp = 0;
+                        line.phase = 'idle';
+                    }
+                }
+                // --- PHASE 4: IDLE / INTERACTION ---
+                else if (line.phase === 'idle') {
+                    // Interaction Logic
+                    const dy = mouseRef.current.y - baseY;
+                    const dx = mouseRef.current.x; // Current mouse X
+                    
+                    // Check if mouse is interacting
+                    // "When the cursor moving in that time the cursor is hovered on top of the line"
+                    // We check vertical distance
+                    const distCheck = Math.abs(dy);
+                    
+                    if (distCheck < CONF.hoverThreshold) {
+                         line.isHovered = true;
+                    } 
+                    
+                    // If hovered, dragging, but break if too far
+                    if (line.isHovered) {
+                         if (distCheck > CONF.hoverThreshold * 4) {
+                             line.isHovered = false; // Snap back if pulled too far
+                         } else {
+                             line.spring.target = dy;
+                             line.mouseX = mouseRef.current.x;
+                         }
+                    } else {
+                        line.spring.target = 0;
+                    }
+                }
+
+                // Physics update
+                const k = CONF.springStiffness;
+                const d = CONF.springDamping;
+                const ax = (line.spring.target - line.spring.pos) * k;
+                line.spring.vel += ax;
+                line.spring.vel *= d;
+                line.spring.pos += line.spring.vel;
+
+                // Drawing
+                ctx.beginPath();
+                ctx.strokeStyle = CONF.color;
+                ctx.lineWidth = 2; // Thinner, crisper lines
+                // Add glow
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = CONF.color;
+
+
+                if (line.phase === 'arrival') {
+                    const startX = line.direction === 1 ? 0 : width;
+                    const endX = line.direction === 1 ? width * line.progress : width * (1 - line.progress);
+                    ctx.moveTo(startX, baseY);
+                    ctx.lineTo(endX, baseY);
+                } else {
+                    // Resolution of line points
+                    const steps = 100;
+                    const stepSize = width / steps;
+
+                    ctx.moveTo(0, baseY); // Start
+
+                    for (let i = 0; i <= steps; i++) {
+                        const x = i * stepSize;
+                        let y = baseY;
+
+                        // Apply Wave
+                        if (line.phase === 'wave') {
+                             y += Math.sin(x * line.waveFreq + line.wavePhase) * line.waveAmp;
+                        }
+
+                        // Apply Interaction (Gaussian pluck)
+                        if (line.phase === 'idle' || line.phase === 'wave') {
+                             // Gaussian curve for smooth bend
+                             // Peak at line.mouseX
+                             const distX = x - line.mouseX;
+                             // Width of the pluck
+                             const spread = 80; 
+                             const gaussian = Math.exp( - (distX * distX) / (2 * spread * spread) );
+                             y += line.spring.pos * gaussian;
+                        }
+
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            });
+
+            animationId = requestAnimationFrame(render);
+        };
+
+        render();
+
+        return () => {
+            window.removeEventListener('mousemove', updateMouse);
+            canvas.removeEventListener('mouseleave', handleMouseLeave);
+            cancelAnimationFrame(animationId);
+        };
+    }, [dimensions, CONF.color, CONF.lineCount, CONF.springDamping, CONF.springStiffness, CONF.hoverThreshold]);
+
+    return (
+        <div ref={containerRef} className={\`relative w-full h-full overflow-hidden bg-transparent \${className}\`}>
+             <canvas ref={canvasRef} className="block" />
+        </div>
+    );
+}
+
+export default SynthwaveLines;`,
+        props: [
+            { name: 'config', type: 'Partial<SynthwaveLinesConfig>', default: '{}', description: 'Configuration object' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
+    },
+    {
+        id: 'hover-image-list',
+        name: 'Hover Image List',
+        index: 34,
+        description: 'A minimal list component where hovering over items reveals a following image. Features smooth spring-based cursor tracking and layout based on the user\'s provided screenshot.',
+        tags: ['list', 'hover', 'image', 'reveal', 'cursor', 'follow', 'spring', 'framer-motion'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { HoverImageList } from '@/components/ui';
+
+// Basic usage
+<HoverImageList />
+
+// With custom items
+<HoverImageList
+    items={[
+        {
+            id: 1,
+            text: "ITEM 1",
+            subtext: "01",
+            image: "https://example.com/image.jpg"
+        }
+    ]}
+/>`,
+        fullCode: `"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence, useSpring, useMotionValue } from "framer-motion";
+import { cn } from "@/lib/utils";
+
+interface HoverImageListItem {
+    id: number;
+    text: string;
+    subtext: string;
+    image: string;
+}
+
+interface HoverImageListProps {
+    items?: HoverImageListItem[];
+    className?: string;
+}
+
+const defaultItems: HoverImageListItem[] = [
+    {
+        id: 1,
+        text: "DAN DA DAN",
+        subtext: "01",
+        image: "/24/dandadan.jpg",
+    },
+    {
+        id: 2,
+        text: "JUJUTSU KAISEN",
+        subtext: "02",
+        image: "/24/jujutsu kaisen.jpg",
+    },
+    {
+        id: 3,
+        text: "CHAINSAW MAN",
+        subtext: "03",
+        image: "/24/chainsaw-man-the-5120x2880-23013.jpg",
+    },
+    {
+        id: 4,
+        text: "DEMON SLAYER",
+        subtext: "04",
+        image: "/24/demon-slayer-3840x2160-23615.jpg",
+    },
+    {
+        id: 5,
+        text: "SOLO LEVELING",
+        subtext: "05",
+        image: "/24/solo leveling.jpg",
+    },
+];
+
+const HoverHeading = ({ text }: { text: string }) => {
+    return (
+        <h2 className="relative z-30 mix-blend-difference overflow-hidden text-4xl md:text-6xl font-kugile tracking-tighter text-zinc-100 transition-colors group-hover:text-zinc-400 leading-tight">
+            <span className="relative block pt-3 pb-1">
+                {text.split("").map((char, i) => (
+                    <motion.span
+                        key={i}
+                        className="inline-block relative"
+                        initial={{ y: 0, skewY: 0 }}
+                        variants={{
+                            hover: {
+                                y: "200%",
+                                skewY: 12,
+                                transition: {
+                                    duration: 1.0,
+                                    // Left-to-right stagger
+                                    delay: i * 0.03,
+                                    ease: [0.19, 1, 0.22, 1], // expoOut
+                                }
+                            }
+                        }}
+                    >
+                        {char === " " ? "\\u00A0" : char}
+                    </motion.span>
+                ))}
+            </span>
+            <span className="absolute top-0 left-0 block w-full pt-3 pb-1">
+                {text.split("").map((char, i) => (
+                    <motion.span
+                        key={i}
+                        className="inline-block relative"
+                        initial={{ y: "-200%", skewY: 12 }}
+                        variants={{
+                            hover: {
+                                y: 0,
+                                skewY: 0,
+                                transition: {
+                                    duration: 1.0,
+                                    delay: i * 0.03,
+                                    ease: [0.19, 1, 0.22, 1], // expoOut
+                                }
+                            }
+                        }}
+                    >
+                        {char === " " ? "\\u00A0" : char}
+                    </motion.span>
+                ))}
+            </span>
+        </h2>
+    );
+};
+
+export function HoverImageList({
+    items = defaultItems,
+    className,
+}: HoverImageListProps) {
+    const [activeImage, setActiveImage] = useState<string | null>(null);
+    const [activeId, setActiveId] = useState<number | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Mouse position
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+
+    // Smooth springs for the image movement
+    const springConfig = { damping: 20, stiffness: 200, mass: 0.5 };
+    const x = useSpring(mouseX, springConfig);
+    const y = useSpring(mouseY, springConfig);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        // We want the image centered on the cursor, or slightly offset
+        // Calculating relative to the container isn't strictly necessary if using fixed/absolute with e.clientX/Y
+        // creating a parallax effect or just direct follow.
+
+        // Using simple client coordinates for a "fixed" feel or relative to container
+        // Let's go relative to the container to keep it contained? 
+        // Actually, "fixed" behavior usually looks better for this heavy overlay style
+
+        // For this implementation, let's track relative to the container center or top-left
+        if (!containerRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+
+        // Offset relative to the container
+        const offsetX = e.clientX - rect.left;
+        const offsetY = e.clientY - rect.top;
+
+        mouseX.set(offsetX);
+        mouseY.set(offsetY);
+    };
+
+    return (
+        <div
+            ref={containerRef}
+            className={cn(
+                "relative w-full max-w-5xl mx-auto py-8 px-4",
+                className
+            )}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => {
+                setActiveImage(null);
+                setActiveId(null);
+            }}
+        >
+            {/* List Items */}
+            <div className="flex flex-col">
+                {items.map((item) => (
+                    <motion.div
+                        key={item.id}
+                        className="flex justify-between items-center py-9 border-b border-zinc-700/50 last:border-none cursor-pointer group transition-all duration-300"
+                        onMouseEnter={() => {
+                            setActiveImage(item.image);
+                            setActiveId(item.id);
+                        }}
+                        initial="initial"
+                        whileHover="hover"
+                    >
+                        <HoverHeading text={item.text} />
+                        <span className="text-sm md:text-lg font-light text-zinc-400 group-hover:text-zinc-600 transition-colors relative z-30 mix-blend-difference">
+                            {item.subtext}
+                        </span>
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* Hover Image - Preloaded and accessible for smooth transitions */}
+            <motion.div
+                className="absolute top-0 left-0 z-20 pointer-events-none mix-blend-normal"
+                style={{ x, y }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{
+                    opacity: activeImage ? 1 : 0,
+                    scale: activeImage ? 1 : 0.8,
+                }}
+                transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+            >
+                <div className="relative -translate-x-1/2 -translate-y-1/2">
+                    {items.map((item) => (
+                        <img
+                            key={item.id}
+                            src={item.image}
+                            alt="Preview"
+                            className={cn(
+                                "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-auto h-auto max-w-[450px] max-h-[450px] object-contain shadow-2xl transition-all duration-300",
+                                activeId === item.id 
+                                    ? "opacity-100 scale-100 blur-0" 
+                                    : "opacity-0 scale-95 blur-sm"
+                            )}
+                        />
+                    ))}
+                </div>
+            </motion.div>
+
+            {/* Background/Context helper - removing if standalone component
+          but useful for visibility if parent is light/dark.
+          The prompt image shows light theme, but codebase seems robust.
+          I'm using mix-blend-difference for text to ensure visibility against the image.
+      */}
+        </div>
+    );
+}`,
+        props: [
+            { name: 'items', type: 'HoverImageListItem[]', default: 'defaultItems', description: 'Array of items with text and images' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
+    }
 ];
 
 // Get component by ID

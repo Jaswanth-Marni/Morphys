@@ -185,6 +185,21 @@ const PixelSimulation = dynamic(() => import("@/components/ui/PixelSimulation").
     ssr: false
 });
 
+const RunningOutline = dynamic(() => import("@/components/ui/RunningOutline").then(mod => ({ default: mod.RunningOutline })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const SynthwaveLines = dynamic(() => import("@/components/ui/SynthwaveLines").then(mod => ({ default: mod.SynthwaveLines })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const HoverImageList = dynamic(() => import("@/components/ui/HoverImageList").then(mod => ({ default: mod.HoverImageList })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -304,6 +319,9 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'flip-clock': FlipClock as React.ComponentType<{ config?: any }>,
     'gravity': Gravity as React.ComponentType<{ config?: any }>,
     'pixel-simulation': PixelSimulation as React.ComponentType<{ config?: any }>,
+    'running-outline': RunningOutline as React.ComponentType<{ config?: any }>,
+    'synthwave-lines': SynthwaveLines as React.ComponentType<{ config?: any }>,
+    'hover-image-list': HoverImageList as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -583,6 +601,79 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         <div>
                                             <span className="text-xs text-foreground/40 mb-1 block">Logo Font Size</span>
                                             <NumberControl label="" value={config.logoFontSize} min={40} max={150} suffix="px" onChange={(val) => onConfigChange('logoFontSize', val)} />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'running-outline' ? (
+                                // RUNNING OUTLINE CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Text</label>
+                                        <input
+                                            type="text"
+                                            value={config.words?.[0]?.text ?? "OUTLINE"}
+                                            onChange={(e) => {
+                                                const currentFont = config.words?.[0]?.font || "font-thunder";
+                                                onConfigChange('words', [{ text: e.target.value, font: currentFont }]);
+                                            }}
+                                            className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Typography</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['font-thunder', 'font-kugile', 'font-victory', 'font-logo', 'font-heading'].map((font) => {
+                                                const activeFont = config.words?.[0]?.font || 'font-thunder';
+                                                return (
+                                                    <button
+                                                        key={font}
+                                                        onClick={() => {
+                                                            const currentText = config.words?.[0]?.text ?? "OUTLINE";
+                                                            onConfigChange('words', [{ text: currentText, font }]);
+                                                        }}
+                                                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${activeFont === font ? 'bg-foreground text-background' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/70'}`}
+                                                    >
+                                                        {font.replace('font-', '').charAt(0).toUpperCase() + font.replace('font-', '').slice(1)}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Color</label>
+                                        <div>
+                                            <input
+                                                type="color"
+                                                value={config.color === 'var(--foreground)' ? '#000000' : config.color}
+                                                onChange={(e) => onConfigChange('color', e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'synthwave-lines' ? (
+                                // SYNTHWAVE LINES CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Settings</label>
+                                        <NumberControl
+                                            label="Line Count"
+                                            value={config.lineCount || 10}
+                                            min={5}
+                                            max={50}
+                                            onChange={(val) => onConfigChange('lineCount', val)}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Color</span>
+                                            <input
+                                                type="color"
+                                                value={config.color || '#ffffff'}
+                                                onChange={(e) => onConfigChange('color', e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer"
+                                            />
                                         </div>
                                     </div>
                                 </>
@@ -2103,6 +2194,12 @@ export default function ComponentDetailPage() {
                 color2: '#a855f7'
             };
         }
+        if (componentId === 'running-outline') {
+            return {
+                words: [{ text: "OUTLINE", font: "font-thunder" }],
+                color: 'var(--foreground)'
+            };
+        }
         return {
             cols: 10,
             rows: 8,
@@ -2301,6 +2398,11 @@ export default function ComponentDetailPage() {
                 colorMode: 'depth',
                 color1: '#6366f1',
                 color2: '#a855f7'
+            });
+        } else if (componentId === 'running-outline') {
+            setConfig({
+                words: [{ text: "OUTLINE", font: "font-thunder" }],
+                color: 'var(--foreground)'
             });
         }
     }, [componentId]);
