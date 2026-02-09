@@ -246,7 +246,7 @@ const copyToClipboard = async (text: string) => {
 };
 
 // COMPONENT REGISTRY
-const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> = {
+const componentRegistry: Record<string, React.ComponentType<{ config?: any; isFullScreen?: boolean }>> = {
     'flip-grid': FlipGrid,
     'ascii-simulation': AsciiSimulation,
     'liquid-morph': LiquidMorph,
@@ -256,7 +256,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'spotlight-search': SpotlightSearch as React.ComponentType<{ config?: any }>,
     'image-trail-cursor': ImageTrailCursor as React.ComponentType<{ config?: any }>,
     'reality-lens': RealityLens as React.ComponentType<{ config?: any }>,
-    'scroll-to-reveal': ({ config = {} }: { config?: any }) => (
+    'scroll-to-reveal': ({ config = {}, isFullScreen }: { config?: any; isFullScreen?: boolean }) => (
         <ScrollToRevealSandbox
             text={config.text || "Morphys is a curated collection of high-performance, aesthetically pleasing UI components designed to elevate your web applications. Built with React, Tailwind CSS, and Framer Motion, it offers seamless integration for developers seeking valid, modern design. Our library features a diverse range of animations, interactions, and layout utilities that are fully customizable and responsive. Whether you're building stunning landing pages or complex applications, Morphys provides the essential building blocks to create immersive user experiences that captivate and engage your audience."}
             className={config.className || "text-3xl md:text-5xl lg:text-7xl font-kugile text-[#e8e4dc]"}
@@ -271,7 +271,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'text-mirror': TextMirror as React.ComponentType<{ config?: any }>,
     'step-morph': StepMorph as React.ComponentType<{ config?: any }>,
     'center-menu': CenterMenu as React.ComponentType<{ config?: any }>,
-    'glass-surge': ({ config = {} }: { config?: any }) => (
+    'glass-surge': ({ config = {}, isFullScreen }: { config?: any; isFullScreen?: boolean }) => (
         <div className="flex items-center justify-center w-full h-full">
             <GlassSurge
                 text={config.text || "MORPHYS"}
@@ -280,7 +280,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
         </div>
     ),
     'layered-image-showcase': LayeredImageShowcase as React.ComponentType<{ config?: any }>,
-    'impact-text': ({ config = {} }: { config?: any }) => (
+    'impact-text': ({ config = {}, isFullScreen }: { config?: any; isFullScreen?: boolean }) => (
         <ImpactText
             text={config.text || "LOADING"}
             config={{
@@ -294,7 +294,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'wave-marquee': WaveMarquee as React.ComponentType<{ config?: any }>,
     'expandable-strips': ExpandableStrips as React.ComponentType<{ config?: any }>,
     'frosted-glass': FrostedGlass as React.ComponentType<{ config?: any }>,
-    'text-reveal': ({ config = {} }: { config?: any }) => (
+    'text-reveal': ({ config = {}, isFullScreen }: { config?: any; isFullScreen?: boolean }) => (
         <div className="flex items-center justify-center w-full h-full">
             <TextReveal
                 text={config.text || "MORPHYS"}
@@ -303,7 +303,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
             />
         </div>
     ),
-    'text-reveal-2': ({ config = {} }: { config?: any }) => (
+    'text-reveal-2': ({ config = {}, isFullScreen }: { config?: any; isFullScreen?: boolean }) => (
         <div className="flex items-center justify-center w-full h-full">
             <TextReveal2
                 text={config.text || "MORPHYS"}
@@ -312,7 +312,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
             />
         </div>
     ),
-    'crt-glitch': ({ config = {} }: { config?: any }) => (
+    'crt-glitch': ({ config = {}, isFullScreen }: { config?: any; isFullScreen?: boolean }) => (
         <CRTGlitch
             config={{
                 text: config.text || "MORPHYS",

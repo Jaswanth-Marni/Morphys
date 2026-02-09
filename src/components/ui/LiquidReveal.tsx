@@ -82,14 +82,15 @@ const LiquidImage = ({ imageUrl, isHovered, enableAnimation = true }: LiquidImag
     const { viewport } = useThree();
 
     // Load texture
-    const texture = useTexture(imageUrl);
+    const texture = useTexture(imageUrl) as THREE.Texture;
 
     // Calculate scaling to "cover" the viewport
     const resizeValues = useMemo(() => {
-        if (!texture || !texture.image) return { width: viewport.width, height: viewport.height };
+        const img = texture.image as HTMLImageElement;
+        if (!texture || !img) return { width: viewport.width, height: viewport.height };
 
         const screenAspect = viewport.width / viewport.height;
-        const imageAspect = texture.image.width / texture.image.height;
+        const imageAspect = img.width / img.height;
 
         let scaleX = 1;
         let scaleY = 1;
