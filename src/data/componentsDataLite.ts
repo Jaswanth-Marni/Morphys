@@ -947,8 +947,25 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'imageUrl', type: 'string', default: 'undefined', description: 'URL of the image to reveal' },
             { name: 'isHovered', type: 'boolean', default: 'false', description: 'Control hover state externally' }
         ]
+    },
+    {
+        id: 'pinned-carousel',
+        name: 'Pinned Carousel',
+        index: 37,
+        description: 'A cinematic horizontal scroll component where large serial numbers and names pin to the left edge while images scroll across. Features multi-layered parallax and smooth chained transitions.',
+        tags: ['scroll', 'horizontal', 'pinning', 'parallax', 'animation', 'framer-motion', 'cinematic'],
+        category: 'layout',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react', 'lucide-react'],
+        usage: `import { PinnedCarousel } from '@/components/ui';
+
+<PinnedCarousel />`,
+        props: [
+            { name: 'config', type: 'object', default: '{}', description: 'Configuration for items and behavior' }
+        ]
     }
 ];
+
 
 
 // Fast lookup by ID

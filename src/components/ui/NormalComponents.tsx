@@ -91,6 +91,7 @@ import { SynthwaveLines } from "./SynthwaveLines";
 import { HoverImageList } from "./HoverImageList";
 import { ScrollSkew } from "./ScrollSkew";
 import { LiquidReveal } from "./LiquidReveal";
+import { PinnedCarousel } from "./PinnedCarousel";
 
 // Preview Wrappers
 const TextPressurePreview = () => (
@@ -210,12 +211,63 @@ const ScrollSkewPreview = () => (
 );
 
 const LiquidRevealPreview = () => (
-    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
-        <div className="scale-[0.5] origin-center w-[200%] h-[200%]">
-            <LiquidReveal />
-        </div>
+    <div className="w-full h-full relative overflow-hidden rounded-[20px] bg-transparent">
+        <LiquidReveal config={{ text: "reveal." }} />
     </div>
 );
+
+const PinnedCarouselPreview = () => {
+    // Determine theme for preview
+    const [isLight, setIsLight] = useState(false);
+
+    useEffect(() => {
+        const checkTheme = () => {
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            setIsLight(currentTheme === "light");
+        };
+
+        checkTheme();
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === "data-theme") {
+                    checkTheme();
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, { attributes: true });
+
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+            <div className="relative w-full h-full flex items-center justify-center scale-[0.35] origin-center">
+                {/* Number */}
+                <h2 className={`absolute left-[-20%] top-1/2 -translate-y-[45%] text-[70vh] tracking-tighter leading-none select-none font-victory ${isLight ? 'text-black drop-shadow-[0_0_50px_rgba(0,0,0,0.3)]' : 'text-white drop-shadow-[0_0_50px_rgba(0,0,0,0.5)]'}`}>
+                    1
+                </h2>
+
+                {/* Name */}
+                <div className="absolute bottom-0 left-[-20%] z-10 translate-y-[20%]">
+                    <h3 className={`text-[12vw] font-black tracking-tighter whitespace-nowrap leading-none select-none font-victory ${isLight ? 'text-black/20' : 'text-white/20'}`}>
+                        CHAINSAW-MAN
+                    </h3>
+                </div>
+
+                {/* Image */}
+                <div className={`absolute right-[-10%] top-1/2 -translate-y-1/2 w-[35vw] aspect-auto max-h-[70vh] overflow-hidden shadow-2xl border ${isLight ? 'border-black/10' : 'border-white/10'}`}>
+                    <img
+                        src="/24/chainsaw-man-the-5120x2880-23013.jpg"
+                        alt=""
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};
 
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
@@ -255,6 +307,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'hover-image-list': HoverImageListPreview,
     'scroll-skew': ScrollSkewPreview,
     'liquid-reveal': LiquidRevealPreview,
+    'pinned-carousel': PinnedCarouselPreview,
 };
 
 export function NormalComponents() {

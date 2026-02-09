@@ -328,7 +328,26 @@ export const componentMetadata: ComponentMetadata[] = [
         category: 'animation',
         dependencies: ['framer-motion', 'react'],
     },
+    {
+        id: 'liquid-reveal',
+        name: 'Liquid Reveal',
+        index: 36,
+        description: 'A WebGL shader component that uses high-frequency sine waves to create a liquid distortion effect, revealing an image on hover or scroll.',
+        tags: ['webgl', 'shader', 'liquid', 'distortion', 'reveal', 'react-three-fiber', '3d'],
+        category: 'animation',
+        dependencies: ['@react-three/fiber', '@react-three/drei', 'three', 'react'],
+    },
+    {
+        id: 'pinned-carousel',
+        name: 'Pinned Carousel',
+        index: 37,
+        description: 'A cinematic horizontal scroll component where large serial numbers and names pin to the left edge while images scroll across.',
+        tags: ['scroll', 'horizontal', 'pinning', 'parallax', 'animation', 'framer-motion', 'cinematic'],
+        category: 'layout',
+        dependencies: ['framer-motion', 'react', 'lucide-react'],
+    }
 ];
+
 
 // Fast lookup by ID
 const metadataMap = new Map(componentMetadata.map(c => [c.id, c]));

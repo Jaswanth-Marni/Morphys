@@ -44,6 +44,7 @@ const componentModuleMap: Record<string, string> = {
     'hover-image-list': 'HoverImageList',
     'scroll-skew': 'ScrollSkew',
     'liquid-reveal': 'LiquidReveal',
+    'pinned-carousel': 'PinnedCarousel',
 };
 
 // Prefetch cache to avoid duplicate prefetches

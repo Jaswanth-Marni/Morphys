@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useMemo, useEffect, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -79,10 +79,33 @@ interface LiquidImageProps {
 
 const LiquidImage = ({ imageUrl, isHovered, enableAnimation = true }: LiquidImageProps) => {
     const meshRef = useRef<THREE.Mesh>(null);
+    const { viewport } = useThree();
 
     // Load texture
     const texture = useTexture(imageUrl);
 
+    // Calculate scaling to "cover" the viewport
+    const resizeValues = useMemo(() => {
+        if (!texture || !texture.image) return { width: viewport.width, height: viewport.height };
+
+        const screenAspect = viewport.width / viewport.height;
+        const imageAspect = texture.image.width / texture.image.height;
+
+        let scaleX = 1;
+        let scaleY = 1;
+
+        if (screenAspect > imageAspect) {
+            // Screen is wider than image aspect
+            scaleX = viewport.width;
+            scaleY = viewport.width / imageAspect;
+        } else {
+            // Screen is taller than image aspect
+            scaleX = viewport.height * imageAspect;
+            scaleY = viewport.height;
+        }
+
+        return { width: scaleX, height: scaleY };
+    }, [texture, viewport.width, viewport.height]);
 
     // Use LinearSRGBColorSpace to avoid "darkening" or double-gamma correction
     // when using raw shaders
@@ -133,11 +156,7 @@ const LiquidImage = ({ imageUrl, isHovered, enableAnimation = true }: LiquidImag
 
     return (
         <mesh ref={meshRef} scale={[1, 1, 1]}>
-            {/* 
-         Plane dimensions: matched to standard 16:9 or similar aspect ratio.
-         Adjust args width/height to match texture aspect ratio if dynamic.
-      */}
-            <planeGeometry args={[6, 4, 32, 32]} />
+            <planeGeometry args={[resizeValues.width, resizeValues.height, 32, 32]} />
             <shaderMaterial
                 vertexShader={vertexShader}
                 fragmentShader={fragmentShader}
@@ -148,15 +167,15 @@ const LiquidImage = ({ imageUrl, isHovered, enableAnimation = true }: LiquidImag
     );
 };
 
-export const LiquidReveal = ({ config = {} }: { config?: any }) => {
+export const LiquidReveal = ({ config = {}, isFullScreen }: { config?: any, isFullScreen?: boolean }) => {
     const [isHovered, setIsHovered] = useState(false);
-    const imageUrl = config.imageUrl || "/carousel7.jpg";
+    const imageUrl = config.imageUrl || "/harri-p-L8p9qMMiCWs-unsplash.jpg";
 
 
     // Use LinearToneMapping to prevent auto-exposure darkening
     return (
         <div
-            className="w-full h-full min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden group cursor-pointer"
+            className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden group cursor-pointer"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -164,9 +183,11 @@ export const LiquidReveal = ({ config = {} }: { config?: any }) => {
                 <Canvas
                     camera={{ position: [0, 0, 5], fov: 45 }}
                     gl={{ toneMapping: THREE.NoToneMapping }}
+                    dpr={[1, 2]}
                 >
                     <React.Suspense fallback={null}>
                         <LiquidImage
+                            key={imageUrl}
                             imageUrl={imageUrl}
                             isHovered={isHovered}
                             enableAnimation={config.enableAnimation !== false}
@@ -175,9 +196,13 @@ export const LiquidReveal = ({ config = {} }: { config?: any }) => {
                 </Canvas>
             </div>
 
-            <div className={`pointer-events-none relative z-10 text-white text-center transition-all duration-700 transform ${isHovered ? 'translate-y-8 opacity-0 blur-sm' : 'translate-y-0 opacity-100 blur-0'}`}>
-                <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-4 mix-blend-difference">{config.text || "reveal."}</h2>
-                <p className="text-zinc-400 font-light tracking-widest text-sm uppercase">Hover to undistort</p>
+            <div className={`pointer-events-none relative z-10 text-white text-center px-4 transition-all duration-700 transform ${isHovered ? 'translate-y-8 opacity-0 blur-sm' : 'translate-y-0 opacity-100 blur-0'}`}>
+                <h2 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter mb-2 md:mb-4 mix-blend-difference drop-shadow-2xl">
+                    {config.text || "reveal."}
+                </h2>
+                <p className="text-white/50 font-light tracking-widest text-[10px] sm:text-xs md:text-sm uppercase drop-shadow-md">
+                    Hover to undistort
+                </p>
             </div>
         </div>
     );

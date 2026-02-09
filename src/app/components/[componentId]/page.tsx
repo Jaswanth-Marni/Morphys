@@ -210,6 +210,11 @@ const LiquidReveal = dynamic(() => import("@/components/ui/LiquidReveal").then(m
     ssr: false
 });
 
+const PinnedCarousel = dynamic(() => import("@/components/ui/PinnedCarousel").then(mod => ({ default: mod.PinnedCarousel })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -334,6 +339,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any }>> =
     'hover-image-list': HoverImageList as React.ComponentType<{ config?: any }>,
     'scroll-skew': ScrollSkew as React.ComponentType<{ config?: any }>,
     'liquid-reveal': LiquidReveal as React.ComponentType<{ config?: any }>,
+    'pinned-carousel': PinnedCarousel as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -740,7 +746,7 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                                 type="text"
                                                 value={config.imageUrl || ""}
                                                 placeholder="https://..."
-                                                onChange={(e) => onConfigChange('imageUrl', e.target.value)}
+                                                onChange={(e) => onConfigChange('imageUrl', e.target.value.trim())}
                                                 className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
                                             />
                                         </div>
@@ -2717,7 +2723,7 @@ export default function ComponentDetailPage() {
                                             />
                                         </RealityLens>
                                     ) : PreviewComponent && (
-                                        <PreviewComponent key={componentKey} config={config} />
+                                        <PreviewComponent key={componentKey} config={config} isFullScreen={isFullScreen} />
                                     )}
                                 </div>
 
