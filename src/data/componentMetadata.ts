@@ -345,6 +345,15 @@ export const componentMetadata: ComponentMetadata[] = [
         tags: ['scroll', 'horizontal', 'pinning', 'parallax', 'animation', 'framer-motion', 'cinematic'],
         category: 'layout',
         dependencies: ['framer-motion', 'react', 'lucide-react'],
+    },
+    {
+        id: 'timeline-zoom',
+        name: 'Timeline Zoom',
+        index: 38,
+        description: 'A horizontal timeline that reveals content based on cursor proximity and wave-like pressure interactions.',
+        tags: ['timeline', 'zoom', 'navigation', 'reveal', 'wave', 'interaction'],
+        category: 'interaction',
+        dependencies: ['framer-motion', 'react'],
     }
 ];
 

@@ -963,6 +963,24 @@ export const componentsDataLite: ComponentDataLite[] = [
         props: [
             { name: 'config', type: 'object', default: '{}', description: 'Configuration for items and behavior' }
         ]
+    },
+    {
+        id: 'timeline-zoom',
+        name: 'Timeline Zoom',
+        index: 38,
+        description: 'A horizontal timeline that reveals content based on cursor proximity and wave-like pressure interactions.',
+        tags: ['timeline', 'zoom', 'navigation', 'reveal', 'wave', 'interaction'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { TimelineZoom } from '@/components/ui';
+
+// Basic usage
+<TimelineZoom />`,
+        props: [
+            { name: 'items', type: 'TimelineItem[]', default: '[]', description: 'Array of timeline items' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
     }
 ];
 

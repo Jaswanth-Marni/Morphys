@@ -215,6 +215,11 @@ const PinnedCarousel = dynamic(() => import("@/components/ui/PinnedCarousel").th
     ssr: false
 });
 
+const TimelineZoom = dynamic(() => import("@/components/ui/TimelineZoom").then(mod => ({ default: mod.TimelineZoom })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -340,6 +345,9 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any; isFu
     'scroll-skew': ScrollSkew as React.ComponentType<{ config?: any }>,
     'liquid-reveal': LiquidReveal as React.ComponentType<{ config?: any }>,
     'pinned-carousel': PinnedCarousel as React.ComponentType<{ config?: any }>,
+    'timeline-zoom': ({ config = {} }: { config?: any }) => (
+        <TimelineZoom items={config.items} className={config.className} />
+    ),
 };
 
 

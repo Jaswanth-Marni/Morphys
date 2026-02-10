@@ -45,6 +45,7 @@ const componentModuleMap: Record<string, string> = {
     'scroll-skew': 'ScrollSkew',
     'liquid-reveal': 'LiquidReveal',
     'pinned-carousel': 'PinnedCarousel',
+    'timeline-zoom': 'TimelineZoom',
 };
 
 // Prefetch cache to avoid duplicate prefetches

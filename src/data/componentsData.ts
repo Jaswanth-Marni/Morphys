@@ -4168,6 +4168,398 @@ export default PinnedCarousel;`,
         props: [
             { name: 'config', type: 'object', default: '{}', description: 'Configuration for items and behavior' }
         ]
+    },
+    {
+        id: 'timeline-zoom',
+        name: 'Timeline Zoom',
+        index: 38,
+        description: 'A horizontal timeline that reveals content based on cursor proximity and wave-like pressure interactions.',
+        tags: ['timeline', 'zoom', 'navigation', 'reveal', 'wave', 'interaction'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { TimelineZoom } from '@/components/ui';
+
+// Basic usage
+<TimelineZoom />`,
+        fullCode: `"use client";
+
+import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { motion, useSpring, useTransform, useMotionValue, useVelocity, useAnimationFrame } from 'framer-motion';
+
+// ============================================
+// TYPES
+// ============================================
+
+interface TimelineItem {
+    id: string;
+    label: string;
+    subLabel?: string;
+    image: string; // URL to the background image
+    offset: number; // Position on the timeline (0-100 or pixel based)
+}
+
+interface TimelineZoomProps {
+    items?: TimelineItem[];
+    className?: string;
+    defaultImage?: string;
+}
+
+// ============================================
+// DEFAULT DATA
+// ============================================
+
+const DEFAULT_ITEMS: TimelineItem[] = [
+    {
+        id: '1',
+        label: 'Kyoto, Japan',
+        subLabel: '12:00 PM',
+        image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop',
+        offset: 0
+    },
+    {
+        id: '2',
+        label: 'New York, USA',
+        subLabel: '10:00 PM',
+        image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=2070&auto=format&fit=crop',
+        offset: 25
+    },
+    {
+        id: '3',
+        label: 'London, UK',
+        subLabel: '3:00 AM',
+        image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=2070&auto=format&fit=crop',
+        offset: 50
+    },
+    {
+        id: '4',
+        label: 'Paris, France',
+        subLabel: '4:00 AM',
+        image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073&auto=format&fit=crop',
+        offset: 75
+    },
+    {
+        id: '5',
+        label: 'Tokyo, Japan',
+        subLabel: '12:00 PM',
+        image: 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?q=80&w=2036&auto=format&fit=crop',
+        offset: 100
+    }
+];
+
+// ============================================
+// TICK COMPONENT
+// ============================================
+
+interface TickProps {
+    index: number;
+    totalTicks: number;
+    x: number; // normalized position 0-1
+    activeItem: TimelineItem | null;
+    mouseX: any; // MotionValue
+    isMajor: boolean;
+    label?: string;
+    subLabel?: string;
+    containerWidth: number;
+    onClick?: () => void;
+}
+
+const Tick = ({ index, x, mouseX, isMajor, label, subLabel, containerWidth, onClick }: TickProps) => {
+    const tickRef = useRef<HTMLDivElement>(null);
+    const [elementX, setElementX] = useState(0);
+
+    // Calculate distance from mouse to this tick
+    // We use a spring to smooth out the height changes
+    const heightSpring = useSpring(isMajor ? 32 : 16, { stiffness: 300, damping: 20 });
+    const opacitySpring = useSpring(isMajor ? 1 : 0.4, { stiffness: 300, damping: 20 });
+    
+    // Wave physics parameters
+    const MAX_DIST = 150; // Influence radius of the cursor
+    const MAX_HEIGHT = isMajor ? 80 : 50; // Max height when hovered
+    const BASE_HEIGHT = isMajor ? 32 : 12; // Resting height
+
+    useAnimationFrame(() => {
+        if (!tickRef.current) return;
+        
+        // precise X position of this tick on screen
+        const rect = tickRef.current.getBoundingClientRect();
+        const currentX = rect.left + rect.width / 2;
+        setElementX(currentX); // Store for click handling if needed
+
+        const mouseXValue = mouseX.get();
+        const mouseVel = mouseX.getVelocity();
+        
+        const dist = currentX - mouseXValue; // Signed distance
+        
+        // Add velocity skew
+        // If moving right (positive vel), push wave to right (negative skew to left side?)
+        // actually if moving right, the "pressure" builds up in front?
+        // Let's try to pull the wave in the direction of movement
+        // skew factor
+        const skew = mouseVel * 0.05; 
+        
+        // Effective distance calculation with skew
+        const effectiveDist = Math.abs(dist - skew);
+
+        if (effectiveDist < MAX_DIST) {
+            // Gaussian-ish curve for smooth wave
+            const power = 1 - (effectiveDist / MAX_DIST);
+            
+            // Add some "pressure" effect
+            // If moving fast, the peak is higher or sharper?
+            const velocityFactor = Math.min(Math.abs(mouseVel) / 1000, 0.5);
+            
+            const targetHeight = BASE_HEIGHT + (MAX_HEIGHT - BASE_HEIGHT) * Math.pow(power, 2) * (1 + velocityFactor);
+            heightSpring.set(targetHeight);
+            
+            if (!isMajor) {
+                // Determine opacity based on height/proximity
+                 opacitySpring.set(0.4 + (0.6 * power));
+            }
+        } else {
+            heightSpring.set(BASE_HEIGHT);
+            opacitySpring.set(isMajor ? 1 : 0.4);
+        }
+    });
+
+    return (
+        <div 
+            ref={tickRef}
+            className={\`absolute bottom-0 flex flex-col items-center justify-end cursor-pointer group\`}
+            style={{ 
+                left: \`\${x * 100}%\`,
+                width: '2px', // Interaction target width is handled by parent or padding
+                transform: 'translateX(-50%)',
+                zIndex: isMajor ? 10 : 1
+            }}
+            onClick={onClick}
+        >
+            {isMajor && label && (
+                <motion.div 
+                    className="mb-4 flex flex-col items-center whitespace-nowrap"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <div className="bg-black/80 backdrop-blur-md text-white/90 px-3 py-1.5 rounded-full text-xs font-medium border border-white/10 shadow-lg flex items-center gap-2">
+                        <span className="tracking-wide uppercase">{label}</span>
+                        {subLabel && <span className="text-white/50 border-l border-white/20 pl-2">{subLabel}</span>}
+                    </div>
+                </motion.div>
+            )}
+            
+            <motion.div 
+                className={\`w-[1px] \${isMajor ? 'bg-white' : 'bg-white/50'} rounded-t-full shadow-[0_0_10px_rgba(255,255,255,0.3)]\`}
+                style={{ 
+                    height: heightSpring,
+                    opacity: opacitySpring,
+                    width: isMajor ? 2 : 1
+                }}
+            />
+        </div>
+    );
+};
+
+// ============================================
+// COMPONENT
+// ============================================
+
+export function TimelineZoom({ 
+    items = DEFAULT_ITEMS,
+    className = "",
+    defaultImage
+}: TimelineZoomProps) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const mouseX = useMotionValue(-1000); // Initialize off-screen
+    const [containerWidth, setContainerWidth] = useState(1000);
+    const [activeItem, setActiveItem] = useState<TimelineItem>(items[0]);
+    const [scrollProgress, setScrollProgress] = useState(0);
+
+    // Initial background
+    const [currentImage, setCurrentImage] = useState(items[0].image);
+
+    // Handle resize
+    useEffect(() => {
+        if (containerRef.current) {
+            setContainerWidth(containerRef.current.getBoundingClientRect().width);
+        }
+        
+        const handleResize = () => {
+             if (containerRef.current) {
+                setContainerWidth(containerRef.current.getBoundingClientRect().width);
+            }
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Generate ticks
+    // We want a tick every X pixels approximately
+    const TICK_DENSITY = 10; // pixels per tick
+    const TOTAL_TICKS = Math.floor(containerWidth / TICK_DENSITY);
+    
+    // Create tick data
+    const ticks = useMemo(() => {
+        return Array.from({ length: TOTAL_TICKS }).map((_, i) => {
+            const x = i / (TOTAL_TICKS - 1); // 0 to 1
+            const xPercent = x * 100;
+            
+            // Allow some tolerance for "major" alignment
+            const closestItem = items.find(item => Math.abs(item.offset - xPercent) < (100 / TOTAL_TICKS));
+            
+            return {
+                id: i,
+                x,
+                isMajor: !!closestItem,
+                item: closestItem
+            };
+        });
+    }, [TOTAL_TICKS, items]);
+
+    // Handle mouse movement
+    const handleMouseMove = (e: React.MouseEvent) => {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (rect) {
+            mouseX.set(e.clientX);
+            
+            // Calculate hover percent to potentially seek/preview (optional)
+            // const x = e.clientX - rect.left;
+            // const percent = x / rect.width;
+        }
+    };
+
+    // Click to jump to section
+    const handleTickClick = (item: TimelineItem) => {
+        setActiveItem(item);
+        setCurrentImage(item.image);
+    };
+
+    // Find closest item to cursor for "settling" logic ideally
+    // For now, we'll simple detect hover near major points or just let click interaction work
+    // The prompt implies "scrolling" reveals. 
+    // Let's implement a scroll container logic if requested, but horizontally.
+    // However, the "pressure wave" implies mouse interaction as primary for the wave.
+    
+    // Update active item based on hover-scrubbing could be cool:
+    // If the user hovers over a major point, maybe we "peek" that image?
+    // "when the user settles at that point by scrolling then the picture is revealed"
+    
+    // Let's implement actual horizontal scrolling
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useTransform(mouseX, [0, 1], [0, 1]) as any; // placeholder
+
+    const onScroll = () => {
+        if (!scrollContainerRef.current) return;
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+        const progress = (scrollLeft / (scrollWidth - clientWidth)) * 100;
+        setScrollProgress(progress);
+        
+        // Find closest item
+        let closest = items[0];
+        let minDiff = Infinity;
+        
+        items.forEach(item => {
+            const diff = Math.abs(item.offset - progress);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closest = item;
+            }
+        });
+        
+        // If we are "close enough" and "settled" (velocity low), we switch
+        // For simplicity, let's switch active item when within range
+        if (closest.id !== activeItem.id && minDiff < 10) {
+            setActiveItem(closest);
+            setCurrentImage(closest.image); // Instant switch or transition?
+        }
+    };
+
+    // Smooth transition of background
+    // We can layer the images and fade opacity
+    
+    return (
+        <div 
+            className={\`relative w-full h-[600px] bg-black overflow-hidden font-sans select-none \${className}\`}
+            ref={containerRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => mouseX.set(-1000)}
+        >
+            {/* Background Images Layer */}
+            <div className="absolute inset-0 z-0">
+                {items.map((item) => (
+                    <motion.div
+                        key={item.id}
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: \`url(\${item.image})\` }}
+                        initial={{ opacity: 0 }}
+                        animate={{ 
+                            opacity: activeItem.id === item.id ? 1 : 0,
+                            scale: activeItem.id === item.id ? 1.05 : 1
+                        }}
+                        transition={{ duration: 1, ease: 'easeInOut' }}
+                    />
+                ))}
+                {/* Overlay Vignette */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/60 pointer-events-none" />
+                <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+            </div>
+
+            {/* Content Container */}
+            <div className="relative z-10 w-full h-full flex flex-col justify-end pb-12">
+                
+                {/* Current Location Indicator (if needed fixed on screen) */}
+                <div className="absolute top-12 left-12">
+                   <motion.div 
+                        key={activeItem.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex flex-col text-white"
+                   >
+                       <span className="text-xs font-bold tracking-[0.2em] text-white/50 mb-2 uppercase">Current Location</span>
+                       <span className="text-4xl md:text-6xl font-light tracking-tight">{activeItem.label}</span>
+                       <span className="text-sm font-mono mt-2 text-white/70">{activeItem.subLabel}</span>
+                   </motion.div>
+                </div>
+
+                {/* Main Timeline Interactive Area */}
+                {/* We use a scrollable container to allow "scrolling" behavior if desired, 
+                    OR we can map mouse position to scroll. 
+                    Given "scrolling" description, let's assume actual scroll interaction or drag.
+                */}
+                
+                <div className="w-full px-12">
+                   
+                    {/* The Ruler */}
+                    <div className="relative h-32 w-full flex items-end">
+                        <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                        
+                        {/* Render Ticks */}
+                        {ticks.map((tick, i) => (
+                            <Tick 
+                                key={tick.id}
+                                index={i}
+                                totalTicks={TOTAL_TICKS}
+                                x={tick.x} // Position 0-1
+                                activeItem={activeItem}
+                                mouseX={mouseX}
+                                isMajor={tick.isMajor}
+                                label={tick.item?.label}
+                                subLabel={tick.item?.subLabel}
+                                containerWidth={containerWidth}
+                                onClick={() => tick.item && handleTickClick(tick.item)}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}`,
+        props: [
+            { name: 'items', type: 'TimelineItem[]', default: '[]', description: 'Array of timeline items' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
     }
 ];
 
