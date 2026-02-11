@@ -34,10 +34,15 @@ export default function ComponentsPage() {
                 <DotPattern />
             </div>
 
-            {/* Top Blur - Mobile (Stronger) */}
-            <ProgressiveBlur className="block md:hidden" position="top" height="150px" blurAmount="16px" />
+            {/* Top Blur - Mobile (Stronger) - Explicit blur levels */}
+            <ProgressiveBlur
+                className="block md:hidden"
+                position="top"
+                height="150px"
+                blurLevels={[1, 2, 4, 8, 16, 32, 64, 128]}
+            />
             {/* Top Blur - Desktop (Standard) */}
-            <ProgressiveBlur className="hidden md:block" position="top" height="150px" blurAmount="8px" />
+            <ProgressiveBlur className="hidden md:block" position="top" height="150px" />
 
             {/* Content Container */}
             <div className="relative z-10 flex flex-col items-center gap-4 w-full min-h-[calc(100vh-200px)]">
