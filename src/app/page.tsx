@@ -15,10 +15,10 @@ export default function Home() {
 
         {/* Progressive blur overlays */}
         {/* Top Blur - Mobile (Stronger) */}
-        <ProgressiveBlur className="block md:hidden" position="top" height="150px" blurAmount="16px" />
+        <ProgressiveBlur className="block md:hidden" position="top" height="150px" blurLevels={[1, 2, 4, 8, 16, 32, 64, 128]} />
         {/* Top Blur - Desktop (Standard) */}
-        <ProgressiveBlur className="hidden md:block" position="top" height="150px" blurAmount="8px" />
-        <ProgressiveBlur position="bottom" height="150px" blurAmount="2px" />
+        <ProgressiveBlur className="hidden md:block" position="top" height="150px" />
+        <ProgressiveBlur position="bottom" height="150px" />
       </section>
 
       {/* ===== SECTION 2: STYLE SHOWCASE ===== */}
