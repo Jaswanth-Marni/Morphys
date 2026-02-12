@@ -1,0 +1,20 @@
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 7.0s
+  Running TypeScript ...
+Failed to compile.
+
+./src/data/tmp_componentsDataLite.ts:3:9
+Type error: Left side of comma operator is unused and has no side effects.
+
+  1 |
+  2 | {
+> 3 |     id: 'timeline-zoom',
+    |         ^
+  4 |         name: 'Timeline Zoom',
+  5 |             index: 32,
+  6 |                 description: 'A timeline with zoom capabilities.',
+Next.js build worker exited with code: 1 and signal: null

@@ -1,0 +1,33 @@
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./src/data/componentsData.ts:4810:185
+Parsing ecmascript source code failed
+  4808 |                 {defaultItems.slice(0, 5).map((item, i) => (
+  4809 |                     <div key={i} className="flex-1 w-full border-b border-foreground/10 flex items-center justify-center relative min-h-[60px]">
+> 4810 |                         <div className="text-3xl md:text-4xl text-foreground font-whyte font-bold tracking-tighter text-center whitespace-nowrap px-4" style={{ fontVariationSettings: `'wght' 600, 'wdth' 100` }}>
+       |                                                                                                                                                                                         ^^^^^^
+  4811 |                             {item.name}
+  4812 |                         </div>
+  4813 |                         <div className="absolute left-4 text-[10px] font-mono opacity-30">
+
+Expected ',', got 'string literal ("wght", 'wght')'
+
+Import traces:
+  Client Component Browser:
+    ./src/data/componentsData.ts [Client Component Browser]
+    ./src/app/components/[componentId]/page.tsx [Client Component Browser]
+    ./src/app/components/[componentId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/data/componentsData.ts [Client Component SSR]
+    ./src/app/components/[componentId]/page.tsx [Client Component SSR]
+    ./src/app/components/[componentId]/page.tsx [Server Component]
+
+
+    at <unknown> (./src/data/componentsData.ts:4810:185)

@@ -1,0 +1,20 @@
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 4.3s
+  Running TypeScript ...
+Failed to compile.
+
+./src/components/ui/ElasticScroll.tsx:162:25
+Type error: Cannot find name 'useScroll'. Did you mean 'scroll'?
+
+  160 |
+  161 |     // Native scroll drives the animation values
+> 162 |     const { scrollY } = useScroll({ container: containerRef });
+      |                         ^
+  163 |
+  164 |     // Velocity derived from native scroll ΓÇö drives the elastic text effects
+  165 |     const velocity = useVelocity(scrollY);
+Next.js build worker exited with code: 1 and signal: null

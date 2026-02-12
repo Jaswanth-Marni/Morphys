@@ -1,0 +1,33 @@
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./src/data/componentsData.ts:4816:17
+Parsing ecmascript source code failed
+  4814 | 
+  4815 |             <style jsx global>{`
+> 4816 |                 @font - face {
+       |                 ^
+  4817 |         font- family: 'ABC Whyte Inktrap';
+  4818 | src: url('/ABCWhyteInktrapVariable-Trial.ttf') format('truetype');
+  4819 | font - weight: 100 900;
+
+Expected ',', got '@'
+
+Import traces:
+  Client Component Browser:
+    ./src/data/componentsData.ts [Client Component Browser]
+    ./src/app/components/[componentId]/page.tsx [Client Component Browser]
+    ./src/app/components/[componentId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/data/componentsData.ts [Client Component SSR]
+    ./src/app/components/[componentId]/page.tsx [Client Component SSR]
+    ./src/app/components/[componentId]/page.tsx [Server Component]
+
+
+    at <unknown> (./src/data/componentsData.ts:4816:17)

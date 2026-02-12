@@ -354,6 +354,15 @@ export const componentMetadata: ComponentMetadata[] = [
         tags: ['timeline', 'zoom', 'navigation', 'reveal', 'wave', 'interaction'],
         category: 'interaction',
         dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'elastic-scroll',
+        name: 'Elastic Scroll',
+        index: 39,
+        description: 'A velocity-based scroll component where text weight and stretch react to scroll speed, featuring a cloth-like image reveal on hover.',
+        tags: ['scroll', 'velocity', 'elastic', 'typography', 'reveal', 'cloth'],
+        category: 'interaction',
+        dependencies: ['framer-motion', 'react'],
     }
 ];
 

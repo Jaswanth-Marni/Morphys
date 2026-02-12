@@ -93,6 +93,7 @@ import { ScrollSkew } from "./ScrollSkew";
 import { LiquidReveal } from "./LiquidReveal";
 import { PinnedCarousel } from "./PinnedCarousel";
 import { TimelineZoom } from "./TimelineZoom";
+import { ElasticScrollPreview } from "./ElasticScroll";
 
 // Preview Wrappers
 const TimelineZoomPreview = () => (
@@ -319,6 +320,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'liquid-reveal': LiquidRevealPreview,
     'pinned-carousel': PinnedCarouselPreview,
     'timeline-zoom': TimelineZoomPreview,
+    'elastic-scroll': ElasticScrollPreview,
 };
 
 export function NormalComponents() {

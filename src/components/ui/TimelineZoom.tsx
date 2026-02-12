@@ -129,8 +129,7 @@ interface TickProps {
 }
 
 const Tick = ({ index, x, mouseX, isMajor, label, subLabel, logo, containerWidth, onClick }: TickProps) => {
-    const tickRef = useRef<HTMLDivElement>(null);
-    const [elementX, setElementX] = useState(0);
+
 
     // Calculate distance from mouse to this tick
     // We use a spring to smooth out the height changes
@@ -144,12 +143,8 @@ const Tick = ({ index, x, mouseX, isMajor, label, subLabel, logo, containerWidth
     const [isHovered, setIsHovered] = useState(false);
 
     useAnimationFrame(() => {
-        if (!tickRef.current) return;
-
-        // precise X position of this tick on screen
-        const rect = tickRef.current.getBoundingClientRect();
-        const currentX = rect.left + rect.width / 2;
-        setElementX(currentX); // Store for click handling if needed
+        // precise X position of this tick relative to container
+        const currentX = x * containerWidth;
 
         const mouseXValue = mouseX.get();
         const mouseVel = mouseX.getVelocity();
@@ -188,7 +183,8 @@ const Tick = ({ index, x, mouseX, isMajor, label, subLabel, logo, containerWidth
 
     return (
         <div
-            ref={tickRef}
+            // ref removed
+
             className={`absolute bottom-0 flex flex-col items-center justify-end cursor-pointer group`}
             style={{
                 left: `${x * 100}%`,
@@ -309,7 +305,7 @@ export function TimelineZoom({
     const handleMouseMove = (e: React.MouseEvent) => {
         const rect = containerRef.current?.getBoundingClientRect();
         if (rect) {
-            mouseX.set(e.clientX);
+            mouseX.set(e.clientX - rect.left);
 
             // Calculate hover percent to potentially seek/preview (optional)
             // const x = e.clientX - rect.left;
@@ -526,7 +522,7 @@ export function TimelineZoom({
                     {/* Indicator "Now" or "Cursor" text following mouse? */}
                     <motion.div
                         className="absolute bottom-40 pointer-events-none"
-                        style={{ x: mouseX, xOffset: '-50%' }}
+                        style={{ left: mouseX, x: '-50%' }}
                     >
                         {/* <div className="px-3 py-1 rounded bg-white/10 backdrop-blur text-xs text-white border border-white/20">
                             SCANNING

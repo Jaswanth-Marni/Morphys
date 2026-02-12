@@ -1,0 +1,142 @@
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+  Creating an optimized production build ...
+Turbopack build encountered 4 warnings:
+[next]/internal/font/google/bangers_39228543.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Bangers:wght@400&display=swap
+
+Import traces:
+  Client Component Browser:
+    [next]/internal/font/google/bangers_39228543.module.css [Client Component Browser]
+    [next]/internal/font/google/bangers_39228543.js [Client Component Browser]
+    ./src/components/ui/ExpandableStrips.tsx [Client Component Browser]
+    ./src/components/ui/NormalComponents.tsx [Client Component Browser]
+    ./src/app/components/page.tsx [Client Component Browser]
+    ./src/app/components/page.tsx [Server Component]
+
+  Client Component SSR:
+    [next]/internal/font/google/bangers_39228543.module.css [Client Component SSR]
+    [next]/internal/font/google/bangers_39228543.js [Client Component SSR]
+    ./src/components/ui/ExpandableStrips.tsx [Client Component SSR]
+    ./src/components/ui/NormalComponents.tsx [Client Component SSR]
+    ./src/app/components/page.tsx [Client Component SSR]
+    ./src/app/components/page.tsx [Server Component]
+
+
+[next]/internal/font/google/geist_a71539c9.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap
+
+Import trace:
+  Server Component:
+    [next]/internal/font/google/geist_a71539c9.module.css
+    [next]/internal/font/google/geist_a71539c9.js
+    ./src/app/layout.tsx
+
+
+[next]/internal/font/google/geist_mono_8d43a2aa.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap
+
+Import trace:
+  Server Component:
+    [next]/internal/font/google/geist_mono_8d43a2aa.module.css
+    [next]/internal/font/google/geist_mono_8d43a2aa.js
+    ./src/app/layout.tsx
+
+
+[next]/internal/font/google/zen_kaku_gothic_new_bfb2edd1.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400&display=swap
+
+Import traces:
+  Client Component Browser:
+    [next]/internal/font/google/zen_kaku_gothic_new_bfb2edd1.module.css [Client Component Browser]
+    [next]/internal/font/google/zen_kaku_gothic_new_bfb2edd1.js [Client Component Browser]
+    ./src/components/ui/ExpandableStrips.tsx [Client Component Browser]
+    ./src/components/ui/NormalComponents.tsx [Client Component Browser]
+    ./src/app/components/page.tsx [Client Component Browser]
+    ./src/app/components/page.tsx [Server Component]
+
+  Client Component SSR:
+    [next]/internal/font/google/zen_kaku_gothic_new_bfb2edd1.module.css [Client Component SSR]
+    [next]/internal/font/google/zen_kaku_gothic_new_bfb2edd1.js [Client Component SSR]
+    ./src/components/ui/ExpandableStrips.tsx [Client Component SSR]
+    ./src/components/ui/NormalComponents.tsx [Client Component SSR]
+    ./src/app/components/page.tsx [Client Component SSR]
+    ./src/app/components/page.tsx [Server Component]
+
+
+
+> Build error occurred
+Error: Turbopack build failed with 4 errors:
+[next]/internal/font/google/bangers_39228543.module.css
+next/font: error:
+Failed to fetch `Bangers` from Google Fonts.
+
+Import traces:
+  Client Component Browser:
+    [next]/internal/font/google/bangers_39228543.module.css [Client Component Browser]
+    [next]/internal/font/google/bangers_39228543.js [Client Component Browser]
+    ./src/components/ui/ExpandableStrips.tsx [Client Component Browser]
+    ./src/components/ui/NormalComponents.tsx [Client Component Browser]
+    ./src/app/components/page.tsx [Client Component Browser]
+    ./src/app/components/page.tsx [Server Component]
+
+  Client Component SSR:
+    [next]/internal/font/google/bangers_39228543.module.css [Client Component SSR]
+    [next]/internal/font/google/bangers_39228543.js [Client Component SSR]
+    ./src/components/ui/ExpandableStrips.tsx [Client Component SSR]
+    ./src/components/ui/NormalComponents.tsx [Client Component SSR]
+    ./src/app/components/page.tsx [Client Component SSR]
+    ./src/app/components/page.tsx [Server Component]
+
+
+[next]/internal/font/google/geist_a71539c9.module.css
+next/font: error:
+Failed to fetch `Geist` from Google Fonts.
+
+Import trace:
+  Server Component:
+    [next]/internal/font/google/geist_a71539c9.module.css
+    [next]/internal/font/google/geist_a71539c9.js
+    ./src/app/layout.tsx
+
+
+[next]/internal/font/google/geist_mono_8d43a2aa.module.css
+next/font: error:
+Failed to fetch `Geist Mono` from Google Fonts.
+
+Import trace:
+  Server Component:
+    [next]/internal/font/google/geist_mono_8d43a2aa.module.css
+    [next]/internal/font/google/geist_mono_8d43a2aa.js
+    ./src/app/layout.tsx
+
+
+[next]/internal/font/google/zen_kaku_gothic_new_bfb2edd1.module.css
+next/font: error:
+Failed to fetch `Zen Kaku Gothic New` from Google Fonts.
+
+Import traces:
+  Client Component Browser:
+    [next]/internal/font/google/zen_kaku_gothic_new_bfb2edd1.module.css [Client Component Browser]
+    [next]/internal/font/google/zen_kaku_gothic_new_bfb2edd1.js [Client Component Browser]
+    ./src/components/ui/ExpandableStrips.tsx [Client Component Browser]
+    ./src/components/ui/NormalComponents.tsx [Client Component Browser]
+    ./src/app/components/page.tsx [Client Component Browser]
+    ./src/app/components/page.tsx [Server Component]
+
+  Client Component SSR:
+    [next]/internal/font/google/zen_kaku_gothic_new_bfb2edd1.module.css [Client Component SSR]
+    [next]/internal/font/google/zen_kaku_gothic_new_bfb2edd1.js [Client Component SSR]
+    ./src/components/ui/ExpandableStrips.tsx [Client Component SSR]
+    ./src/components/ui/NormalComponents.tsx [Client Component SSR]
+    ./src/app/components/page.tsx [Client Component SSR]
+    ./src/app/components/page.tsx [Server Component]
+
+
+    at ignore-listed frames

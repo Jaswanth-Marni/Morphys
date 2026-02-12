@@ -220,6 +220,11 @@ const TimelineZoom = dynamic(() => import("@/components/ui/TimelineZoom").then(m
     ssr: false
 });
 
+const ElasticScroll = dynamic(() => import("@/components/ui/ElasticScroll").then(mod => ({ default: mod.ElasticScroll })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -348,6 +353,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any; isFu
     'timeline-zoom': ({ config = {} }: { config?: any }) => (
         <TimelineZoom items={config.items} className={config.className} />
     ),
+    'elastic-scroll': ElasticScroll as React.ComponentType<{ config?: any }>,
 };
 
 

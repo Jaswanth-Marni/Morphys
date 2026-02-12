@@ -981,6 +981,24 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'items', type: 'TimelineItem[]', default: '[]', description: 'Array of timeline items' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
+    },
+    {
+        id: 'elastic-scroll',
+        name: 'Elastic Scroll',
+        index: 39,
+        description: 'A velocity-based scroll component where text weight and stretch react to scroll speed, creating elastic typography effects.',
+        tags: ['scroll', 'velocity', 'elastic', 'typography', 'variable-font'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { ElasticScroll } from '@/components/ui';
+
+// Basic usage
+<ElasticScroll />`,
+        props: [
+            { name: 'config', type: 'ElasticScrollConfig', default: '{}', description: 'Configuration object' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+        ]
     }
 ];
 

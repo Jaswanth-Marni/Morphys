@@ -1,0 +1,20 @@
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 5.5s
+  Running TypeScript ...
+Failed to compile.
+
+./src/components/ui/TimelineZoom.tsx:529:45
+Type error: Object literal may only specify known properties, but 'xOffset' does not exist in type 'MotionStyle'. Did you mean to write 'offset'?
+
+  527 |                     <motion.div
+  528 |                         className="absolute bottom-40 pointer-events-none"
+> 529 |                         style={{ x: mouseX, xOffset: '-50%' }}
+      |                                             ^
+  530 |                     >
+  531 |                         {/* <div className="px-3 py-1 rounded bg-white/10 backdrop-blur text-xs text-white border border-white/20">
+  532 |                             SCANNING
+Next.js build worker exited with code: 1 and signal: null
