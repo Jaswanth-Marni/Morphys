@@ -225,6 +225,11 @@ const ElasticScroll = dynamic(() => import("@/components/ui/ElasticScroll").then
     ssr: false
 });
 
+const DiagonalArrival = dynamic(() => import("@/components/ui/DiagonalArrival").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -354,6 +359,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any; isFu
         <TimelineZoom items={config.items} className={config.className} />
     ),
     'elastic-scroll': ElasticScroll as React.ComponentType<{ config?: any }>,
+    'diagonal-arrival': DiagonalArrival as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -1360,6 +1366,21 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         </div>
                                     </div>
                                 </>
+                            ) : componentId === 'diagonal-arrival' ? (
+                                // DIAGONAL ARRIVAL CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Alignment</label>
+                                        <NumberControl
+                                            label="Angle"
+                                            value={config.angle ?? 195}
+                                            min={0}
+                                            max={360}
+                                            suffix="°"
+                                            onChange={(val) => onConfigChange('angle', val)}
+                                        />
+                                    </div>
+                                </>
                             ) : componentId === 'expandable-strips' ? (
                                 // EXPANDABLE STRIPS CONTROLS
                                 <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
@@ -1653,6 +1674,20 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
                 return `import { SpotlightSearch } from '@/components/ui';\n\n// Basic usage\n<SpotlightSearch />`;
             }
             return `import { SpotlightSearch } from '@/components/ui';\n\n<SpotlightSearch\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
+        }
+
+        if (componentId === 'diagonal-arrival') {
+            const defaultConfig = {
+                angle: 195
+            };
+
+            const configEntries: string[] = [];
+            if (config.angle !== defaultConfig.angle) configEntries.push(`        angle: ${config.angle}`);
+
+            if (configEntries.length === 0) {
+                return `import DiagonalArrival from '@/components/ui/DiagonalArrival';\n\n// Basic usage\n<DiagonalArrival />`;
+            }
+            return `import DiagonalArrival from '@/components/ui/DiagonalArrival';\n\n<DiagonalArrival\n    config={{\n${configEntries.join(',\n')}\n    }}\n/>`;
         }
 
         if (componentId === 'navbar-menu') {

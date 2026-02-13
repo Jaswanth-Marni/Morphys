@@ -46,6 +46,7 @@ const componentModuleMap: Record<string, string> = {
     'liquid-reveal': 'LiquidReveal',
     'pinned-carousel': 'PinnedCarousel',
     'timeline-zoom': 'TimelineZoom',
+    'diagonal-arrival': 'DiagonalArrival',
 };
 
 // Prefetch cache to avoid duplicate prefetches

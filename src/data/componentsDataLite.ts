@@ -964,10 +964,11 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'config', type: 'object', default: '{}', description: 'Configuration for items and behavior' }
         ]
     },
+
     {
         id: 'timeline-zoom',
         name: 'Timeline Zoom',
-        index: 38,
+        index: 39,
         description: 'A horizontal timeline that reveals content based on cursor proximity and wave-like pressure interactions.',
         tags: ['timeline', 'zoom', 'navigation', 'reveal', 'wave', 'interaction'],
         category: 'interaction',
@@ -999,6 +1000,21 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'config', type: 'ElasticScrollConfig', default: '{}', description: 'Configuration object' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
         ]
+    },
+    {
+        id: 'diagonal-arrival',
+        name: 'Diagonal Arrival',
+        index: 40,
+        description: 'A draggable, multi-column diagonal carousel with infinite scrolling and smooth entrance animations. Features randomized scroll directions and staggered layouts for a dynamic visual effect.',
+        tags: ['carousel', 'infinite', 'scroll', 'random', 'staggered', 'diagonal', 'framer-motion'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import DiagonalArrival from '@/components/ui/DiagonalArrival';
+
+// Basic usage
+<DiagonalArrival />`,
+        props: []
     }
 ];
 

@@ -363,6 +363,15 @@ export const componentMetadata: ComponentMetadata[] = [
         tags: ['scroll', 'velocity', 'elastic', 'typography', 'reveal', 'cloth'],
         category: 'interaction',
         dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'diagonal-arrival',
+        name: 'Diagonal Arrival',
+        index: 40,
+        description: 'A component that animates elements arriving diagonally onto the screen.',
+        tags: ['animation', 'arrival', 'diagonal', 'motion', 'framer-motion'],
+        category: 'animation',
+        dependencies: ['framer-motion', 'react'],
     }
 ];
 

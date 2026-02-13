@@ -66,7 +66,7 @@ const Menu = () => {
                         stiffness: 100,
                         damping: 20,
                     }}
-                    className={`fixed inset-0 z-[60] flex flex-col items-center pt-24
+                    className={`fixed inset-0 z-[60] flex flex-col items-center justify-center
                         ${isLight
                             ? 'bg-[#e7e5df]'
                             : 'bg-[#080808]'
@@ -125,7 +125,7 @@ const AnimatedLink = ({ text, isLight, delayBase }: AnimatedLinkProps) => {
                             }}
                             style={{ fontVariationSettings: "'wght' 700" }}
                             className={`
-                                inline-block font-heading font-black uppercase text-[43px] md:text-8xl tracking-tighter group-hover:opacity-70 transition-opacity
+                                inline-block font-heading font-black uppercase text-[52px] md:text-9xl tracking-tighter group-hover:opacity-70 transition-opacity
                                 ${isLight ? 'text-[#171717]' : 'text-[#ededed]'}
                             `}
                         >
@@ -134,7 +134,7 @@ const AnimatedLink = ({ text, isLight, delayBase }: AnimatedLinkProps) => {
                     );
                 })}
             </span>
-        </span>
+        </span >
     );
 };
 

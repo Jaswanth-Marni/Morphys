@@ -94,12 +94,21 @@ import { LiquidReveal } from "./LiquidReveal";
 import { PinnedCarousel } from "./PinnedCarousel";
 import { TimelineZoom } from "./TimelineZoom";
 import { ElasticScrollPreview } from "./ElasticScroll";
+import DiagonalArrival from "./DiagonalArrival";
 
 // Preview Wrappers
 const TimelineZoomPreview = () => (
     <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
         <div className="absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left">
             <TimelineZoom className="!min-h-0 w-full h-full" />
+        </div>
+    </div>
+);
+
+const DiagonalArrivalPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left flex items-center justify-center">
+            <DiagonalArrival />
         </div>
     </div>
 );
@@ -321,6 +330,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'pinned-carousel': PinnedCarouselPreview,
     'timeline-zoom': TimelineZoomPreview,
     'elastic-scroll': ElasticScrollPreview,
+    'diagonal-arrival': DiagonalArrivalPreview,
 };
 
 export function NormalComponents() {
