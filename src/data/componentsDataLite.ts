@@ -1015,6 +1015,81 @@ export const componentsDataLite: ComponentDataLite[] = [
 // Basic usage
 <DiagonalArrival />`,
         props: []
+    },
+    {
+        id: 'carousel',
+        name: 'Carousel',
+        index: 41,
+        description: 'A full-screen image carousel with smooth transitions, centered controls, and glassmorphism UI elements.',
+        tags: ['carousel', 'full-screen', 'gallery', 'slider', 'interaction', 'framer-motion'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react', 'lucide-react'],
+        usage: `import Carousel from '@/components/ui/Carousel';
+
+// Basic usage
+<Carousel />`,
+        props: []
+    },
+    {
+        id: 'carousel-2',
+        name: 'Carousel 2',
+        index: 42,
+        description: 'A neon cyberpunk-style carousel with massive typography and distributed UI layout.',
+        tags: ['carousel', 'cyberpunk', 'neon', 'animation', 'typography'],
+        category: 'animation',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react', 'lucide-react'],
+        usage: `import Carousel2 from '@/components/ui/Carousel2';
+
+// Basic usage
+<Carousel2 />`,
+        props: []
+    },
+    {
+        id: 'carousel-3',
+        name: 'Carousel 3',
+        index: 43,
+        description: 'A curved carousel where the center item is larger, featuring smooth scrolling and looping.',
+        tags: ['carousel', 'curved', 'infinite', 'animation', 'framer-motion'],
+        category: 'animation',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import Carousel3 from '@/components/ui/Carousel3';
+
+// Basic usage
+<Carousel3 />`,
+        props: []
+    },
+    {
+        id: 'carousel-4',
+        name: 'Carousel 4',
+        index: 44,
+        description: 'A waterfall carousel where items flow from the right edge and drop down into depth.',
+        tags: ['carousel', 'waterfall', 'animation', 'framer-motion'],
+        category: 'animation',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import Carousel4 from '@/components/ui/Carousel4';
+
+// Basic usage
+<Carousel4 />`,
+        props: []
+    },
+    {
+        id: 'retro-404',
+        name: 'Retro 404',
+        index: 45,
+        description: 'A retro-style 404 error component with glitching neon colors and scanline effects.',
+        tags: ['404', 'retro', 'glitch', 'neon', 'error', 'page'],
+        category: 'animation',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import Retro404 from '@/components/ui/Retro404';
+
+// Basic usage
+<Retro404 />`,
+        props: []
     }
 ];
 

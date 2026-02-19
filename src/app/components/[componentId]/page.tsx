@@ -230,6 +230,31 @@ const DiagonalArrival = dynamic(() => import("@/components/ui/DiagonalArrival").
     ssr: false
 });
 
+const Carousel = dynamic(() => import("@/components/ui/Carousel").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const Carousel2 = dynamic(() => import("@/components/ui/Carousel2").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const Carousel3 = dynamic(() => import("@/components/ui/Carousel3").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const Carousel4 = dynamic(() => import("@/components/ui/Carousel4").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const Retro404 = dynamic(() => import("@/components/ui/Retro404").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -360,6 +385,11 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any; isFu
     ),
     'elastic-scroll': ElasticScroll as React.ComponentType<{ config?: any }>,
     'diagonal-arrival': DiagonalArrival as React.ComponentType<{ config?: any }>,
+    'carousel': Carousel as React.ComponentType<{ config?: any }>,
+    'carousel-2': Carousel2 as React.ComponentType<{ config?: any }>,
+    'carousel-3': Carousel3 as React.ComponentType<{ config?: any }>,
+    'carousel-4': Carousel4 as React.ComponentType<{ config?: any }>,
+    'retro-404': Retro404 as React.ComponentType<{ config?: any }>,
 };
 
 
@@ -2786,7 +2816,7 @@ export default function ComponentDetailPage() {
                                                 right: controlsOpen ? 370 : 16,
                                             }}
                                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                                            className="hidden md:flex flex-col gap-2 z-[60] absolute bottom-[72px]"
+                                            className="hidden md:flex flex-col gap-2 z-[100] absolute bottom-[72px]"
                                         >
                                             {/* Replay Button */}
                                             <button
@@ -2832,7 +2862,7 @@ export default function ComponentDetailPage() {
                                         </motion.div>
 
                                         {/* Mobile Buttons */}
-                                        <div className="absolute bottom-[72px] right-4 md:hidden flex flex-col gap-2 z-[60]">
+                                        <div className="absolute bottom-[72px] right-4 md:hidden flex flex-col gap-2 z-[100]">
                                             <button
                                                 onClick={() => handleConfigChange('_replay', Date.now())}
                                                 className="
@@ -2883,7 +2913,7 @@ export default function ComponentDetailPage() {
                                                 right: controlsOpen ? 370 : 16,
                                             }}
                                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                                            className="hidden md:flex flex-col gap-2 z-[60] absolute bottom-[72px]"
+                                            className="hidden md:flex flex-col gap-2 z-[100] absolute bottom-[72px]"
                                         >
                                             <button
                                                 onClick={() => setIsFullScreen(!isFullScreen)}
@@ -2916,7 +2946,7 @@ export default function ComponentDetailPage() {
                                         </motion.div>
 
                                         {/* Mobile Buttons */}
-                                        <div className="absolute bottom-[72px] right-4 md:hidden flex flex-col gap-2 z-[60]">
+                                        <div className="absolute bottom-[72px] right-4 md:hidden flex flex-col gap-2 z-[100]">
                                             <button
                                                 onClick={() => setIsFullScreen(!isFullScreen)}
                                                 className={`
@@ -2958,7 +2988,7 @@ export default function ComponentDetailPage() {
                                                 right: controlsOpen ? 370 : 16,
                                             }}
                                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                                            className="hidden md:flex flex-col gap-2 z-[60] absolute bottom-[128px]"
+                                            className="hidden md:flex flex-col gap-2 z-[100] absolute bottom-[128px]"
                                         >
                                             <button
                                                 onClick={() => setComponentKey(prev => prev + 1)}
@@ -2985,7 +3015,7 @@ export default function ComponentDetailPage() {
                                         </motion.div>
 
                                         {/* Mobile Reload Button */}
-                                        <div className="absolute bottom-[128px] right-4 md:hidden flex flex-col gap-2 z-[60]">
+                                        <div className="absolute bottom-[128px] right-4 md:hidden flex flex-col gap-2 z-[100]">
                                             <button
                                                 onClick={() => setComponentKey(prev => prev + 1)}
                                                 title="Reload Component"
@@ -3028,7 +3058,7 @@ export default function ComponentDetailPage() {
                                         w-12 h-12 rounded-full
                                         backdrop-blur-lg
                                         flex items-center justify-center
-                                        z-[60]
+                                        z-[100]
                                         hidden md:flex
                                         transition-colors
                                         ${['scroll-to-reveal', 'layered-image-showcase'].includes(componentId)
@@ -3065,7 +3095,7 @@ export default function ComponentDetailPage() {
                                         backdrop-blur-lg
                                         flex items-center justify-center
                                         transition-colors group
-                                        z-[60]
+                                        z-[100]
                                         md:hidden
                                         ${['scroll-to-reveal', 'layered-image-showcase'].includes(componentId)
                                             ? 'bg-white/20 border border-white/30 text-white hover:bg-white/30'

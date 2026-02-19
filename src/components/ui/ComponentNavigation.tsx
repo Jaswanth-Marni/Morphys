@@ -47,6 +47,10 @@ const componentModuleMap: Record<string, string> = {
     'pinned-carousel': 'PinnedCarousel',
     'timeline-zoom': 'TimelineZoom',
     'diagonal-arrival': 'DiagonalArrival',
+    'carousel': 'Carousel',
+    'carousel-2': 'Carousel2',
+    'carousel-3': 'Carousel3',
+    'carousel-4': 'Carousel4',
 };
 
 // Prefetch cache to avoid duplicate prefetches
@@ -349,7 +353,7 @@ export function ComponentNavigation({ currentId }: { currentId: string }) {
             initial={{ y: 200, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="fixed bottom-4 md:bottom-4 left-0 right-0 flex flex-col items-center z-[60] pointer-events-none px-4 pb-safe"
+            className="fixed bottom-4 md:bottom-4 left-0 right-0 flex flex-col items-center z-[100] pointer-events-none px-4 pb-safe"
         >
             {/* Centered Name Popup - Premium Glass Design */}
             <AnimatePresence>

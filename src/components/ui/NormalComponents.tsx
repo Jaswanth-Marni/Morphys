@@ -2,11 +2,13 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
+import { Search } from "lucide-react";
 
-// Lazy Loader Component with Hysteresis
+// Lazy Loader Component with Hysteresis and Performance Optimizations
 const PreviewLazyLoader = ({ children }: { children: React.ReactNode }) => {
     const ref = useRef(null);
-    const isInView = useInView(ref, { margin: "200px 0px 200px 0px", once: false });
+    // Reduced margin to avoidance aggressive loading of off-screen heavy components
+    const isInView = useInView(ref, { margin: "50px 0px 50px 0px", once: false });
     const [shouldRender, setShouldRender] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -15,17 +17,18 @@ const PreviewLazyLoader = ({ children }: { children: React.ReactNode }) => {
 
         if (isInView) {
             // Mount after delay to ensure user has stopped/slowed down
+            // Increased delay to prevents mounting during fast scrolling
             if (!shouldRender) {
                 timeoutRef.current = setTimeout(() => {
                     setShouldRender(true);
-                }, 600); // Increased delay
+                }, 800); // Wait 0.8s before mounting
             }
         } else {
-            // Unmount after a long delay (hysteresis) to prevent thrashing
+            // Unmount faster to free up resources
             if (shouldRender) {
                 timeoutRef.current = setTimeout(() => {
                     setShouldRender(false);
-                }, 4000); // Keep alive for 4s after leaving view
+                }, 500); // Only keep alive for 0.5s after leaving view
             }
         }
 
@@ -35,7 +38,11 @@ const PreviewLazyLoader = ({ children }: { children: React.ReactNode }) => {
     }, [isInView, shouldRender]);
 
     return (
-        <div ref={ref} className="w-full h-full flex items-center justify-center">
+        <div
+            ref={ref}
+            className="w-full h-full flex items-center justify-center containment-strict"
+            style={{ contentVisibility: 'auto' }}
+        >
             <AnimatePresence>
                 {shouldRender && (
                     <motion.div
@@ -95,6 +102,11 @@ import { PinnedCarousel } from "./PinnedCarousel";
 import { TimelineZoom } from "./TimelineZoom";
 import { ElasticScrollPreview } from "./ElasticScroll";
 import DiagonalArrival from "./DiagonalArrival";
+import Carousel from "./Carousel";
+import Carousel2 from "./Carousel2";
+import Carousel3 from "./Carousel3";
+import Carousel4 from "./Carousel4";
+import Retro404 from "./Retro404";
 
 // Preview Wrappers
 const TimelineZoomPreview = () => (
@@ -289,6 +301,47 @@ const PinnedCarouselPreview = () => {
     );
 };
 
+
+const CarouselPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left flex items-center justify-center">
+            <Carousel />
+        </div>
+    </div>
+);
+
+const Carousel2Preview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left flex items-center justify-center">
+            <Carousel2 />
+        </div>
+    </div>
+);
+
+const Carousel3Preview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left flex items-center justify-center">
+            <Carousel3 />
+        </div>
+    </div>
+);
+
+const Carousel4Preview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left flex items-center justify-center">
+            <Carousel4 />
+        </div>
+    </div>
+);
+
+const Retro404Preview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left flex items-center justify-center">
+            <Retro404 />
+        </div>
+    </div>
+);
+
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -331,11 +384,34 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'timeline-zoom': TimelineZoomPreview,
     'elastic-scroll': ElasticScrollPreview,
     'diagonal-arrival': DiagonalArrivalPreview,
+    'carousel': CarouselPreview,
+    'carousel-2': Carousel2Preview,
+    'carousel-3': Carousel3Preview,
+    'carousel-4': Carousel4Preview,
+    'retro-404': Retro404Preview,
 };
+
+// Text-based components that should remain interactive (hover effects)
+const TEXT_BASED_IDS = new Set([
+    'text-pressure',
+    'text-mirror',
+    'glass-surge',
+    'frosted-glass',
+    'text-reveal',
+    'text-reveal-2',
+    'diffuse-text',
+    'fluid-height',
+    'step-morph',
+    'scroll-to-reveal',
+    'impact-text',
+    'running-outline',
+    'crt-glitch'
+]);
 
 export function NormalComponents() {
     const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
     const [isSorting, setIsSorting] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const handleSort = (order: 'newest' | 'oldest') => {
         if (order === sortOrder) return;
@@ -351,7 +427,21 @@ export function NormalComponents() {
         }, 400);
     };
 
-    const sortedComponents = [...componentsData].sort((a, b) => {
+    const filteredComponents = componentsData.filter((component) => {
+        const query = searchQuery.toLowerCase();
+        return (
+            component.name.toLowerCase().includes(query) ||
+            component.description.toLowerCase().includes(query) ||
+            component.tags.some(tag => tag.toLowerCase().includes(query)) ||
+            String(component.index).includes(query)
+        );
+    });
+
+    const sortedComponents = [...filteredComponents].sort((a, b) => {
+        if (searchQuery) {
+            return a.index - b.index;
+        }
+
         if (sortOrder === 'newest') {
             return b.index - a.index;
         } else {
@@ -362,13 +452,38 @@ export function NormalComponents() {
     return (
         <div className="w-full min-h-full flex flex-col items-center justify-start px-4 md:px-8 pb-12 mt-8 md:mt-20">
             {/* Full Screen Blur Loading Overlay */}
-            {/* Full Screen Blur Loading Overlay */}
             <AnimatePresence>
                 {isSorting && <GlobalLoader />}
             </AnimatePresence>
 
-            <div className="w-full max-w-7xl mb-8 flex justify-end">
-                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md rounded-full p-1 pl-4 border border-white/10 shadow-sm">
+            <div className="w-full max-w-7xl mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                {/* Search Bar */}
+                <div className="relative w-full md:w-96 group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                        <Search className="h-4 w-4 text-foreground/50 group-focus-within:text-foreground/80 transition-colors" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Search components..."
+                        className="
+                            w-full pl-10 pr-4 py-2.5 
+                            backdrop-blur-[8px]
+                            bg-white/5 
+                            border border-white/10
+                            rounded-full 
+                            text-sm text-foreground 
+                            shadow-sm
+                            focus:outline-none focus:bg-white/10 focus:ring-1 focus:ring-white/20
+                            transition-all duration-300
+                            placeholder:text-foreground/30
+                        "
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+
+                {/* Sort Button */}
+                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md rounded-full p-1 pl-4 border border-white/10 shadow-sm self-end md:self-auto">
                     <span className="text-xs font-medium text-foreground/50 uppercase tracking-wider">Sort</span>
                     <div className="flex bg-black/20 rounded-full p-1">
                         <button
@@ -398,97 +513,108 @@ export function NormalComponents() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full max-w-7xl">
-                {sortedComponents.map((component, i) => {
-                    const PreviewComponent = componentPreviews[component.id];
+                {sortedComponents.length > 0 ? (
+                    sortedComponents.map((component, i) => {
+                        const PreviewComponent = componentPreviews[component.id];
+                        const isTextBased = TEXT_BASED_IDS.has(component.id);
 
-                    return (
-                        <Link
-                            key={component.id}
-                            href={`/components/${component.id}`}
-                            className="block"
-                        >
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{
-                                    duration: 0.5,
-                                    delay: i * 0.05,
-                                    ease: [0.23, 1, 0.32, 1]
-                                }}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="
-                                    aspect-square w-full rounded-[32px]
-                                    backdrop-blur-[8px]
-                                    bg-transparent
-                                    dark:bg-white/5
-                                    shadow-sm
-                                    relative overflow-hidden
-                                    component-card-border
-                                    cursor-pointer
-                                    group
-                                    transition-shadow duration-300
-                                    hover:shadow-lg
-                                "
+                        return (
+                            <Link
+                                key={component.id}
+                                href={`/components/${component.id}`}
+                                className="block"
                             >
-                                {/* Card Content Container */}
-                                <div className="
-                                    absolute inset-0 
-                                    flex flex-col
-                                    p-[15px]
-                                    gap-[10px]
-                                ">
-                                    {/* Top Container - Component Info */}
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{
+                                        duration: 0.5,
+                                        delay: i * 0.05,
+                                        ease: [0.23, 1, 0.32, 1]
+                                    }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="
+                                        aspect-square w-full rounded-[32px]
+                                        backdrop-blur-[8px]
+                                        bg-transparent
+                                        dark:bg-white/5
+                                        shadow-sm
+                                        relative overflow-hidden
+                                        component-card-border
+                                        cursor-pointer
+                                        group
+                                        transition-shadow duration-300
+                                        hover:shadow-lg
+                                    "
+                                >
+                                    {/* Card Content Container */}
                                     <div className="
-                                        w-full flex-1
-                                        rounded-[20px]
-                                        flex items-center justify-between
-                                        px-4
-                                        overflow-hidden
-                                        component-sandbox-border
+                                        absolute inset-0 
+                                        flex flex-col
+                                        p-[15px]
+                                        gap-[10px]
                                     ">
-                                        {/* Component Name - Left */}
-                                        <span className="
-                                            text-sm md:text-base font-medium
-                                            text-foreground/80
-                                            truncate
+                                        {/* Top Container - Component Info */}
+                                        <div className="
+                                            w-full flex-1
+                                            rounded-[20px]
+                                            flex items-center justify-between
+                                            px-4
+                                            overflow-hidden
+                                            component-sandbox-border
                                         ">
-                                            {component.name}
-                                        </span>
-
-                                        {/* Index Number - Right */}
-                                        <span className="
-                                            text-xs md:text-sm font-mono
-                                            text-foreground/50
-                                            ml-2
-                                        ">
-                                            #{String(component.index).padStart(2, '0')}
-                                        </span>
-                                    </div>
-
-                                    {/* Bottom Container - Live Preview Sandbox */}
-                                    <div className="
-                                        w-full h-[80%]
-                                        rounded-[20px]
-                                        flex items-center justify-center
-                                        overflow-hidden
-                                        component-sandbox-border
-                                    ">
-                                        {PreviewComponent ? (
-                                            <PreviewLazyLoader>
-                                                <PreviewComponent />
-                                            </PreviewLazyLoader>
-                                        ) : (
-                                            <span className="text-foreground/30 text-sm">
-                                                Preview coming soon
+                                            {/* Component Name - Left */}
+                                            <span className="
+                                                text-sm md:text-base font-medium
+                                                text-foreground/80
+                                                truncate
+                                            ">
+                                                {component.name}
                                             </span>
-                                        )}
+
+                                            {/* Index Number - Right */}
+                                            <span className="
+                                                text-xs md:text-sm font-mono
+                                                text-foreground/50
+                                                ml-2
+                                            ">
+                                                #{String(component.index).padStart(2, '0')}
+                                            </span>
+                                        </div>
+
+                                        {/* Bottom Container - Live Preview Sandbox */}
+                                        <div className={`
+                                            w-full h-[80%]
+                                            rounded-[20px]
+                                            flex items-center justify-center
+                                            overflow-hidden
+                                            component-sandbox-border
+                                            ${!isTextBased ? 'pointer-events-none' : ''}
+                                        `}>
+                                            {PreviewComponent ? (
+                                                <PreviewLazyLoader>
+                                                    <PreviewComponent />
+                                                </PreviewLazyLoader>
+                                            ) : (
+                                                <span className="text-foreground/30 text-sm">
+                                                    Preview coming soon
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        </Link>
-                    );
-                })}
+                                </motion.div>
+                            </Link>
+                        );
+                    })
+                ) : (
+                    <div className="col-span-full py-20 text-center text-foreground/40">
+                        <div className="flex flex-col items-center gap-4">
+                            <Search className="w-12 h-12 opacity-20" />
+                            <p className="text-lg">No components found matching "{searchQuery}"</p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

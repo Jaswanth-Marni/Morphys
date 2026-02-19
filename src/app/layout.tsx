@@ -26,12 +26,12 @@ const victoryStriker = localFont({
   variable: "--font-victory",
 });
 
+const schabo = localFont({
+  src: "../../public/SCHABO-XCondensed.otf",
+  variable: "--font-schabo",
+});
 
-
-export const metadata: Metadata = {
-  title: "Morphys - Curated Chaos",
-  description: "The art of organized chaos in UI. Discover unique and uncommon components.",
-};
+// ...
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -63,7 +63,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${victoryStriker.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${victoryStriker.variable} ${schabo.variable} antialiased`}
         suppressHydrationWarning
       >
         <MenuProvider>
