@@ -287,8 +287,8 @@ export function IndexScrollRevealSandbox({ items: propItems, className = "", tit
     const [activeIndex, setActiveIndex] = useState(-1);
     
     // Use config if available (from preview page), otherwise props, otherwise defaults
-    const items = config?.items || propItems || defaultItems;
-    const title = config?.title || propTitle || "MORPHYS";
+    const items = (config?.items || propItems || defaultItems) as ScrollItem[];
+    const title = (config?.title || propTitle || "MORPHYS") as string;
 
     // Robust manual scroll handling to bypass global scroll interceptors (like Lenis)
     useEffect(() => {

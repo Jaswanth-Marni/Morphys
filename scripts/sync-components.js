@@ -13,6 +13,7 @@ function clearAndUpper(text) {
 const anomalies = {
     'reveal-marquee': 'ClothTicker',
     'image-trail-cursor': 'ImageTrailCursor', // Ensure exact case matches if needed
+    'crt-glitch': 'CRTGlitch',
 };
 
 const litePath = path.join(__dirname, '..', 'src', 'data', 'componentsDataLite.ts');
