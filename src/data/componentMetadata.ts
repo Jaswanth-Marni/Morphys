@@ -454,7 +454,24 @@ export const componentMetadata: ComponentMetadata[] = [
         category: 'interaction',
         dependencies: ['react'],
     },
-
+    {
+        id: 'chromatic-text',
+        name: 'Chromatic Text',
+        index: 50,
+        description: 'A vibrant, glowing text effect with chromatic aberration and neon blur offsets.',
+        tags: ['text', 'chromatic', 'aberration', 'neon', 'glow', 'effect'],
+        category: 'effect',
+        dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'index-scroll-reveal',
+        name: 'Index Scroll Reveal',
+        index: 51,
+        description: 'A layout where index boxes expand according to scroll position on the right, displaying blurred images and numbers smoothly.',
+        tags: ['layout', 'scroll', 'reveal', 'index', 'interactive', 'framer-motion'],
+        category: 'interaction',
+        dependencies: ['framer-motion', 'react'],
+    }
 ];
 
 
