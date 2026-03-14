@@ -215,7 +215,10 @@ export function IndexScrollReveal({ items = defaultItems, className = "", title 
             <div className="flex-1 w-full bg-zinc-900/5 rounded-[2.5rem] border border-black/5 px-2 md:px-3 flex flex-col gap-2 md:gap-3 relative">
                 {/* Intro Section */}
                 <div className="w-full h-screen flex flex-col items-center justify-center">
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900/5 rounded-[2rem] border border-black/5 relative overflow-hidden backdrop-blur-sm">
+                    <div 
+                        className="w-full h-full flex flex-col items-center justify-center bg-zinc-900/5 rounded-[2rem] border border-black/5 relative overflow-hidden backdrop-blur-sm"
+                        style={{ containerType: 'inline-size' }}
+                    >
                          <div className="absolute top-10 left-10 md:top-16 md:left-16 flex flex-col gap-1">
                             <span className="text-[10px] md:text-xs font-bold font-mono uppercase tracking-[0.3em] opacity-40">System</span>
                             <h1 className="text-xl md:text-3xl font-black font-mono leading-none tracking-tighter uppercase whitespace-nowrap">Morphys<br />Archive</h1>
@@ -225,7 +228,7 @@ export function IndexScrollReveal({ items = defaultItems, className = "", title 
                          </div>
                          
                          <div className="relative z-10 flex flex-col items-center px-4">
-                            <h1 className="text-[12rem] md:text-[20rem] lg:text-[26rem] leading-none font-black font-mono tracking-tighter opacity-[0.03] select-none uppercase truncate max-w-full text-center">
+                            <h1 className="text-[19cqw] leading-none font-black font-mono tracking-tighter opacity-[0.03] select-none uppercase truncate max-w-full text-center">
                                 {title}
                             </h1>
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -377,14 +380,17 @@ export function IndexScrollRevealSandbox({ items: propItems, className = "", tit
                     >
                         {/* Intro Section */}
                         <div className="section-item w-full h-screen flex-shrink-0 flex flex-col items-center justify-center min-h-[500px]">
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900/5 rounded-[2.5rem] border border-black/5 relative overflow-hidden backdrop-blur-sm">
+                        <div 
+                            className="w-full h-full flex flex-col items-center justify-center bg-zinc-900/5 rounded-[2.5rem] border border-black/5 relative overflow-hidden backdrop-blur-sm"
+                            style={{ containerType: 'inline-size' }}
+                        >
                              <div className="absolute top-10 left-10 flex flex-col gap-0.5">
                                 <span className="text-[8px] md:text-[10px] font-bold font-mono uppercase tracking-widest opacity-40">Project</span>
                                 <h1 className="text-lg md:text-xl font-black font-mono leading-tight tracking-tighter uppercase whitespace-nowrap">Morphys<br />Sandbox</h1>
                              </div>
                              
                              <div className="relative flex flex-col items-center">
-                                <h1 className="text-[12rem] md:text-[20rem] lg:text-[26rem] leading-none font-black font-mono tracking-tighter opacity-[0.03] select-none uppercase truncate max-w-full text-center">
+                                <h1 className="text-[19cqw] leading-none font-black font-mono tracking-tighter opacity-[0.03] select-none uppercase truncate max-w-full text-center">
                                     {title}
                                 </h1>
                                 <div className="absolute inset-0 flex items-center justify-center scale-75 md:scale-100">
