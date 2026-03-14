@@ -92,7 +92,7 @@ const ScrollSkewText = () => {
     return (
         <div
             ref={containerRef}
-            className="w-full h-screen flex items-center justify-center overflow-hidden bg-black relative"
+            className="w-full h-full min-h-[500px] flex items-center justify-center overflow-hidden bg-black relative"
         >
             <div
                 ref={textRef}

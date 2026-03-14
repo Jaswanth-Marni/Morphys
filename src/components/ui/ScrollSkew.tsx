@@ -57,9 +57,9 @@ function ParallaxText({ children, baseVelocity = 5, className = "", scrollY, sty
     });
 
     return (
-        <div className="parallax overflow-visible w-full m-0 flex flex-nowrap whitespace-nowrap leading-[1] py-2">
+        <div style={{ containerType: "inline-size" }} className="parallax overflow-visible w-full m-0 flex flex-nowrap whitespace-nowrap leading-[1] py-2">
             <motion.div
-                className={`font-vank text-[25vw] md:text-[15vw] tracking-[1px] flex flex-nowrap whitespace-nowrap ${className}`}
+                className={`font-vank text-[clamp(12.5rem,25cqi,37.5rem)] md:text-[clamp(7.5rem,15cqi,22.5rem)] tracking-[1px] flex flex-nowrap whitespace-nowrap ${className}`}
                 style={{ x, skewX, ...style }}
             >
                 {/* Repeat content 8 times to ensure seamless infinite scroll */}

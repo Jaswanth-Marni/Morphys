@@ -132,6 +132,8 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
             className={`relative min-h-screen w-full overflow-hidden ${className}`}
             style={{
                 background: "var(--background)",
+                marginTop: "-150px",
+                paddingTop: "150px",
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: isInView ? 1 : 0 }}
@@ -141,7 +143,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
 
             {/* ========== STYLES HEADING - TOP CENTER ========== */}
             <motion.div
-                className="absolute top-[120px] md:top-[100px] left-1/2 -translate-x-1/2 z-40 pointer-events-none"
+                className="absolute top-[270px] md:top-[250px] left-1/2 -translate-x-1/2 z-40 pointer-events-none"
                 variants={headingContainerVariants}
                 initial={initialVariant}
                 animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
@@ -172,7 +174,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                 className="absolute top-0 left-0 right-0 z-20 pointer-events-none"
                 style={{
                     height: "35%",
-                    background: "linear-gradient(to bottom, var(--background) 0%, var(--background) 20%, transparent 100%)",
+                    background: "var(--background)",
                     maskImage: "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
                     WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
                 }}
@@ -201,7 +203,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                 className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none"
                 style={{
                     height: "35%",
-                    background: "linear-gradient(to top, var(--background) 0%, var(--background) 20%, transparent 100%)",
+                    background: "var(--background)",
                     maskImage: "linear-gradient(to top, black 0%, black 40%, transparent 100%)",
                     WebkitMaskImage: "linear-gradient(to top, black 0%, black 40%, transparent 100%)",
                 }}
@@ -246,7 +248,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                 className="absolute top-0 bottom-0 left-0 z-20 pointer-events-none"
                 style={{
                     width: "30%",
-                    background: "linear-gradient(to right, var(--background) 0%, var(--background) 15%, transparent 100%)",
+                    background: "var(--background)",
                     maskImage: "linear-gradient(to right, black 0%, black 30%, transparent 100%)",
                     WebkitMaskImage: "linear-gradient(to right, black 0%, black 30%, transparent 100%)",
                 }}
@@ -275,7 +277,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                 className="absolute top-0 bottom-0 right-0 z-20 pointer-events-none"
                 style={{
                     width: "30%",
-                    background: "linear-gradient(to left, var(--background) 0%, var(--background) 15%, transparent 100%)",
+                    background: "var(--background)",
                     maskImage: "linear-gradient(to left, black 0%, black 30%, transparent 100%)",
                     WebkitMaskImage: "linear-gradient(to left, black 0%, black 30%, transparent 100%)",
                 }}
@@ -305,7 +307,9 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                 style={{
                     width: "50%",
                     height: "50%",
-                    background: "radial-gradient(ellipse at top left, var(--background) 0%, var(--background) 20%, transparent 70%)",
+                    background: "var(--background)",
+                    maskImage: "radial-gradient(ellipse at top left, black 0%, black 20%, transparent 70%)",
+                    WebkitMaskImage: "radial-gradient(ellipse at top left, black 0%, black 20%, transparent 70%)",
                 }}
                 variants={blurVariants}
                 initial={initialVariant}
@@ -334,7 +338,9 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
                 style={{
                     width: "50%",
                     height: "50%",
-                    background: "radial-gradient(ellipse at bottom right, var(--background) 0%, var(--background) 20%, transparent 70%)",
+                    background: "var(--background)",
+                    maskImage: "radial-gradient(ellipse at bottom right, black 0%, black 20%, transparent 70%)",
+                    WebkitMaskImage: "radial-gradient(ellipse at bottom right, black 0%, black 20%, transparent 70%)",
                 }}
                 variants={blurVariants}
                 initial={initialVariant}

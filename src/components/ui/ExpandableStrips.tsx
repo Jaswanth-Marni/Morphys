@@ -115,7 +115,7 @@ export function ExpandableStrips({ className = "", style }: { className?: string
     return (
         <div
             ref={parentRef}
-            className={`w-full h-screen min-h-[800px] flex flex-col items-center justify-center bg-[#f2f1ef] overflow-hidden py-10 ${className}`}
+            className={`w-full h-full min-h-[500px] min-h-[800px] flex flex-col items-center justify-center bg-[#f2f1ef] overflow-hidden py-10 ${className}`}
             style={style}
         >
 

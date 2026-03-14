@@ -45,6 +45,15 @@
   font-display: swap;
 }
 
+/* Overheat Font */
+@font-face {
+  font-family: 'Overheat';
+  src: url('/overheat-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Logo font class */
 .font-logo {
   font-family: 'Andora', sans-serif;
@@ -55,6 +64,12 @@
 .font-kugile {
   font-family: 'Kugile', serif;
   font-weight: 400;
+}
+
+/* Overheat font class */
+.font-overheat {
+  font-family: 'Overheat', sans-serif;
+  font-weight: normal;
 }
 
 /* SCHABO Font */
@@ -321,4 +336,154 @@ input[type="number"]::-webkit-outer-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+/* ===========================================
+   FOOTER — Performance-optimized CSS animations
+   =========================================== */
+
+/* ---- Marquee infinite scroll (CSS only) ---- */
+@keyframes footer-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.footer-marquee {
+  animation: footer-marquee-scroll linear infinite;
+  will-change: transform;
+}
+
+/* ---- Orbit: elliptical path via CSS keyframes ---- */
+@keyframes footer-orbit {
+  0% {
+    transform: translate(-50%, -50%) translate(calc(min(30vw, 280px)), 0) scale(0.85);
+    opacity: 0.7;
+  }
+
+  25% {
+    transform: translate(-50%, -50%) translate(0, calc(min(12vh, 100px))) scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translate(calc(-1 * min(30vw, 280px)), 0) scale(0.85);
+    opacity: 0.7;
+  }
+
+  75% {
+    transform: translate(-50%, -50%) translate(0, calc(-1 * min(12vh, 100px))) scale(0.7);
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) translate(calc(min(30vw, 280px)), 0) scale(0.85);
+    opacity: 0.7;
+  }
+}
+
+.footer-orbit-container {
+  height: 280px;
+}
+
+.footer-orbit-wrapper {
+  animation: footer-orbit linear infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.footer-orbit-icon {
+  width: 56px;
+  height: 56px;
+  pointer-events: auto;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.footer-orbit-icon:hover {
+  transform: scale(1.3);
+}
+
+/* Pause orbit on hover */
+.footer-orbit-wrapper:hover {
+  animation-play-state: paused;
+}
+
+/* Orbit tooltip — pure CSS */
+.footer-orbit-tooltip {
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.8);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  color: var(--foreground);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.footer-orbit-icon:hover .footer-orbit-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* Orbit path ring */
+.footer-orbit-path {
+  width: min(60vw, 560px);
+  height: min(24vh, 200px);
+  border: 1px dashed color-mix(in srgb, var(--foreground) 6%, transparent);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ---- Aurora glow following mouse via CSS custom props ---- */
+.footer-aurora {
+  background:
+    radial-gradient(circle 500px at var(--mx) var(--my), color-mix(in srgb, var(--foreground) 2.5%, transparent), transparent 60%),
+    radial-gradient(circle 250px at var(--mx) var(--my), color-mix(in srgb, var(--foreground) 3.5%, transparent), transparent 70%);
+  transition: none;
+  /* no transition for mouse tracking — must be instant */
+}
+
+/* ---- Footer letter entrance + hover (CSS only) ---- */
+@keyframes footer-letter-entrance {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+    filter: blur(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+.footer-letter {
+  display: inline-block;
+  cursor: pointer;
+  font-variation-settings: 'wght' 200;
+  opacity: 0;
+  animation: footer-letter-entrance 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  will-change: transform, opacity, filter, font-variation-settings;
+  transition: font-variation-settings 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.3s ease;
+}
+
+.footer-letter:hover {
+  font-variation-settings: 'wght' 700;
+  transform: translateY(-20px) scale(1.05);
 }

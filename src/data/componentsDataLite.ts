@@ -303,7 +303,7 @@ export const componentsDataLite: ComponentDataLite[] = [
 <DiagonalFocus />
 
 // With custom className
-<DiagonalFocus className="h-screen" />`,
+<DiagonalFocus className="h-full min-h-[500px]" />`,
         props: [
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes for container' },
         ]
@@ -323,7 +323,7 @@ export const componentsDataLite: ComponentDataLite[] = [
 <NotificationStack />
 
 // With custom className
-<NotificationStack className="h-screen" />`,
+<NotificationStack className="h-full min-h-[500px]" />`,
         props: [
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes for container' },
         ]
@@ -514,7 +514,7 @@ export const componentsDataLite: ComponentDataLite[] = [
     }}
 />`,
         props: [
-            { name: 'className', type: 'string', default: "'h-screen'", description: 'Additional CSS classes for height/styling' },
+            { name: 'className', type: 'string', default: "'h-full min-h-[500px]'", description: 'Additional CSS classes for height/styling' },
             { name: 'config', type: 'object', default: '{}', description: 'Configuration object with title, accentColor, and textColor' },
         ]
     },
@@ -1090,6 +1090,89 @@ export const componentsDataLite: ComponentDataLite[] = [
 // Basic usage
 <Retro404 />`,
         props: []
+    },
+    {
+        id: 'mouse-interaction-1',
+        name: 'Mouse Interaction 1',
+        index: 46,
+        description: 'A highly optimized grid interaction where a trail of boxes follows the cursor with smooth corner smoothing.',
+        tags: ['interaction', 'grid', 'trail', 'box', 'canvas', 'performance'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['react'],
+        usage: `import MouseInteraction1 from '@/components/ui/MouseInteraction1';\n\n<MouseInteraction1 />`,
+        props: []
+    },
+    {
+        id: 'perspective-carousel',
+        name: 'Perspective Carousel',
+        index: 47,
+        description: 'A horizontally scrolling 3D perspective carousel with parallax depth, blur, and smooth inertia.',
+        tags: ['carousel', '3d', 'perspective', 'animation', 'gallery', 'framer-motion'],
+        category: 'animation',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react', 'lucide-react'],
+        usage: `import PerspectiveCarousel from '@/components/ui/PerspectiveCarousel';\n\n<PerspectiveCarousel />`,
+        props: []
+    },
+    {
+        id: 'full-screen-menu',
+        name: 'Full Screen Menu',
+        index: 48,
+        description: 'A full screen menu matching the reference image.',
+        tags: ['menu', 'full-screen', 'layout', 'navigation'],
+        category: 'layout',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import FullScreenMenu from '@/components/ui/FullScreenMenu';\n\n<FullScreenMenu />`,
+        props: []
+    },
+    {
+        id: 'kinetic-grid',
+        name: 'Kinetic Grid',
+        index: 49,
+        description: 'A grid of plus symbols that react directly to mouse movement, rotating smoothly based on cursor direction.',
+        tags: ['background', 'grid', 'physics', 'interactive', 'canvas', 'performance'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['react'],
+        usage: `import { KineticGrid } from '@/components/ui';\n\n<KineticGrid />`,
+        props: [
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' },
+            { name: 'gridSize', type: 'number', default: '40', description: 'Spacing between plus symbols' },
+            { name: 'influenceRadius', type: 'number', default: '400', description: 'Radius of cursor effect' },
+        ]
+    },
+    {
+        id: 'chromatic-text',
+        name: 'Chromatic Text',
+        index: 50,
+        description: 'A vibrant, glowing text effect with chromatic aberration and neon blur offsets.',
+        tags: ['text', 'chromatic', 'aberration', 'neon', 'glow', 'effect'],
+        category: 'effect',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { ChromaticText } from '@/components/ui';\n\n<ChromaticText />`,
+        props: [
+            { name: 'config', type: 'Partial<ChromaticTextConfig>', default: '{}', description: 'Configuration for colors, blurs and intensity' },
+            { name: 'text', type: 'string', default: 'undefined', description: 'The text to display (overrides config.text)' },
+            { name: 'className', type: 'string', default: 'undefined', description: 'Additional CSS classes' }
+        ]
+    },
+    {
+        id: 'index-scroll-reveal',
+        name: 'Index Scroll Reveal',
+        index: 51,
+        description: 'A layout where index boxes expand according to scroll position on the right, displaying blurred images and numbers smoothly.',
+        tags: ['layout', 'scroll', 'reveal', 'index', 'interactive', 'framer-motion'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { IndexScrollReveal } from '@/components/ui';\n\n<IndexScrollReveal />`,
+        props: [
+            { name: 'items', type: 'ScrollItem[]', default: 'defaultItems', description: 'Array of items to display' },
+            { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
+        ]
     }
 ];
 

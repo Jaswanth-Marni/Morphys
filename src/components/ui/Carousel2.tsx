@@ -133,7 +133,7 @@ export function Carousel2() {
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-screen overflow-hidden bg-black text-white font-sans selection:bg-[#00f0ff] selection:text-black cursor-none"
+            className="relative w-full h-full min-h-[500px] overflow-hidden bg-black text-white font-sans selection:bg-[#00f0ff] selection:text-black cursor-none"
             onMouseMove={handleMouseMove}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}

@@ -198,7 +198,7 @@ const ElasticItem = ({
                         skewX,
                         fontVariationSettings: fontSettings,
                     }}
-                    className="text-[10vw] leading-[0.8] text-foreground font-whyte select-none text-center origin-center block will-change-transform whitespace-pre-line"
+                    className="text-[clamp(5.0rem,10cqi,15.0rem)] leading-[0.8] text-foreground font-whyte select-none text-center origin-center block will-change-transform whitespace-pre-line"
                 >
                     {formattedName}
                 </motion.span>
@@ -313,7 +313,7 @@ export function ElasticScroll({
 
 export function ElasticScrollPreview() {
     return (
-        <div className="w-full h-full bg-background flex flex-col overflow-hidden relative">
+        <div style={{ containerType: "inline-size" }} className="w-full h-full bg-background flex flex-col overflow-hidden relative">
             <div className="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,_rgba(0,0,0,0.2),transparent_70%)]" />
 
             <div className="flex flex-col w-full h-full overflow-hidden">

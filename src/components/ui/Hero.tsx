@@ -377,7 +377,7 @@ const Hero = () => {
                 transition={{ duration: 1.5, delay: 0.5 }}
                 className="absolute top-0 bottom-0 left-0 w-[12%] z-20 pointer-events-none"
                 style={{
-                    background: "linear-gradient(to right, var(--background), transparent)",
+                    background: "var(--background)",
                     maskImage: "linear-gradient(to right, black, transparent)",
                     WebkitMaskImage: "linear-gradient(to right, black, transparent)",
                     backdropFilter: "blur(5px)",
@@ -390,7 +390,7 @@ const Hero = () => {
                 transition={{ duration: 1.5, delay: 0.5 }}
                 className="absolute top-0 bottom-0 right-0 w-[12%] z-20 pointer-events-none"
                 style={{
-                    background: "linear-gradient(to left, var(--background), transparent)",
+                    background: "var(--background)",
                     maskImage: "linear-gradient(to left, black, transparent)",
                     WebkitMaskImage: "linear-gradient(to left, black, transparent)",
                     backdropFilter: "blur(5px)",

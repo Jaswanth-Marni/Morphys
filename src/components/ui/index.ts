@@ -13,3 +13,6 @@ export * from "./StyleSpecificComponents";
 export * from "./NormalComponents";
 export * from "./TimelineZoom";
 export * from "./ElasticScroll";
+export * from "./KineticGrid";
+export * from "./ChromaticText";
+export * from "./IndexScrollReveal";

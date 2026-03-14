@@ -417,7 +417,44 @@ export const componentMetadata: ComponentMetadata[] = [
         tags: ['404', 'retro', 'glitch', 'neon', 'error', 'page'],
         category: 'animation',
         dependencies: ['framer-motion', 'react'],
-    }
+    },
+    {
+        id: 'mouse-interaction-1',
+        name: 'Mouse Interaction 1',
+        index: 46,
+        description: 'A highly optimized grid interaction where a trail of boxes follows the cursor with smooth corner smoothing.',
+        tags: ['interaction', 'grid', 'trail', 'box', 'canvas', 'performance'],
+        category: 'interaction',
+        dependencies: ['react'],
+    },
+    {
+        id: 'perspective-carousel',
+        name: 'Perspective Carousel',
+        index: 47,
+        description: 'A horizontally scrolling 3D perspective carousel with parallax depth, blur, and smooth inertia.',
+        tags: ['carousel', '3d', 'perspective', 'animation', 'gallery', 'framer-motion'],
+        category: 'animation',
+        dependencies: ['framer-motion', 'react', 'lucide-react'],
+    },
+    {
+        id: 'full-screen-menu',
+        name: 'Full Screen Menu',
+        index: 48,
+        description: 'A full screen menu matching the reference image.',
+        tags: ['menu', 'full-screen', 'layout', 'navigation'],
+        category: 'layout',
+        dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'kinetic-grid',
+        name: 'Kinetic Grid',
+        index: 49,
+        description: 'A grid of plus symbols that react directly to mouse movement, rotating smoothly based on cursor direction.',
+        tags: ['background', 'grid', 'physics', 'interactive', 'canvas', 'performance'],
+        category: 'interaction',
+        dependencies: ['react'],
+    },
+
 ];
 
 

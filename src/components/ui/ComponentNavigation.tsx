@@ -51,6 +51,7 @@ const componentModuleMap: Record<string, string> = {
     'carousel-2': 'Carousel2',
     'carousel-3': 'Carousel3',
     'carousel-4': 'Carousel4',
+
 };
 
 // Prefetch cache to avoid duplicate prefetches

@@ -137,7 +137,7 @@ export default function Carousel4() {
                         className="flex flex-col items-start leading-none"
                     >
                         {/* ID Number */}
-                        <h1 className="text-[12vw] font-schabo text-foreground tracking-[1px] leading-[0.8] mb-6">
+                        <h1 className="text-[clamp(6.0rem,12cqi,18.0rem)] font-schabo text-foreground tracking-[1px] leading-[0.8] mb-6">
                             {String(items[activeIndex].id).padStart(2, '0')}
                         </h1>
 
@@ -146,7 +146,7 @@ export default function Carousel4() {
                             {items[activeIndex].name.split(" ").map((word, i) => (
                                 <h1
                                     key={i}
-                                    className="text-[12vw] font-schabo text-foreground tracking-[1px] uppercase leading-[0.75]"
+                                    className="text-[clamp(6.0rem,12cqi,18.0rem)] font-schabo text-foreground tracking-[1px] uppercase leading-[0.75]"
                                 >
                                     {word}
                                 </h1>

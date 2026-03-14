@@ -250,7 +250,44 @@ const Carousel4 = dynamic(() => import("@/components/ui/Carousel4").then(mod => 
     ssr: false
 });
 
+
+
 const Retro404 = dynamic(() => import("@/components/ui/Retro404").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const MouseInteraction1 = dynamic(() => import("@/components/ui/MouseInteraction1").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const PerspectiveCarousel = dynamic(() => import("@/components/ui/PerspectiveCarousel").then(mod => ({ default: mod.default })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const FullScreenMenu = dynamic(() => import("@/components/ui/FullScreenMenu"), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const KineticGrid = dynamic(() => import("@/components/ui/KineticGrid").then(mod => ({ default: mod.KineticGrid })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const ChromaticText = dynamic(() => import("@/components/ui/ChromaticText").then(mod => ({ default: mod.ChromaticText })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const IndexScrollReveal = dynamic(() => import("@/components/ui/IndexScrollReveal").then(mod => ({ default: mod.IndexScrollReveal })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const IndexScrollRevealSandbox = dynamic(() => import("@/components/ui/IndexScrollReveal").then(mod => ({ default: mod.IndexScrollRevealSandbox })), {
     loading: ComponentLoader,
     ssr: false
 });
@@ -389,7 +426,44 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any; isFu
     'carousel-2': Carousel2 as React.ComponentType<{ config?: any }>,
     'carousel-3': Carousel3 as React.ComponentType<{ config?: any }>,
     'carousel-4': Carousel4 as React.ComponentType<{ config?: any }>,
+
     'retro-404': Retro404 as React.ComponentType<{ config?: any }>,
+    'mouse-interaction-1': ({ config = {} }: { config?: any }) => (
+        <MouseInteraction1
+            boxSize={config.boxSize ?? 35}
+            trailSize={config.trailSize ?? 8}
+            gridGap={config.gridGap ?? 0}
+            onHoverColor={config.onHoverColor || '#500724'}
+            hideGrid={config.hideGrid ?? true}
+            className="w-full h-full bg-black rounded-lg overflow-hidden"
+        />
+    ),
+    'perspective-carousel': ({ config = {} }: { config?: any }) => (
+        <PerspectiveCarousel config={config} />
+    ),
+    'full-screen-menu': FullScreenMenu as React.ComponentType<{ config?: any }>,
+    'kinetic-grid': ({ config = {} }: { config?: any }) => (
+        <KineticGrid
+            gridSize={config.gridSize ?? 40}
+            plusSize={config.plusSize ?? 10}
+            color={config.color || 'currentColor'}
+            influenceRadius={config.influenceRadius ?? 400}
+            forceMultiplier={config.forceMultiplier ?? 0.005}
+            damping={config.damping ?? 0.95}
+        />
+    ),
+    'chromatic-text': ({ config = {} }: { config?: any }) => (
+        <ChromaticText
+            config={{
+                text: config.text ?? 'MORPHYS',
+                offset: config.offset ?? 4,
+                glowRadius: config.glowRadius ?? 25,
+                bottomFade: config.bottomFade ?? true,
+            }}
+            className="text-[5rem] md:text-[9rem] lg:text-[12rem]"
+        />
+    ),
+    'index-scroll-reveal': IndexScrollRevealSandbox,
 };
 
 
@@ -773,6 +847,55 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         <div className="grid grid-cols-2 gap-3">
                                             <NumberControl label="Intensity" value={Math.round(config.intensity * 10)} min={0} max={50} onChange={(val) => onConfigChange('intensity', val / 10)} />
                                             <NumberControl label="Radius" value={Math.round(config.radius * 10)} min={1} max={30} onChange={(val) => onConfigChange('radius', val / 10)} />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'kinetic-grid' ? (
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Layout</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl label="Grid Size" value={config.gridSize ?? 40} min={10} max={100} onChange={(val) => onConfigChange('gridSize', val)} />
+                                            <NumberControl label="Plus Size" value={config.plusSize ?? 10} min={2} max={40} onChange={(val) => onConfigChange('plusSize', val)} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Physics</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl label="Radius" value={config.influenceRadius ?? 400} min={50} max={1000} onChange={(val) => onConfigChange('influenceRadius', val)} />
+                                            <NumberControl label="Force" value={typeof config.forceMultiplier === 'number' ? Math.round(config.forceMultiplier * 10000) : 5} min={1} max={50} onChange={(val) => onConfigChange('forceMultiplier', val / 10000)} />
+                                            <NumberControl label="Damping" value={typeof config.damping === 'number' ? Math.round(config.damping * 100) : 90} min={50} max={100} onChange={(val) => onConfigChange('damping', val / 100)} />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'chromatic-text' ? (
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.text ?? "MORPHYS"}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-10 px-3 bg-white/5 border border-white/10 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl label="Offset" value={config.offset ?? 4} min={1} max={20} suffix="px" onChange={(val) => onConfigChange('offset', val)} />
+                                            <NumberControl label="Glow Radius" value={config.glowRadius ?? 25} min={5} max={100} suffix="px" onChange={(val) => onConfigChange('glowRadius', val)} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Options</label>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-foreground/60">Bottom Fade</span>
+                                            <button onClick={() => onConfigChange('bottomFade', config.bottomFade !== false ? false : true)} className={`w-12 h-6 rounded-full relative transition-colors ${config.bottomFade !== false ? 'bg-foreground' : 'bg-foreground/20'}`}>
+                                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${config.bottomFade !== false ? 'left-7' : 'left-1'}`} />
+                                            </button>
                                         </div>
                                     </div>
                                 </>
@@ -1291,6 +1414,23 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         </div>
                                     </div>
                                 </>
+                            ) : componentId === 'index-scroll-reveal' ? (
+                                // INDEX SCROLL REVEAL CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Title</span>
+                                            <input
+                                                type="text"
+                                                value={config.title === undefined ? 'MORPHYS' : config.title}
+                                                onChange={(e) => onConfigChange('title', e.target.value)}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                                placeholder="Enter title..."
+                                            />
+                                        </div>
+                                    </div>
+                                </>
                             ) : componentId === 'crt-glitch' ? (
                                 // CRT GLITCH CONTROLS
                                 <>
@@ -1440,6 +1580,119 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         This component uses pre-configured settings and doesn't have adjustable controls.
                                     </p>
                                 </div>
+                            ) : componentId === 'mouse-interaction-1' ? (
+                                // MOUSE INTERACTION 1 CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Layout</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl label="Box Size" value={config.boxSize || 35} min={10} max={60} suffix="px" onChange={(val) => onConfigChange('boxSize', val)} />
+                                            <NumberControl label="Gap" value={config.gridGap ?? 0} min={-2} max={10} suffix="px" onChange={(val) => onConfigChange('gridGap', val)} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Trail</label>
+                                        <NumberControl label="Trail Size" value={config.trailSize || 8} min={1} max={30} onChange={(val) => onConfigChange('trailSize', val)} />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Hover Color</span>
+                                            <input type="color" value={config.onHoverColor || '#500724'} onChange={(e) => onConfigChange('onHoverColor', e.target.value)} className="w-full h-10 rounded-lg cursor-pointer" />
+                                        </div>
+                                        <div className="flex items-center justify-between mt-2">
+                                            <span className="text-sm text-foreground/60">Hide Grid</span>
+                                            <button onClick={() => onConfigChange('hideGrid', !config.hideGrid)} className={`w-12 h-6 rounded-full relative transition-colors ${config.hideGrid !== false ? 'bg-foreground' : 'bg-foreground/20'}`}>
+                                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${config.hideGrid !== false ? 'left-7' : 'left-1'}`} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : componentId === 'perspective-carousel' ? (
+                                // PERSPECTIVE CAROUSEL CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Position</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl
+                                                label="X Spacing"
+                                                value={config.xSpacing ?? 100}
+                                                min={-300}
+                                                max={300}
+                                                suffix="px"
+                                                onChange={(val) => onConfigChange('xSpacing', val)}
+                                            />
+                                            <NumberControl
+                                                label="Y Spacing"
+                                                value={config.ySpacing ?? 2}
+                                                min={-200}
+                                                max={200}
+                                                suffix="px"
+                                                onChange={(val) => onConfigChange('ySpacing', val)}
+                                            />
+                                        </div>
+                                        <NumberControl
+                                            label="Z Depth"
+                                            value={config.zDepth ?? -25}
+                                            min={-200}
+                                            max={200}
+                                            suffix="px"
+                                            onChange={(val) => onConfigChange('zDepth', val)}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Rotation</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl
+                                                label="Rotate Y"
+                                                value={config.rotateY ?? 130}
+                                                min={0}
+                                                max={360}
+                                                suffix="°"
+                                                onChange={(val) => onConfigChange('rotateY', val)}
+                                            />
+                                            <NumberControl
+                                                label="Rotate X"
+                                                value={config.rotateX ?? 0}
+                                                min={0}
+                                                max={100}
+                                                onChange={(val) => onConfigChange('rotateX', val)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl
+                                                label="Scale"
+                                                value={config.scale ?? 75}
+                                                min={10}
+                                                max={150}
+                                                suffix="%"
+                                                onChange={(val) => onConfigChange('scale', val)}
+                                            />
+                                            <NumberControl
+                                                label="Perspective"
+                                                value={config.perspective ?? 4000}
+                                                min={500}
+                                                max={10000}
+                                                suffix="px"
+                                                onChange={(val) => onConfigChange('perspective', val)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Carousel Rotation</label>
+                                        <NumberControl
+                                            label="Rotation"
+                                            value={config.carouselRotation ?? 0}
+                                            min={-180}
+                                            max={180}
+                                            suffix="°"
+                                            onChange={(val) => onConfigChange('carouselRotation', val)}
+                                        />
+                                    </div>
+                                </>
                             ) : (
                                 // DEFAULT - No controls available
                                 <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
@@ -1900,6 +2153,26 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
 <CenterMenu className="absolute bottom-8" />`;
         }
 
+        if (componentId === 'index-scroll-reveal') {
+            return `import { IndexScrollReveal } from '@/components/ui/IndexScrollReveal';
+
+// Basic usage - renders full page layout
+<IndexScrollReveal />
+
+// With custom items
+<IndexScrollReveal 
+    items={[
+        {
+            id: '1',
+            index: '01',
+            title: 'Your Title',
+            image: '/your-image.jpg',
+            color: '#ff0000'
+        }
+    ]}
+/>`;
+        }
+
         if (componentId === 'text-mirror') {
             const defaultConfig = {
                 text: "MORPHYS",
@@ -1950,6 +2223,19 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
         accentColor: "${config.accentColor || '#FF3333'}",
         textColor: "${config.textColor || '#ffffff'}"
     }}
+/>`;
+        }
+
+        if (componentId === 'mouse-interaction-1') {
+            return `import MouseInteraction1 from '@/components/ui/MouseInteraction1';
+
+<MouseInteraction1 
+    boxSize={${config.boxSize || 35}}
+    trailSize={${config.trailSize || 8}}
+    gridGap={${config.gridGap ?? 0}}
+    onHoverColor="${config.onHoverColor || '#500724'}"
+    hideGrid={${config.hideGrid ?? true}}
+    className="w-full h-full bg-black rounded-lg overflow-hidden"
 />`;
         }
 
@@ -2326,6 +2612,25 @@ export default function ComponentDetailPage() {
                 color2: '#a855f7'
             };
         }
+        if (componentId === 'mouse-interaction-1') {
+            return {
+                boxSize: 35,
+                trailSize: 8,
+                gridGap: 0,
+                onHoverColor: '#500724',
+                hideGrid: true,
+            };
+        }
+        if (componentId === 'kinetic-grid') {
+            return {
+                gridSize: 40,
+                plusSize: 10,
+                color: 'currentColor',
+                influenceRadius: 400,
+                forceMultiplier: 0.0005,
+                damping: 0.9,
+            };
+        }
         if (componentId === 'running-outline') {
             return {
                 words: [{ text: "OUTLINE", font: "font-thunder" }],
@@ -2432,6 +2737,23 @@ export default function ComponentDetailPage() {
         } else if (componentId === 'reality-lens') {
             setConfig({
                 lensSize: 120,
+            });
+        } else if (componentId === 'mouse-interaction-1') {
+            setConfig({
+                boxSize: 35,
+                trailSize: 8,
+                gridGap: 0,
+                onHoverColor: '#500724',
+                hideGrid: true,
+            });
+        } else if (componentId === 'kinetic-grid') {
+            setConfig({
+                gridSize: 40,
+                plusSize: 10,
+                color: 'currentColor',
+                influenceRadius: 400,
+                forceMultiplier: 0.0005,
+                damping: 0.9,
             });
         } else if (componentId === 'diffuse-text') {
             setConfig({

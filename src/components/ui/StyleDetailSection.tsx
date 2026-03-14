@@ -80,7 +80,7 @@ export const StyleDetailSection = ({
             />
 
             {/* Main content container */}
-            <div className="relative w-full max-w-6xl mx-auto px-6 md:px-12 flex flex-col lg:flex-row items-center gap-6 lg:gap-12 h-screen lg:h-auto justify-center lg:justify-start pt-20 lg:pt-0">
+            <div className="relative w-full max-w-6xl mx-auto px-6 md:px-12 flex flex-col lg:flex-row items-center gap-6 lg:gap-12 h-full min-h-[500px] lg:h-auto justify-center lg:justify-start pt-20 lg:pt-0">
 
                 {/* Left: Main Image - Banner on mobile, Side image on desktop */}
                 <div className="relative w-full h-[35vh] lg:h-auto lg:w-2/5 lg:aspect-[3/4] flex-shrink-0">

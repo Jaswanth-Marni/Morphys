@@ -107,6 +107,25 @@ import Carousel2 from "./Carousel2";
 import Carousel3 from "./Carousel3";
 import Carousel4 from "./Carousel4";
 import Retro404 from "./Retro404";
+import MouseInteraction1 from "./MouseInteraction1";
+import PerspectiveCarousel from "./PerspectiveCarousel";
+import FullScreenMenu from "./FullScreenMenu";
+import { KineticGrid } from "./KineticGrid";
+import { ChromaticTextPreview } from "./ChromaticText";
+import { IndexScrollReveal, IndexScrollRevealSandbox } from "./IndexScrollReveal";
+const MouseInteraction1Preview = () => (
+    <div className="w-full h-full bg-black overflow-hidden relative rounded-[20px]">
+        <MouseInteraction1 boxSize={35} trailSize={15} gridGap={0} onHoverColor="#ffffff" />
+    </div>
+);
+
+const PerspectiveCarouselPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left flex items-center justify-center">
+            <PerspectiveCarousel interactive={false} />
+        </div>
+    </div>
+);
 
 // Preview Wrappers
 const TimelineZoomPreview = () => (
@@ -274,7 +293,7 @@ const PinnedCarouselPreview = () => {
     }, []);
 
     return (
-        <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div style={{ containerType: "inline-size" }} className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
             <div className="relative w-full h-full flex items-center justify-center scale-[0.35] origin-center">
                 {/* Number */}
                 <h2 className={`absolute left-[-20%] top-1/2 -translate-y-[45%] text-[70vh] tracking-tighter leading-none select-none font-victory ${isLight ? 'text-black drop-shadow-[0_0_50px_rgba(0,0,0,0.3)]' : 'text-white drop-shadow-[0_0_50px_rgba(0,0,0,0.5)]'}`}>
@@ -283,7 +302,7 @@ const PinnedCarouselPreview = () => {
 
                 {/* Name */}
                 <div className="absolute bottom-0 left-[-20%] z-10 translate-y-[20%]">
-                    <h3 className={`text-[12vw] font-black tracking-tighter whitespace-nowrap leading-none select-none font-victory ${isLight ? 'text-black/20' : 'text-white/20'}`}>
+                    <h3 className={`text-[clamp(6.0rem,12cqi,18.0rem)] font-black tracking-tighter whitespace-nowrap leading-none select-none font-victory ${isLight ? 'text-black/20' : 'text-white/20'}`}>
                         CHAINSAW-MAN
                     </h3>
                 </div>
@@ -342,6 +361,34 @@ const Retro404Preview = () => (
     </div>
 );
 
+const FullScreenMenuPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left flex items-center justify-center">
+            <FullScreenMenu />
+        </div>
+    </div>
+);
+
+const KineticGridPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="absolute inset-0 w-full h-full">
+            <KineticGrid />
+        </div>
+    </div>
+);
+
+const ChromaticTextPreviewWrapper = () => (
+    <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden relative rounded-[20px]">
+        <ChromaticTextPreview />
+    </div>
+);
+
+const IndexScrollRevealPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px] pointer-events-auto">
+        <IndexScrollRevealSandbox className="w-full" />
+    </div>
+);
+
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
     'flip-grid': FlipGridPreview,
@@ -389,6 +436,12 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'carousel-3': Carousel3Preview,
     'carousel-4': Carousel4Preview,
     'retro-404': Retro404Preview,
+    'mouse-interaction-1': MouseInteraction1Preview,
+    'perspective-carousel': PerspectiveCarouselPreview,
+    'full-screen-menu': FullScreenMenuPreview,
+    'kinetic-grid': KineticGridPreview,
+    'chromatic-text': ChromaticTextPreviewWrapper,
+    'index-scroll-reveal': IndexScrollRevealPreview,
 };
 
 // Text-based components that should remain interactive (hover effects)
@@ -405,7 +458,11 @@ const TEXT_BASED_IDS = new Set([
     'scroll-to-reveal',
     'impact-text',
     'running-outline',
-    'crt-glitch'
+    'crt-glitch',
+    'mouse-interaction-1',
+    'kinetic-grid',
+    'chromatic-text',
+    'index-scroll-reveal'
 ]);
 
 export function NormalComponents() {

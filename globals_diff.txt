@@ -1,0 +1,33 @@
+diff --git a/src/app/globals.css b/src/app/globals.css
+index ba797b6..229518d 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -45,6 +45,15 @@
+   font-display: swap;
+ }
+ 
++/* Overheat Font */
++@font-face {
++  font-family: 'Overheat';
++  src: url('/overheat-regular.ttf') format('truetype');
++  font-weight: normal;
++  font-style: normal;
++  font-display: swap;
++}
++
+ /* Logo font class */
+ .font-logo {
+   font-family: 'Andora', sans-serif;
+@@ -57,6 +66,12 @@
+   font-weight: 400;
+ }
+ 
++/* Overheat font class */
++.font-overheat {
++  font-family: 'Overheat', sans-serif;
++  font-weight: normal;
++}
++
+ /* SCHABO Font */
+ @font-face {
+   font-family: 'Schabo';

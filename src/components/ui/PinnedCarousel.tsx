@@ -95,12 +95,12 @@ const CarouselItem = ({ item, index, scrollYProgress, total, isLight }: { item: 
     const imgY = "23vh";
 
     return (
-        <div className="absolute inset-0 pointer-events-none">
+        <div style={{ containerType: "inline-size" }} className="absolute inset-0 pointer-events-none">
             <motion.div
                 style={{ x: nameX }}
                 className="absolute bottom-0 left-0 z-10"
             >
-                <h3 className={`text-[12vw] font-black tracking-tighter whitespace-nowrap leading-none select-none font-victory ${isLight ? 'text-black/20' : 'text-white/20'}`}>
+                <h3 className={`text-[clamp(6.0rem,12cqi,18.0rem)] font-black tracking-tighter whitespace-nowrap leading-none select-none font-victory ${isLight ? 'text-black/20' : 'text-white/20'}`}>
                     {item.name}
                 </h3>
             </motion.div>
@@ -183,7 +183,7 @@ export const PinnedCarousel = ({ config = {} }: { config?: any }) => {
     return (
         <div
             ref={containerRef}
-            className="h-screen w-full relative overflow-hidden"
+            className="h-full min-h-[500px] w-full relative overflow-hidden"
             onWheel={handleWheel}
         >
 
