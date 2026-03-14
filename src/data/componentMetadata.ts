@@ -471,6 +471,15 @@ export const componentMetadata: ComponentMetadata[] = [
         tags: ['layout', 'scroll', 'reveal', 'index', 'interactive', 'framer-motion'],
         category: 'interaction',
         dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'infinity-brand-scroll',
+        name: 'Infinity Brand Scroll',
+        index: 52,
+        description: 'A 3D infinite looping strip of pictures in a twisted lemniscate shape with smooth scrolling physics.',
+        tags: ['3d', 'scroll', 'infinite', 'brand', 'showcase', 'three-js'],
+        category: 'interaction',
+        dependencies: ['@react-three/fiber', '@react-three/drei', 'three', 'react'],
     }
 ];
 

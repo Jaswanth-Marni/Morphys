@@ -1173,6 +1173,22 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'items', type: 'ScrollItem[]', default: 'defaultItems', description: 'Array of items to display' },
             { name: 'className', type: 'string', default: "''", description: 'Additional CSS classes' }
         ]
+    },
+    {
+        id: 'infinity-brand-scroll',
+        name: 'Infinity Brand Scroll',
+        index: 52,
+        description: 'A 3D infinite looping strip of pictures in a twisted lemniscate shape with smooth scrolling physics.',
+        tags: ['3d', 'scroll', 'infinite', 'brand', 'showcase', 'three-js'],
+        category: 'interaction',
+        previewConfig: { speed: 0.5, radius: 10 },
+        dependencies: ['@react-three/fiber', '@react-three/drei', 'three', 'react'],
+        usage: `import { InfinityBrandScroll } from '@/components/ui';\n\n<InfinityBrandScroll />`,
+        props: [
+            { name: 'items', type: 'Array<{image: string}>', default: 'defaultImages', description: 'Array of images to loop' },
+            { name: 'speed', type: 'number', default: '0.5', description: 'Base auto-scroll speed' },
+            { name: 'radius', type: 'number', default: '12', description: 'Radius of the loop' }
+        ]
     }
 ];
 

@@ -98,6 +98,7 @@ import { SynthwaveLines } from "./SynthwaveLines";
 import { HoverImageList } from "./HoverImageList";
 import { ScrollSkew } from "./ScrollSkew";
 import { LiquidReveal } from "./LiquidReveal";
+import InfinityBrandScroll from "./InfinityBrandScroll";
 import { PinnedCarousel } from "./PinnedCarousel";
 import { TimelineZoom } from "./TimelineZoom";
 import { ElasticScrollPreview } from "./ElasticScroll";
@@ -389,8 +390,15 @@ const IndexScrollRevealPreview = () => (
     </div>
 );
 
+const InfinityBrandScrollPreview = () => (
+    <div className="w-full h-full bg-transparent overflow-hidden relative rounded-[20px]">
+        <InfinityBrandScroll speed={0} interactive={false} />
+    </div>
+);
+
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
+    'infinity-brand-scroll': InfinityBrandScrollPreview,
     'flip-grid': FlipGridPreview,
     'ascii-simulation': AsciiSimulationPreview,
     'liquid-morph': LiquidMorphPreview,

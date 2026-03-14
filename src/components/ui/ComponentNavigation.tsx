@@ -53,6 +53,7 @@ const componentModuleMap: Record<string, string> = {
     'carousel-4': 'Carousel4',
     'chromatic-text': 'ChromaticText',
     'index-scroll-reveal': 'IndexScrollReveal',
+    'infinity-brand-scroll': 'InfinityBrandScroll',
 
 };
 

@@ -292,6 +292,16 @@ const IndexScrollRevealSandbox = dynamic(() => import("@/components/ui/IndexScro
     ssr: false
 });
 
+const InfinityBrandScroll = dynamic(() => import("@/components/ui/InfinityBrandScroll"), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const InfinityBrand = dynamic(() => import("@/components/ui/InfinityBrand").then(mod => ({ default: mod.InfinityBrand })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -464,6 +474,8 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any; isFu
         />
     ),
     'index-scroll-reveal': IndexScrollRevealSandbox,
+    'infinity-brand': InfinityBrand,
+    'infinity-brand-scroll': InfinityBrandScroll,
 };
 
 
@@ -1431,6 +1443,37 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         </div>
                                     </div>
                                 </>
+                            ) : componentId === 'infinity-brand' ? (
+                                // INFINITY BRAND CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Motion</label>
+                                        <NumberControl
+                                            label="Speed"
+                                            value={Math.round((config.speed || 0.2) * 100)}
+                                            min={0}
+                                            max={200}
+                                            onChange={(val) => onConfigChange('speed', val / 100)}
+                                        />
+                                        <NumberControl
+                                            label="Scale Variation"
+                                            value={Math.round((config.scaleVar || 0.3) * 100)}
+                                            min={0}
+                                            max={200}
+                                            onChange={(val) => onConfigChange('scaleVar', val / 100)}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Geometry</label>
+                                        <NumberControl
+                                            label="Loop Radius"
+                                            value={(config.radius || 4) * 10}
+                                            min={10}
+                                            max={100}
+                                            onChange={(val) => onConfigChange('radius', val / 10)}
+                                        />
+                                    </div>
+                                </>
                             ) : componentId === 'crt-glitch' ? (
                                 // CRT GLITCH CONTROLS
                                 <>
@@ -1548,6 +1591,29 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                             max={360}
                                             suffix="°"
                                             onChange={(val) => onConfigChange('angle', val)}
+                                        />
+                                    </div>
+                                </>
+                            ) : componentId === 'infinity-brand-scroll' ? (
+                                // INFINITY BRAND SCROLL CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Motion</label>
+                                        <NumberControl
+                                            label="Speed"
+                                            value={config.speed ?? 0.5}
+                                            min={0}
+                                            max={5}
+                                            suffix="x"
+                                            onChange={(val) => onConfigChange('speed', val)}
+                                        />
+                                        <NumberControl
+                                            label="Radius"
+                                            value={config.radius ?? 5}
+                                            min={2}
+                                            max={15}
+                                            suffix="u"
+                                            onChange={(val) => onConfigChange('radius', val)}
                                         />
                                     </div>
                                 </>
@@ -2173,6 +2239,31 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
 />`;
         }
 
+        if (componentId === 'infinity-brand-scroll') {
+            const configEntries: string[] = [];
+            if (config.speed !== 0.5) configEntries.push(`    speed={${config.speed}}`);
+            if (config.radius !== 5) configEntries.push(`    radius={${config.radius}}`);
+
+            if (configEntries.length === 0) {
+                return `import InfinityBrandScroll from '@/components/ui/InfinityBrandScroll';\n\n// Basic usage\n<InfinityBrandScroll />`;
+            }
+            return `import InfinityBrandScroll from '@/components/ui/InfinityBrandScroll';\n\n<InfinityBrandScroll\n${configEntries.join('\n')}\n/>`;
+        }
+
+        if (componentId === 'infinity-brand') {
+            return `import { InfinityBrand } from '@/components/ui/InfinityBrand';
+
+// Basic usage 
+<InfinityBrand />
+
+// With custom configuration
+<InfinityBrand 
+    speed={0.4}
+    radius={5}
+    scaleVar={0.5}
+/>`;
+        }
+
         if (componentId === 'text-mirror') {
             const defaultConfig = {
                 text: "MORPHYS",
@@ -2635,6 +2726,12 @@ export default function ComponentDetailPage() {
             return {
                 words: [{ text: "OUTLINE", font: "font-thunder" }],
                 color: 'var(--foreground)'
+            };
+        }
+        if (componentId === 'infinity-brand-scroll') {
+            return {
+                speed: 0.5,
+                radius: 10
             };
         }
         return {
