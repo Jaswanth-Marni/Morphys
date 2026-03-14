@@ -473,9 +473,9 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any; isFu
             className="text-[5rem] md:text-[9rem] lg:text-[12rem]"
         />
     ),
-    'index-scroll-reveal': IndexScrollRevealSandbox,
-    'infinity-brand': InfinityBrand,
-    'infinity-brand-scroll': InfinityBrandScroll,
+    'index-scroll-reveal': IndexScrollRevealSandbox as React.ComponentType<{ config?: any }>,
+    'infinity-brand': ({ config = {} }: { config?: any }) => <InfinityBrand {...config} />,
+    'infinity-brand-scroll': ({ config = {} }: { config?: any }) => <InfinityBrandScroll {...config} />,
 };
 
 
