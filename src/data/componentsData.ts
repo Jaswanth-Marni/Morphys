@@ -16761,7 +16761,7 @@ export const Retro3DText = ({
 
 export default Retro3DText;
 `
-    }
+    },
 ];
 
 

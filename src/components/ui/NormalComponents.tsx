@@ -399,9 +399,7 @@ const InfinityBrandScrollPreview = () => (
 
 const Retro3DTextPreview = () => (
     <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
-        <div className="scale-[0.5] w-[200%] h-[200%] origin-top-left flex items-center justify-center">
-             <Retro3DText />
-        </div>
+        <Retro3DText fontSize="3.5rem" depth={10} className="w-full h-full" />
     </div>
 );
 
