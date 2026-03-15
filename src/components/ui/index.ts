@@ -16,4 +16,3 @@ export * from "./ElasticScroll";
 export * from "./KineticGrid";
 export * from "./ChromaticText";
 export * from "./IndexScrollReveal";
-export * from "./Deck3D";
