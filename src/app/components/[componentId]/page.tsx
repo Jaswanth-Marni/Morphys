@@ -302,6 +302,11 @@ const InfinityBrand = dynamic(() => import("@/components/ui/InfinityBrand").then
     ssr: false
 });
 
+const Retro3DText = dynamic(() => import("@/components/ui/Retro3DText").then(mod => ({ default: mod.Retro3DText })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -476,6 +481,7 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any; isFu
     'index-scroll-reveal': IndexScrollRevealSandbox as React.ComponentType<{ config?: any }>,
     'infinity-brand': ({ config = {} }: { config?: any }) => <InfinityBrand {...config} />,
     'infinity-brand-scroll': ({ config = {} }: { config?: any }) => <InfinityBrandScroll {...config} />,
+    'retro-3d-text': ({ config = {} }: { config?: any }) => <Retro3DText {...config} />,
 };
 
 
@@ -1038,6 +1044,73 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                             suffix="px"
                                             onChange={(val) => onConfigChange('borderRadius', val)}
                                         />
+                                    </div>
+                                </>
+                            ) : componentId === 'retro-3d-text' ? (
+                                // RETRO 3D TEXT CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.text ?? "MORPHYS"}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                             <NumberControl label="Font Size" value={parseInt(config.fontSize) || 8} min={2} max={20} suffix="rem" onChange={(val) => onConfigChange('fontSize', `${val}rem`)} />
+                                             <NumberControl label="Depth" value={config.depth ?? 15} min={0} max={50} onChange={(val) => onConfigChange('depth', val)} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3 mt-3">
+                                              <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Letter Spacing</span>
+                                                <input
+                                                    type="text"
+                                                    value={config.letterSpacing ?? "0px"}
+                                                    onChange={(e) => onConfigChange('letterSpacing', e.target.value)}
+                                                     className="w-full h-10 px-3 bg-foreground/5 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Colors</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                             <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Front Color</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.frontColor || '#FDF9ED'}
+                                                    onChange={(e) => onConfigChange('frontColor', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Side Color</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.sideColor || '#3B70A2'}
+                                                    onChange={(e) => onConfigChange('sideColor', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Background</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.backgroundColor || '#FAD3E7'}
+                                                    onChange={(e) => onConfigChange('backgroundColor', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </>
                             ) : componentId === 'navbar-menu-2' ? (
@@ -1775,6 +1848,85 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         />
                                     </div>
                                 </>
+                            ) : componentId === 'retro-3d-text' ? (
+                                // RETRO 3D TEXT CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Content</label>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Text</span>
+                                            <input
+                                                type="text"
+                                                value={config.text ?? 'MORPHYS'}
+                                                onChange={(e) => onConfigChange('text', e.target.value)}
+                                                className="w-full h-10 px-3 bg-white/25 backdrop-blur-md border border-white/30 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                                placeholder="Enter text..."
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <NumberControl
+                                            label="Depth"
+                                            value={config.depth ?? 15}
+                                            min={0}
+                                            max={50}
+                                            onChange={(val) => onConfigChange('depth', val)}
+                                        />
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Font Size</span>
+                                            <input
+                                                type="text"
+                                                value={config.fontSize ?? '8rem'}
+                                                onChange={(e) => onConfigChange('fontSize', e.target.value)}
+                                                className="w-full h-10 px-3 bg-white/25 backdrop-blur-md border border-white/30 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                                placeholder="e.g. 8rem, 100px"
+                                            />
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Letter Spacing</span>
+                                            <input
+                                                type="text"
+                                                value={config.letterSpacing ?? '0px'}
+                                                onChange={(e) => onConfigChange('letterSpacing', e.target.value)}
+                                                className="w-full h-10 px-3 bg-white/25 backdrop-blur-md border border-white/30 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                                                placeholder="e.g. 10px, 0.5em"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Colors</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Front</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.frontColor || '#FDF9ED'}
+                                                    onChange={(e) => onConfigChange('frontColor', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-foreground/40 mb-1 block">Side</span>
+                                                <input
+                                                    type="color"
+                                                    value={config.sideColor || '#3B70A2'}
+                                                    onChange={(e) => onConfigChange('sideColor', e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-foreground/40 mb-1 block">Background</span>
+                                            <input
+                                                type="color"
+                                                value={config.backgroundColor || '#FAD3E7'}
+                                                onChange={(e) => onConfigChange('backgroundColor', e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+                                </>
                             ) : (
                                 // DEFAULT - No controls available
                                 <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
@@ -2451,6 +2603,21 @@ ${configEntries.join('\n')}
 <FlipClock />`;
         }
 
+        if (componentId === 'retro-3d-text') {
+             return `import { Retro3DText } from '@/components/ui';
+
+<Retro3DText
+    text="${config.text || 'MORPHYS'}"
+    fontSize="${config.fontSize || '8rem'}"
+    depth={${config.depth ?? 15}}
+    letterSpacing="${config.letterSpacing ?? '0px'}"
+    frontColor="${config.frontColor || '#FDF9ED'}"
+    sideColor="${config.sideColor || '#3B70A2'}"
+    backgroundColor="${config.backgroundColor || '#FAD3E7'}"
+    isInteractive={true}
+/>`;
+        }
+
         // DEFAULT FALLBACK - Use the usage from componentsDataLite
         // This ensures every component shows its correct usage code
         const componentDataForUsage = getComponentByIdLite(componentId);
@@ -2706,6 +2873,17 @@ export default function ComponentDetailPage() {
                 autoGlitch: true,
                 hoverTrigger: true,
                 fontSize: 80,
+            };
+        }
+        if (componentId === 'retro-3d-text') {
+            return {
+                text: "MORPHYS",
+                fontSize: "8rem",
+                frontColor: "#FDF9ED",
+                sideColor: "#3B70A2",
+                backgroundColor: "#FAD3E7",
+                depth: 15,
+                letterSpacing: "0px"
             };
         }
         if (componentId === 'pixel-simulation') {

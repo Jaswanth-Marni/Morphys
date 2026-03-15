@@ -1191,7 +1191,39 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'weight', type: 'number', default: '5', description: 'Weight of the scroll physics' },
             { name: 'impact', type: 'number', default: '1', description: 'Strength of the impact/jiggle effect' }
         ]
-    }
+    },
+    {
+        id: 'retro-3d-text',
+        name: 'Retro 3D Text',
+        index: 53,
+        description: 'A bold, retro-style 3D block text effect with customizable colors and depth, featuring hover interactions.',
+        tags: ['text', '3d', 'retro', 'block', 'shadow', 'effect'],
+        category: 'effect',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { Retro3DText } from '@/components/ui';
+
+// Basic usage
+<Retro3DText text="RETRO" />
+
+// Custom usage
+<Retro3DText 
+  text="MORPHYS" 
+  frontColor="#FDF9ED" 
+  sideColor="#3B70A2" 
+  backgroundColor="#FAD3E7" 
+  fontSize="8rem" 
+/>`,
+        props: [
+            { name: 'text', type: 'string', default: '"MORPHYS"', description: 'The text content to display' },
+            { name: 'frontColor', type: 'string', default: '"#FDF9ED"', description: 'Color of the text face' },
+            { name: 'sideColor', type: 'string', default: '"#3B70A2"', description: 'Color of the 3D extrusion' },
+            { name: 'backgroundColor', type: 'string', default: '"#FAD3E7"', description: 'Background of the container' },
+            { name: 'depth', type: 'number', default: '15', description: 'Depth of the shadow extrusion' },
+            { name: 'fontSize', type: 'string', default: '"8rem"', description: 'CSS font size' },
+            { name: 'letterSpacing', type: 'string', default: '"0px"', description: 'Letter spacing (CSS value)' },
+        ]
+    },
 ];
 
 

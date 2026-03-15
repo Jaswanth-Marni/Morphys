@@ -114,6 +114,7 @@ import FullScreenMenu from "./FullScreenMenu";
 import { KineticGrid } from "./KineticGrid";
 import { ChromaticTextPreview } from "./ChromaticText";
 import { IndexScrollReveal, IndexScrollRevealSandbox } from "./IndexScrollReveal";
+import { Retro3DText } from "./Retro3DText";
 const MouseInteraction1Preview = () => (
     <div className="w-full h-full bg-black overflow-hidden relative rounded-[20px]">
         <MouseInteraction1 boxSize={35} trailSize={15} gridGap={0} onHoverColor="#ffffff" />
@@ -396,6 +397,14 @@ const InfinityBrandScrollPreview = () => (
     </div>
 );
 
+const Retro3DTextPreview = () => (
+    <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative rounded-[20px]">
+        <div className="scale-[0.5] w-[200%] h-[200%] origin-top-left flex items-center justify-center">
+             <Retro3DText />
+        </div>
+    </div>
+);
+
 // Component previews mapping
 const componentPreviews: Record<string, React.ComponentType> = {
     'infinity-brand-scroll': InfinityBrandScrollPreview,
@@ -450,6 +459,7 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'kinetic-grid': KineticGridPreview,
     'chromatic-text': ChromaticTextPreviewWrapper,
     'index-scroll-reveal': IndexScrollRevealPreview,
+    'retro-3d-text': Retro3DTextPreview,
 };
 
 // Text-based components that should remain interactive (hover effects)
@@ -470,7 +480,8 @@ const TEXT_BASED_IDS = new Set([
     'mouse-interaction-1',
     'kinetic-grid',
     'chromatic-text',
-    'index-scroll-reveal'
+    'index-scroll-reveal',
+    'retro-3d-text'
 ]);
 
 export function NormalComponents() {

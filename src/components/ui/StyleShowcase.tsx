@@ -131,9 +131,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
             ref={sectionRef}
             className={`relative min-h-screen w-full overflow-hidden ${className}`}
             style={{
-                background: "var(--background)",
-                marginTop: "-150px",
-                paddingTop: "150px",
+                background: "transparent",
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: isInView ? 1 : 0 }}
@@ -143,7 +141,7 @@ const StyleShowcase = ({ className = "" }: StyleShowcaseProps) => {
 
             {/* ========== STYLES HEADING - TOP CENTER ========== */}
             <motion.div
-                className="absolute top-[270px] md:top-[250px] left-1/2 -translate-x-1/2 z-40 pointer-events-none"
+                className="absolute top-[100px] left-1/2 -translate-x-1/2 z-40 pointer-events-none"
                 variants={headingContainerVariants}
                 initial={initialVariant}
                 animate={shouldAnimate || hasShowcaseAnimated ? "visible" : "hidden"}
