@@ -8,7 +8,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 export type AsciiShape = 'torus' | 'cube' | 'car';
 
-interface ObjMesh {
+export interface ObjMesh {
     vertices: number[]; // x, y, z flat array
     faces: number[];    // v1, v2, v3 indices flat array
     normals?: number[]; // matching vertices

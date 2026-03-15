@@ -1609,11 +1609,27 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         />
                                         <NumberControl
                                             label="Radius"
-                                            value={config.radius ?? 5}
+                                            value={config.radius ?? 8}
                                             min={2}
                                             max={15}
                                             suffix="u"
                                             onChange={(val) => onConfigChange('radius', val)}
+                                        />
+                                        <NumberControl
+                                            label="Weight"
+                                            value={config.weight ?? 5}
+                                            min={0.1}
+                                            max={10}
+                                            suffix=""
+                                            onChange={(val) => onConfigChange('weight', val)}
+                                        />
+                                        <NumberControl
+                                            label="Impact"
+                                            value={config.impact ?? 1}
+                                            min={0}
+                                            max={3}
+                                            suffix="u"
+                                            onChange={(val) => onConfigChange('impact', val)}
                                         />
                                     </div>
                                 </>
@@ -2242,7 +2258,9 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
         if (componentId === 'infinity-brand-scroll') {
             const configEntries: string[] = [];
             if (config.speed !== 0.5) configEntries.push(`    speed={${config.speed}}`);
-            if (config.radius !== 5) configEntries.push(`    radius={${config.radius}}`);
+            if (config.radius !== 8) configEntries.push(`    radius={${config.radius}}`);
+            if (config.weight !== 5) configEntries.push(`    weight={${config.weight}}`);
+            if (config.impact !== 1) configEntries.push(`    impact={${config.impact}}`);
 
             if (configEntries.length === 0) {
                 return `import InfinityBrandScroll from '@/components/ui/InfinityBrandScroll';\n\n// Basic usage\n<InfinityBrandScroll />`;

@@ -1181,13 +1181,15 @@ export const componentsDataLite: ComponentDataLite[] = [
         description: 'A 3D infinite looping strip of pictures in a twisted lemniscate shape with smooth scrolling physics.',
         tags: ['3d', 'scroll', 'infinite', 'brand', 'showcase', 'three-js'],
         category: 'interaction',
-        previewConfig: { speed: 0.5, radius: 10 },
+        previewConfig: { speed: 0.5, radius: 8, weight: 5, impact: 1 },
         dependencies: ['@react-three/fiber', '@react-three/drei', 'three', 'react'],
         usage: `import { InfinityBrandScroll } from '@/components/ui';\n\n<InfinityBrandScroll />`,
         props: [
             { name: 'items', type: 'Array<{image: string}>', default: 'defaultImages', description: 'Array of images to loop' },
             { name: 'speed', type: 'number', default: '0.5', description: 'Base auto-scroll speed' },
-            { name: 'radius', type: 'number', default: '12', description: 'Radius of the loop' }
+            { name: 'radius', type: 'number', default: '8', description: 'Radius of the loop' },
+            { name: 'weight', type: 'number', default: '5', description: 'Weight of the scroll physics' },
+            { name: 'impact', type: 'number', default: '1', description: 'Strength of the impact/jiggle effect' }
         ]
     }
 ];

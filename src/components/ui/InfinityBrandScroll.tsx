@@ -14,6 +14,8 @@ export interface InfinityBrandScrollProps {
     radius?: number; // Size of the loop
     text?: string;
     interactive?: boolean; // Whether to enable user interaction (scroll, drag, hover)
+    weight?: number; // Weight of the scroll (drag resistance & momentum) - default: 3
+    impact?: number; // Strength of the impact/jiggle effect - default: 1
 }
 
 // --- The 3D Scene ---
@@ -62,7 +64,8 @@ const Card = ({
     selected,
     setSelected,
     interactive = true,
-    animProgress
+    animProgress,
+    expansion
 }: { 
     url: string; 
     positionAt: number; 
@@ -76,6 +79,7 @@ const Card = ({
     setSelected: (i: number | null) => void;
     interactive?: boolean;
     animProgress: React.MutableRefObject<number>;
+    expansion: React.MutableRefObject<number>;
 }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const texture = useTexture(url) as THREE.Texture;
@@ -125,7 +129,17 @@ const Card = ({
 
         // Use scratch vectors
         curve.getPoint(t, scratch.point);
+        
+        // --- LOCAL EXPANSION LOGIC ---
+        // Apply "jiggle" expansion only to items near the front (Z > 0 roughly)
+        // This makes the impact local to the user's "holding" area
+        const zInfluence = THREE.MathUtils.smoothstep(scratch.point.z, -2, 5); 
+        // Normalize expansion relative to curve scale to get a multiplier
+        const expansionFactor = 1 + (expansion.current / curve.scale) * zInfluence;
+        scratch.point.multiplyScalar(expansionFactor);
+        
         // Tangent calculation
+        // Note: We use original tangent which is "good enough" and stable
         const tangent = curve.getTangent(t).normalize(); 
         
         // Loop Orientation
@@ -140,6 +154,7 @@ const Card = ({
         // Apply smooth hover scale
         const loopTargetScale = scaleBase * hoverScale.current;
         const loopScale = scratch.scaleVec.set(3 * aspect, 3, 1).multiplyScalar(loopTargetScale * 0.25);
+
 
 
         // 2. Plot Focus Position
@@ -258,7 +273,7 @@ const Card = ({
     );
 };
 
-const Scene = ({ items, baseSpeed, radius, interactive = true }: { items: { image: string }[], baseSpeed: number, radius: number, interactive?: boolean }) => {
+const Scene = ({ items, baseSpeed, radius, interactive = true, weight = 3, impact = 1 }: { items: { image: string }[], baseSpeed: number, radius: number, interactive?: boolean, weight?: number, impact?: number }) => {
     const curve = useMemo(() => new InfinityCurve(radius), [radius]);
     const scrollOffset = useRef(0);
     const scrollVelocity = useRef(baseSpeed);
@@ -270,8 +285,27 @@ const Scene = ({ items, baseSpeed, radius, interactive = true }: { items: { imag
     const isDragging = useRef(false);
     const previousPointer = useRef(0);
 
+    // NEW: Smooth Dragging refs
+    const scrollTarget = useRef(0);
+    const lastScrollOffset = useRef(0);
+
+    // Friction / Expansion physics
+    const expansion = useRef(0); // Current expansion amount
+    const expansionVelocity = useRef(0); // For spring physics
+
     // Arrival animation ref (0 to 1) 
     const animProgress = useRef(0);
+
+    // Precalculate physics properties based on weight
+    // Base values (weight=1):
+    // Damping: 0.08 (fast)
+    // Sensitivity: 0.0015 (fast)
+    // Momentum Friction: 0.05 (stops quickly)
+    
+    // Adjusted for better default feel
+    const dragDamping = useMemo(() => 0.08 / Math.max(weight * 0.5, 0.1), [weight]);
+    const sensitivity = useMemo(() => 0.0012 / Math.max(weight * 0.5, 0.1), [weight]);
+    const friction = useMemo(() => 0.05 / Math.max(weight * 0.8, 0.1), [weight]);
 
     useFrame((state, delta) => {
         // Prepare for arrival animation - prevent frame skip on first render
@@ -285,12 +319,50 @@ const Scene = ({ items, baseSpeed, radius, interactive = true }: { items: { imag
              if (animProgress.current > 1) animProgress.current = 1;
         }
 
-        if (!isDragging.current) {
+        // --- Expansion / Jiggle Physics ---
+        // Target expansion is based on current scroll velocity
+        // The faster we scroll, the wider the loop gets
+        // Multiplied by impact factor
+        const speed = Math.abs(scrollVelocity.current);
+        const targetExpansion = Math.min(speed * 3 * impact, 5 * impact); 
+
+        // Spring physics for expansion (Hooke's Law with Damping)
+        // F = -k*x - c*v
+        const k = 80; // Stiffness (higher = snappier jiggle)
+        const c = 8; // Damping (lower = more wobble/bouncier stop)
+        
+        const force = (targetExpansion - expansion.current) * k - expansionVelocity.current * c;
+        expansionVelocity.current += force * dt;
+        expansion.current += expansionVelocity.current * dt;
+
+        // Apply updated radius to the curve
+        // This dynamically changes the loop size based on velocity!
+        // curve.scale = radius + expansion.current; // REMOVED GLOBAL SCALING
+
+
+        if (isDragging.current) {
+            // "Weighted" Drag Logic
+            // Instead of direct manipulation, we lerp towards the target
+            // This gives it a "heavy" feel and smooths out mouse jitter
+            scrollOffset.current = THREE.MathUtils.lerp(scrollOffset.current, scrollTarget.current, dragDamping);
+
+            // Calculate velocity based on actual movement for momentum release
+            // Original logic used: scrollOffset.current += scrollVelocity.current * dt * 0.1;
+            // So Velocity = (Change / dt) * 10
+            const change = scrollOffset.current - lastScrollOffset.current;
+            if (dt > 0.001) {
+                // Smooth velocity calculation to prevent spikes
+                const instantVelocity = (change / dt) * 10;
+                scrollVelocity.current = THREE.MathUtils.lerp(scrollVelocity.current, instantVelocity, 0.5);
+            }
+            targetVelocity.current = baseSpeed; // Reset target for when we release
+            
+        } else {
             // Smoothly interpolate velocity back to baseSpeed (or slowed speed if hovered)
-            scrollVelocity.current = THREE.MathUtils.lerp(scrollVelocity.current, targetVelocity.current, 0.05);
+            scrollVelocity.current = THREE.MathUtils.lerp(scrollVelocity.current, targetVelocity.current, friction);
             
             // Apply velocity to offset
-            scrollOffset.current += scrollVelocity.current * delta * 0.1;
+            scrollOffset.current += scrollVelocity.current * dt * 0.1;
 
             // Determine target speed based on hover state (slow down if hovered)
             // If not interactive, always use baseSpeed (no hover slowdown)
@@ -303,6 +375,8 @@ const Scene = ({ items, baseSpeed, radius, interactive = true }: { items: { imag
                 targetVelocity.current = destinationSpeed;
             }
         }
+        
+        lastScrollOffset.current = scrollOffset.current;
     });
 
     const { gl } = useThree();
@@ -323,8 +397,9 @@ const Scene = ({ items, baseSpeed, radius, interactive = true }: { items: { imag
         const handlePointerDown = (e: PointerEvent) => {
             isDragging.current = true;
             previousPointer.current = e.clientX;
-            // Stop auto motion temporarily
-            // targetVelocity.current = 0; 
+            
+            // Sync target so we don't jump
+            scrollTarget.current = scrollOffset.current;
         };
 
         const handlePointerMove = (e: PointerEvent) => {
@@ -332,13 +407,9 @@ const Scene = ({ items, baseSpeed, radius, interactive = true }: { items: { imag
             const deltaX = e.clientX - previousPointer.current;
             previousPointer.current = e.clientX;
             
-            // Direct manipulation
-            // Sensitivity factor: 0.001 seems reasonable for pixels -> curve parameter space (0..1)
-            scrollOffset.current -= deltaX * 0.001; 
-            
-            // Update velocity to match drag speed for "throw" effect on release
-            scrollVelocity.current = -deltaX * 0.1; // Reverse sign to match standard "drag to move content"
-            targetVelocity.current = baseSpeed; 
+            // Move TARGET, not offset directly
+            // Increased sensitivity slightly to compensate for the lerp feel
+            scrollTarget.current -= deltaX * sensitivity; 
         };
 
         const handlePointerUp = () => {
@@ -381,6 +452,7 @@ const Scene = ({ items, baseSpeed, radius, interactive = true }: { items: { imag
                     setSelected={setSelected}
                     interactive={interactive}
                     animProgress={animProgress}
+                    expansion={expansion}
                 />
             ))}
         </group>
@@ -449,8 +521,11 @@ function SuspenseLoader() {
 export function InfinityBrandScroll({ 
     items = defaultImages, 
     speed = 0.5, 
-    radius = 10,
-    interactive = true
+    radius = 8,
+    interactive = true,
+    text,
+    weight = 5, // Default weight
+    impact = 1 // Default impact
 }: InfinityBrandScrollProps) {
     return (
         <div className="w-full h-full relative overflow-hidden">
@@ -470,7 +545,7 @@ export function InfinityBrandScroll({
                 {/* <fog attach="fog" args={["#09090b", 15, 30]} /> */}
                 
                 <React.Suspense fallback={<SuspenseLoader />}>
-                    <Scene items={items} baseSpeed={speed} radius={radius} interactive={interactive} />
+                    <Scene items={items} baseSpeed={speed} radius={radius} interactive={interactive} weight={weight} impact={impact} />
                 </React.Suspense>
             </Canvas>
 
