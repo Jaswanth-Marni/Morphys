@@ -1,5 +1,5 @@
-import React, { useRef, useCallback, useEffect, memo } from 'react';
-import { motion, useSpring, useMotionValue } from 'framer-motion';
+import React, { useRef, useCallback, useEffect, memo, useState } from 'react';
+import { motion, useSpring, useMotionValue, AnimatePresence } from 'framer-motion';
 
 interface PerspectiveCarouselConfig {
     xSpacing?: number;
@@ -16,6 +16,7 @@ interface PerspectiveCarouselProps {
     config?: PerspectiveCarouselConfig;
     interactive?: boolean;
 }
+
 const CARDS = [
     { id: 1, title: 'CAROUSEL 1', category: 'CONCEPT', img: '/carousel1.png' },
     { id: 2, title: 'CAROUSEL 2', category: 'LIFESTYLE', img: '/carousel2.jpg' },
@@ -34,7 +35,17 @@ const VISIBLE_SLOTS = 11;
 const HALF_SLOTS = Math.floor(VISIBLE_SLOTS / 2);
 
 // Individual card rendered via rAF-driven style updates (bypasses React rendering entirely)
-const CarouselCard = memo(({ slot, smoothScrollPos, xSpacing, ySpacing, zDepth, cfgRotateY, cfgRotateX, cfgScale }: {
+const CarouselCard = memo(({
+    slot,
+    smoothScrollPos,
+    xSpacing,
+    ySpacing,
+    zDepth,
+    cfgRotateY,
+    cfgRotateX,
+    cfgScale,
+    onCardClick
+}: {
     slot: number;
     smoothScrollPos: any;
     xSpacing: number;
@@ -43,6 +54,7 @@ const CarouselCard = memo(({ slot, smoothScrollPos, xSpacing, ySpacing, zDepth, 
     cfgRotateY: number;
     cfgRotateX: number;
     cfgScale: number;
+    onCardClick: (card: any, rect: DOMRect) => void;
 }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const imgRef = useRef<HTMLImageElement>(null);
@@ -103,10 +115,18 @@ const CarouselCard = memo(({ slot, smoothScrollPos, xSpacing, ySpacing, zDepth, 
     const initialIndex = ((slot) % TOTAL_CARDS + TOTAL_CARDS) % TOTAL_CARDS;
     const initialCard = CARDS[initialIndex] || CARDS[0];
 
+    const handleClick = (e: React.MouseEvent) => {
+        if (cardRef.current && lastCardIndexRef.current !== -1) {
+            const rect = cardRef.current.getBoundingClientRect();
+            onCardClick(CARDS[lastCardIndexRef.current], rect);
+        }
+    };
+
     return (
         <div
             ref={cardRef}
-            className="absolute w-[360px] h-[500px] bg-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.2)] group overflow-hidden pointer-events-auto border border-black/5"
+            onClick={handleClick}
+            className="absolute w-[360px] h-[500px] bg-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.2)] group overflow-hidden pointer-events-auto border border-black/5 cursor-pointer"
             style={{
                 transformStyle: 'preserve-3d',
                 backfaceVisibility: 'visible',
@@ -148,36 +168,17 @@ const PerspectiveCarousel = ({ config = {}, interactive = true }: PerspectiveCar
     const carouselRotation = config.carouselRotation ?? 0;
 
     const containerRef = useRef<HTMLDivElement>(null);
+    const [activeCard, setActiveCard] = useState<{ data: any, rect: DOMRect } | null>(null);
 
     // High-performance motion values
     const scrollPos = useMotionValue(0);
-    const smoothScrollPos = useSpring(scrollPos, { damping: 30, stiffness: 200, mass: 1 });
-
-    // Scoped wheel handler — only active when carousel is in view
-    useEffect(() => {
-        if (!interactive) return;
-
-        const container = containerRef.current;
-        if (!container) return;
-
-        const handleWheel = (e: WheelEvent) => {
-            // Prevent the page from scrolling when interacting with the carousel
-            e.preventDefault();
-            e.stopPropagation();
-
-            const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-            scrollPos.set(scrollPos.get() + delta * 0.005);
-        };
-
-        // Use non-passive to allow preventDefault
-        container.addEventListener('wheel', handleWheel, { passive: false });
-        return () => container.removeEventListener('wheel', handleWheel);
-    }, [scrollPos, interactive]);
+    // Optimized spring physics for smoother flow
+    const smoothScrollPos = useSpring(scrollPos, { damping: 40, stiffness: 150, mass: 1.2 });
 
     const handleDrag = useCallback((e: any, info: any) => {
-        if (!interactive) return;
+        if (!interactive || activeCard) return;
         scrollPos.set(scrollPos.get() - info.delta.x * 0.015);
-    }, [scrollPos, interactive]);
+    }, [scrollPos, interactive, activeCard]);
 
     // Fixed viewing angle
     const containerTransform = `rotateX(-28deg) rotateY(-144.8deg) rotateZ(${carouselRotation}deg)`;
@@ -187,43 +188,124 @@ const PerspectiveCarousel = ({ config = {}, interactive = true }: PerspectiveCar
         Array.from({ length: VISIBLE_SLOTS }, (_, i) => i - HALF_SLOTS),
     []);
 
-    return (
-        <motion.div
-            ref={containerRef}
-            className={`relative w-full h-full min-h-[600px] bg-transparent text-gray-900 font-sans overflow-hidden select-none flex flex-col ${interactive ? 'cursor-grab active:cursor-grabbing' : ''}`}
-            style={{ clipPath: 'inset(0)', contain: 'layout style paint' }}
-            drag={interactive ? "x" : false}
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.1}
-            onDrag={handleDrag}
-            whileDrag={interactive ? { cursor: 'grabbing' } : undefined}
-        >
-            {/* --- CAROUSEL --- */}
-            <main className="flex-1 relative flex items-center justify-center overflow-hidden" style={{ perspective: `${cfgPerspective}px` }}>
-                <div
-                    className="relative w-full h-full flex items-center justify-center pointer-events-none"
-                    style={{
-                        transformStyle: 'preserve-3d',
-                        transform: containerTransform,
-                    }}
-                >
-                    {slots.map((slot) => (
-                        <CarouselCard
-                            key={`slot-${slot}`}
-                            slot={slot}
-                            smoothScrollPos={smoothScrollPos}
-                            xSpacing={xSpacing}
-                            ySpacing={ySpacing}
-                            zDepth={zDepth}
-                            cfgRotateY={cfgRotateY}
-                            cfgRotateX={cfgRotateX}
-                            cfgScale={cfgScale}
-                        />
-                    ))}
-                </div>
-            </main>
+    const handleCardClick = useCallback((card: any, rect: DOMRect) => {
+        if (!interactive) return;
+        setActiveCard({ data: card, rect });
+    }, [interactive]);
 
-        </motion.div>
+    const handleCloseOverlay = () => {
+        setActiveCard(null);
+    };
+
+    return (
+        <div className="relative w-full h-full min-h-[600px]">
+            <motion.div
+                ref={containerRef}
+                className={`relative w-full h-full min-h-[600px] bg-transparent text-gray-900 font-sans overflow-hidden select-none flex flex-col ${interactive ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                style={{ clipPath: 'inset(0)', contain: 'layout style paint' }}
+                drag={interactive && !activeCard ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.1}
+                onDrag={handleDrag}
+                whileDrag={interactive && !activeCard ? { cursor: 'grabbing' } : undefined}
+            >
+                {/* --- CAROUSEL --- */}
+                <main className="flex-1 relative flex items-center justify-center overflow-hidden" style={{ perspective: `${cfgPerspective}px` }}>
+                    <div
+                        className="relative w-full h-full flex items-center justify-center pointer-events-none"
+                        style={{
+                            transformStyle: 'preserve-3d',
+                            transform: containerTransform,
+                        }}
+                    >
+                        {slots.map((slot) => (
+                            <CarouselCard
+                                key={`slot-${slot}`}
+                                slot={slot}
+                                smoothScrollPos={smoothScrollPos}
+                                xSpacing={xSpacing}
+                                ySpacing={ySpacing}
+                                zDepth={zDepth}
+                                cfgRotateY={cfgRotateY}
+                                cfgRotateX={cfgRotateX}
+                                cfgScale={cfgScale}
+                                onCardClick={handleCardClick}
+                            />
+                        ))}
+                    </div>
+                </main>
+            </motion.div>
+
+            {/* --- OVERLAY --- */}
+            <AnimatePresence>
+                {activeCard && (
+                    <motion.div
+                        className="fixed inset-0 z-[100] flex items-center justify-center"
+                        initial={{ backgroundColor: "rgba(0,0,0,0)" }}
+                        animate={{ backgroundColor: "rgba(0,0,0,0.8)" }}
+                        exit={{ backgroundColor: "rgba(0,0,0,0)" }}
+                        onClick={handleCloseOverlay}
+                    >
+                        <motion.div
+                            className="bg-gray-900 shadow-2xl rounded-2xl overflow-hidden"
+                            initial={{
+                                position: 'fixed',
+                                top: activeCard.rect.top,
+                                left: activeCard.rect.left,
+                                width: activeCard.rect.width,
+                                height: activeCard.rect.height,
+                                opacity: 1,
+                                borderRadius: '0px',
+                                x: 0,
+                                y: 0,
+                                rotateX: 0
+                            }}
+                            animate={{
+                                top: '50%',
+                                left: '50%',
+                                x: '-50%',
+                                y: '-50%',
+                                width: 'min(500px, 90vw)',
+                                height: 'min(700px, 90vh)',
+                                borderRadius: '12px',
+                                opacity: 1,
+                                transition: { 
+                                    duration: 0.6, 
+                                    ease: [0.2, 0, 0.2, 1] // Custom refined cubic-bezier for smooth flow
+                                }
+                            }}
+                            exit={{
+                                top: activeCard.rect.top,
+                                left: activeCard.rect.left,
+                                width: activeCard.rect.width,
+                                height: activeCard.rect.height,
+                                x: 0,
+                                y: 0,
+                                borderRadius: '0px',
+                                opacity: 0,
+                                transition: { duration: 0.4 }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="relative w-full h-full">
+                                <img
+                                    src={activeCard.data.img}
+                                    alt={activeCard.data.title}
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-8 text-white">
+                                    <span className="text-xs tracking-[0.5em] uppercase mb-2 font-bold text-white/70 block">{activeCard.data.category}</span>
+                                    <h2 className="text-4xl font-light tracking-tighter leading-none mb-4">{activeCard.data.title}</h2>
+                                    <p className="text-sm font-light text-white/60 leading-relaxed max-w-[80%]">
+                                        Click outside to close this detailed view.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 };
 
