@@ -307,6 +307,17 @@ const Retro3DText = dynamic(() => import("@/components/ui/Retro3DText").then(mod
     ssr: false
 });
 
+const Showcase = dynamic(() => import("@/components/ui/Showcase").then(mod => ({ default: mod.Showcase })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+const SlabCarousel = dynamic(() => import("@/components/ui/SlabCarousel").then(mod => ({ default: mod.SlabCarousel })), {
+    loading: ComponentLoader,
+    ssr: false
+});
+
+
 // Helper for robust clipboard copy
 const copyToClipboard = async (text: string) => {
     try {
@@ -482,7 +493,10 @@ const componentRegistry: Record<string, React.ComponentType<{ config?: any; isFu
     'infinity-brand': ({ config = {} }: { config?: any }) => <InfinityBrand {...config} />,
     'infinity-brand-scroll': ({ config = {} }: { config?: any }) => <InfinityBrandScroll {...config} />,
     'retro-3d-text': ({ config = {} }: { config?: any }) => <Retro3DText {...config} />,
+    'showcase': ({ config = {} }: { config?: any }) => <Showcase className="w-full h-full" {...config} />,
+    'slab-carousel': ({ config = {} }: { config?: any }) => <SlabCarousel className="w-full h-full" config={config} />,
 };
+
 
 
 
@@ -1927,6 +1941,75 @@ function ControlsPanel({ isOpen, onClose, config, onConfigChange, componentId, o
                                         </div>
                                     </div>
                                 </>
+                            ) : componentId === 'slab-carousel' ? (
+                                // SLAB CAROUSEL CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Layout</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl label="Base Width" value={config.baseWidth ?? 60} min={20} max={150} suffix="px" onChange={(val) => onConfigChange('baseWidth', val)} />
+                                            <NumberControl label="Expanded Width" value={config.expandedWidth ?? 400} min={100} max={800} suffix="px" onChange={(val) => onConfigChange('expandedWidth', val)} />
+                                        </div>
+                                        <NumberControl label="Gap" value={config.gap ?? 12} min={0} max={50} suffix="px" onChange={(val) => onConfigChange('gap', val)} />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Physics</label>
+                                        <NumberControl label="Neighbor Influence" value={Math.round((config.neighborInfluence ?? 1.6) * 10)} min={5} max={50} onChange={(val) => onConfigChange('neighborInfluence', val / 10)} />
+                                        <NumberControl label="Drag Factor" value={Math.round((config.dragFactor ?? 0.003) * 10000)} min={10} max={100} onChange={(val) => onConfigChange('dragFactor', val / 10000)} />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <NumberControl label="Border Radius" value={config.borderRadius ?? 16} min={0} max={50} suffix="px" onChange={(val) => onConfigChange('borderRadius', val)} />
+                                    </div>
+                                </>
+                            ) : componentId === 'showcase' ? (
+                                // SHOWCASE CONTROLS
+                                <>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Animation</label>
+                                        <NumberControl label="Speed" value={config.speed ?? 1} min={0} max={10} suffix="x" onChange={(val) => onConfigChange('speed', val)} />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Layout</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberControl
+                                                label="Card Width"
+                                                value={parseInt(config.cardWidth) || 22}
+                                                min={10}
+                                                max={40}
+                                                suffix="cqi"
+                                                onChange={(val) => onConfigChange('cardWidth', `${val}cqi`)}
+                                            />
+                                            <NumberControl
+                                                label="Expanded"
+                                                value={parseInt(config.expandedCardWidth) || 55}
+                                                min={30}
+                                                max={90}
+                                                suffix="cqi"
+                                                onChange={(val) => onConfigChange('expandedCardWidth', `${val}cqi`)}
+                                            />
+                                        </div>
+                                        <NumberControl
+                                            label="Tilt"
+                                            value={config.tilt ?? -10}
+                                            min={-45}
+                                            max={45}
+                                            suffix="deg"
+                                            onChange={(val) => onConfigChange('tilt', val)}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-foreground/60">Appearance</label>
+                                        <NumberControl
+                                            label="Font Size"
+                                            value={parseInt(config.fontSize) || 22}
+                                            min={10}
+                                            max={40}
+                                            suffix="cqi"
+                                            onChange={(val) => onConfigChange('fontSize', `${val}cqi`)}
+                                        />
+                                    </div>
+                                </>
                             ) : (
                                 // DEFAULT - No controls available
                                 <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
@@ -2277,6 +2360,28 @@ function CodeDisplay({ config, componentId, initialFullCode }: CodeDisplayProps)
                 return `import { ImageTrailCursor } from '@/components/ui';\n\n// Basic usage\n<ImageTrailCursor />`;
             }
             return `import { ImageTrailCursor } from '@/components/ui';\n\n<ImageTrailCursor\n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
+        }
+
+        if (componentId === 'slab-carousel') {
+             const defaultConfig = {
+                baseWidth: 60,
+                expandedWidth: 400,
+                gap: 12,
+                neighborInfluence: 1.6,
+                dragFactor: 0.003
+            };
+
+            const configEntries: string[] = [];
+            if (config.baseWidth !== defaultConfig.baseWidth) configEntries.push(`        baseWidth: ${config.baseWidth},`);
+            if (config.expandedWidth !== defaultConfig.expandedWidth) configEntries.push(`        expandedWidth: ${config.expandedWidth},`);
+            if (config.gap !== defaultConfig.gap) configEntries.push(`        gap: ${config.gap},`);
+            if (config.neighborInfluence !== defaultConfig.neighborInfluence) configEntries.push(`        neighborInfluence: ${config.neighborInfluence},`);
+            if (config.dragFactor !== defaultConfig.dragFactor) configEntries.push(`        dragFactor: ${config.dragFactor},`);
+
+            if (configEntries.length === 0) {
+                return `import { SlabCarousel } from '@/components/ui';\n\n// Basic usage\n<SlabCarousel />`;
+            }
+             return `import { SlabCarousel } from '@/components/ui';\n\n<SlabCarousel \n    config={{\n${configEntries.join('\n')}\n    }}\n/>`;
         }
 
         if (componentId === 'scroll-to-reveal') {
@@ -3151,6 +3256,8 @@ export default function ComponentDetailPage() {
                 words: [{ text: "OUTLINE", font: "font-thunder" }],
                 color: 'var(--foreground)'
             });
+        } else if (componentId === 'showcase') {
+             setConfig({}); 
         }
     }, [componentId]);
 
@@ -3167,11 +3274,11 @@ export default function ComponentDetailPage() {
     // Calculate font size based on name length
     const headingSize = useMemo(() => {
         const nameLength = componentData.name.length;
-        if (nameLength <= 6) return 'text-[15vw] md:text-[18vw]';
-        if (nameLength <= 10) return 'text-[12vw] md:text-[15vw]';
+        if (nameLength <= 5) return 'text-[15vw] md:text-[18vw]';
+        if (nameLength <= 8) return 'text-[11vw] md:text-[13vw]';
         if (nameLength <= 12) return 'text-[9vw] md:text-[10vw]'; // "Liquid Morph" range
-        if (nameLength <= 15) return 'text-[9vw] md:text-[9vw]';
-        return 'text-[7vw] md:text-[8vw]';
+        if (nameLength <= 15) return 'text-[8vw] md:text-[8vw]';
+        return 'text-[6vw] md:text-[7vw]';
     }, [componentData.name]);
 
     return (

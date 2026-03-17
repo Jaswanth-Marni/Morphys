@@ -17,3 +17,6 @@ export * from "./KineticGrid";
 export * from "./ChromaticText";
 export * from "./IndexScrollReveal";
 export * from "./Retro3DText";
+export * from "./Showcase";
+export * from "./SlabCarousel";
+

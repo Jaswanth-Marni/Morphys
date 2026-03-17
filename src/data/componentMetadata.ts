@@ -480,6 +480,33 @@ export const componentMetadata: ComponentMetadata[] = [
         tags: ['3d', 'scroll', 'infinite', 'brand', 'showcase', 'three-js'],
         category: 'interaction',
         dependencies: ['@react-three/fiber', '@react-three/drei', 'three', 'react'],
+    },
+    {
+        id: 'retro-3d-text',
+        name: 'Retro 3D Text',
+        index: 53,
+        description: 'A retro-style 3D extruded text component with customizeable colors, shadows, and hover effects.',
+        tags: ['text', '3d', 'retro', 'extrusion', 'shadow', 'hover'],
+        category: 'effect',
+        dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'showcase',
+        name: 'Showcase',
+        index: 54,
+        description: 'A full-screen interactive showcase with 3D flip animations, image transitions, and text reveal effects.',
+        tags: ['showcase', 'gallery', '3d', 'flip', 'animation', 'framer-motion'],
+        category: 'interaction',
+        dependencies: ['framer-motion', 'react'],
+    },
+    {
+        id: 'slab-carousel',
+        name: 'Slab Carousel',
+        index: 55,
+        description: 'A responsive fisheye carousel where the active item expands significantly, with a smooth neighborhood expansion effect.',
+        tags: ['carousel', 'fisheye', 'magnification', 'scroll', 'gallery'],
+        category: 'interaction',
+        dependencies: ['framer-motion', 'react'],
     }
 ];
 

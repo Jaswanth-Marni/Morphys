@@ -1224,6 +1224,36 @@ export const componentsDataLite: ComponentDataLite[] = [
             { name: 'letterSpacing', type: 'string', default: '"0px"', description: 'Letter spacing (CSS value)' },
         ]
     },
+    {
+        id: 'showcase',
+        name: 'Showcase',
+        index: 54,
+        description: 'A two-line layered showcase component where an image flows between text lines with smooth scroll transitions.',
+        tags: ['showcase', 'layered', 'scroll', 'animation', 'gallery', 'framer-motion'],
+        category: 'layout',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import Showcase from '@/components/ui/Showcase';
+
+// Basic usage
+<Showcase />`,
+        props: []
+    },
+    {
+        id: 'slab-carousel',
+        name: 'Slab Carousel',
+        index: 55,
+        description: 'A responsive fisheye carousel where the active item expands significantly, with a smooth neighborhood expansion effect on adjacent items.',
+        tags: ['carousel', 'fisheye', 'magnification', 'scroll', 'gallery', 'framer-motion'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { SlabCarousel } from '@/components/ui';
+
+// Basic usage
+<SlabCarousel />`,
+        props: []
+    },
 ];
 
 

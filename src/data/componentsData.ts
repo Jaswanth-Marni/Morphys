@@ -14561,8 +14561,8 @@ export default MouseInteraction1;
         usage: `import PerspectiveCarousel from '@/components/ui/PerspectiveCarousel';\n\n<PerspectiveCarousel />`,
         props: [],
         fullCode: `
-import React, { useRef, useCallback, useEffect, memo } from 'react';
-import { motion, useSpring, useMotionValue } from 'framer-motion';
+import React, { useRef, useCallback, useEffect, memo, useState } from 'react';
+import { motion, useSpring, useMotionValue, AnimatePresence } from 'framer-motion';
 
 interface PerspectiveCarouselConfig {
     xSpacing?: number;
@@ -14579,6 +14579,7 @@ interface PerspectiveCarouselProps {
     config?: PerspectiveCarouselConfig;
     interactive?: boolean;
 }
+
 const CARDS = [
     { id: 1, title: 'CAROUSEL 1', category: 'CONCEPT', img: '/carousel1.png' },
     { id: 2, title: 'CAROUSEL 2', category: 'LIFESTYLE', img: '/carousel2.jpg' },
@@ -14597,7 +14598,17 @@ const VISIBLE_SLOTS = 11;
 const HALF_SLOTS = Math.floor(VISIBLE_SLOTS / 2);
 
 // Individual card rendered via rAF-driven style updates (bypasses React rendering entirely)
-const CarouselCard = memo(({ slot, smoothScrollPos, xSpacing, ySpacing, zDepth, cfgRotateY, cfgRotateX, cfgScale }: {
+const CarouselCard = memo(({
+    slot,
+    smoothScrollPos,
+    xSpacing,
+    ySpacing,
+    zDepth,
+    cfgRotateY,
+    cfgRotateX,
+    cfgScale,
+    onCardClick
+}: {
     slot: number;
     smoothScrollPos: any;
     xSpacing: number;
@@ -14606,6 +14617,7 @@ const CarouselCard = memo(({ slot, smoothScrollPos, xSpacing, ySpacing, zDepth, 
     cfgRotateY: number;
     cfgRotateX: number;
     cfgScale: number;
+    onCardClick: (card: any, rect: DOMRect) => void;
 }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const imgRef = useRef<HTMLImageElement>(null);
@@ -14666,10 +14678,18 @@ const CarouselCard = memo(({ slot, smoothScrollPos, xSpacing, ySpacing, zDepth, 
     const initialIndex = ((slot) % TOTAL_CARDS + TOTAL_CARDS) % TOTAL_CARDS;
     const initialCard = CARDS[initialIndex] || CARDS[0];
 
+    const handleClick = (e: React.MouseEvent) => {
+        if (cardRef.current && lastCardIndexRef.current !== -1) {
+            const rect = cardRef.current.getBoundingClientRect();
+            onCardClick(CARDS[lastCardIndexRef.current], rect);
+        }
+    };
+
     return (
         <div
             ref={cardRef}
-            className="absolute w-[360px] h-[500px] bg-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.2)] group overflow-hidden pointer-events-auto border border-black/5"
+            onClick={handleClick}
+            className="absolute w-[360px] h-[500px] bg-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.2)] group overflow-hidden pointer-events-auto border border-black/5 cursor-pointer"
             style={{
                 transformStyle: 'preserve-3d',
                 backfaceVisibility: 'visible',
@@ -14711,36 +14731,17 @@ const PerspectiveCarousel = ({ config = {}, interactive = true }: PerspectiveCar
     const carouselRotation = config.carouselRotation ?? 0;
 
     const containerRef = useRef<HTMLDivElement>(null);
+    const [activeCard, setActiveCard] = useState<{ data: any, rect: DOMRect } | null>(null);
 
     // High-performance motion values
     const scrollPos = useMotionValue(0);
-    const smoothScrollPos = useSpring(scrollPos, { damping: 30, stiffness: 200, mass: 1 });
-
-    // Scoped wheel handler — only active when carousel is in view
-    useEffect(() => {
-        if (!interactive) return;
-
-        const container = containerRef.current;
-        if (!container) return;
-
-        const handleWheel = (e: WheelEvent) => {
-            // Prevent the page from scrolling when interacting with the carousel
-            e.preventDefault();
-            e.stopPropagation();
-
-            const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-            scrollPos.set(scrollPos.get() + delta * 0.005);
-        };
-
-        // Use non-passive to allow preventDefault
-        container.addEventListener('wheel', handleWheel, { passive: false });
-        return () => container.removeEventListener('wheel', handleWheel);
-    }, [scrollPos, interactive]);
+    // Optimized spring physics for smoother flow
+    const smoothScrollPos = useSpring(scrollPos, { damping: 40, stiffness: 150, mass: 1.2 });
 
     const handleDrag = useCallback((e: any, info: any) => {
-        if (!interactive) return;
+        if (!interactive || activeCard) return;
         scrollPos.set(scrollPos.get() - info.delta.x * 0.015);
-    }, [scrollPos, interactive]);
+    }, [scrollPos, interactive, activeCard]);
 
     // Fixed viewing angle
     const containerTransform = \`rotateX(-28deg) rotateY(-144.8deg) rotateZ(\${carouselRotation}deg)\`;
@@ -14750,43 +14751,124 @@ const PerspectiveCarousel = ({ config = {}, interactive = true }: PerspectiveCar
         Array.from({ length: VISIBLE_SLOTS }, (_, i) => i - HALF_SLOTS),
     []);
 
-    return (
-        <motion.div
-            ref={containerRef}
-            className={\`relative w-full h-full min-h-[600px] bg-transparent text-gray-900 font-sans overflow-hidden select-none flex flex-col \${interactive ? 'cursor-grab active:cursor-grabbing' : ''}\`}
-            style={{ clipPath: 'inset(0)', contain: 'layout style paint' }}
-            drag={interactive ? "x" : false}
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.1}
-            onDrag={handleDrag}
-            whileDrag={interactive ? { cursor: 'grabbing' } : undefined}
-        >
-            {/* --- CAROUSEL --- */}
-            <main className="flex-1 relative flex items-center justify-center overflow-hidden" style={{ perspective: \`\${cfgPerspective}px\` }}>
-                <div
-                    className="relative w-full h-full flex items-center justify-center pointer-events-none"
-                    style={{
-                        transformStyle: 'preserve-3d',
-                        transform: containerTransform,
-                    }}
-                >
-                    {slots.map((slot) => (
-                        <CarouselCard
-                            key={\`slot-\${slot}\`}
-                            slot={slot}
-                            smoothScrollPos={smoothScrollPos}
-                            xSpacing={xSpacing}
-                            ySpacing={ySpacing}
-                            zDepth={zDepth}
-                            cfgRotateY={cfgRotateY}
-                            cfgRotateX={cfgRotateX}
-                            cfgScale={cfgScale}
-                        />
-                    ))}
-                </div>
-            </main>
+    const handleCardClick = useCallback((card: any, rect: DOMRect) => {
+        if (!interactive) return;
+        setActiveCard({ data: card, rect });
+    }, [interactive]);
 
-        </motion.div>
+    const handleCloseOverlay = () => {
+        setActiveCard(null);
+    };
+
+    return (
+        <div className="relative w-full h-full min-h-[600px]">
+            <motion.div
+                ref={containerRef}
+                className={\`relative w-full h-full min-h-[600px] bg-transparent text-gray-900 font-sans overflow-hidden select-none flex flex-col \${interactive ? 'cursor-grab active:cursor-grabbing' : ''}\`}
+                style={{ clipPath: 'inset(0)', contain: 'layout style paint' }}
+                drag={interactive && !activeCard ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.1}
+                onDrag={handleDrag}
+                whileDrag={interactive && !activeCard ? { cursor: 'grabbing' } : undefined}
+            >
+                {/* --- CAROUSEL --- */}
+                <main className="flex-1 relative flex items-center justify-center overflow-hidden" style={{ perspective: \`\${cfgPerspective}px\` }}>
+                    <div
+                        className="relative w-full h-full flex items-center justify-center pointer-events-none"
+                        style={{
+                            transformStyle: 'preserve-3d',
+                            transform: containerTransform,
+                        }}
+                    >
+                        {slots.map((slot) => (
+                            <CarouselCard
+                                key={\`slot-\${slot}\`}
+                                slot={slot}
+                                smoothScrollPos={smoothScrollPos}
+                                xSpacing={xSpacing}
+                                ySpacing={ySpacing}
+                                zDepth={zDepth}
+                                cfgRotateY={cfgRotateY}
+                                cfgRotateX={cfgRotateX}
+                                cfgScale={cfgScale}
+                                onCardClick={handleCardClick}
+                            />
+                        ))}
+                    </div>
+                </main>
+            </motion.div>
+
+            {/* --- OVERLAY --- */}
+            <AnimatePresence>
+                {activeCard && (
+                    <motion.div
+                        className="fixed inset-0 z-[100] flex items-center justify-center"
+                        initial={{ backgroundColor: "rgba(0,0,0,0)" }}
+                        animate={{ backgroundColor: "rgba(0,0,0,0.8)" }}
+                        exit={{ backgroundColor: "rgba(0,0,0,0)" }}
+                        onClick={handleCloseOverlay}
+                    >
+                        <motion.div
+                            className="bg-gray-900 shadow-2xl rounded-2xl overflow-hidden"
+                            initial={{
+                                position: 'fixed',
+                                top: activeCard.rect.top,
+                                left: activeCard.rect.left,
+                                width: activeCard.rect.width,
+                                height: activeCard.rect.height,
+                                opacity: 1,
+                                borderRadius: '0px',
+                                x: 0,
+                                y: 0,
+                                rotateX: 0
+                            }}
+                            animate={{
+                                top: '50%',
+                                left: '50%',
+                                x: '-50%',
+                                y: '-50%',
+                                width: 'min(500px, 90vw)',
+                                height: 'min(700px, 90vh)',
+                                borderRadius: '12px',
+                                opacity: 1,
+                                transition: { 
+                                    duration: 0.6, 
+                                    ease: [0.2, 0, 0.2, 1] // Custom refined cubic-bezier for smooth flow
+                                }
+                            }}
+                            exit={{
+                                top: activeCard.rect.top,
+                                left: activeCard.rect.left,
+                                width: activeCard.rect.width,
+                                height: activeCard.rect.height,
+                                x: 0,
+                                y: 0,
+                                borderRadius: '0px',
+                                opacity: 0,
+                                transition: { duration: 0.4 }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="relative w-full h-full">
+                                <img
+                                    src={activeCard.data.img}
+                                    alt={activeCard.data.title}
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-8 text-white">
+                                    <span className="text-xs tracking-[0.5em] uppercase mb-2 font-bold text-white/70 block">{activeCard.data.category}</span>
+                                    <h2 className="text-4xl font-light tracking-tighter leading-none mb-4">{activeCard.data.title}</h2>
+                                    <p className="text-sm font-light text-white/60 leading-relaxed max-w-[80%]">
+                                        Click outside to close this detailed view.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 };
 
@@ -16760,6 +16842,634 @@ export const Retro3DText = ({
 };
 
 export default Retro3DText;
+`
+    },
+    {
+        id: 'showcase',
+        name: 'Showcase',
+        index: 54,
+        description: 'A two-line layered showcase component where an image flows between text lines with smooth scroll transitions.',
+        tags: ['showcase', 'layered', 'scroll', 'animation', 'gallery', 'framer-motion'],
+        category: 'layout',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import Showcase from '@/components/ui/Showcase';
+
+// Basic usage
+<Showcase />`,
+        props: [],
+        fullCode: `
+'use client';
+
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface ShowcaseItem {
+  id: number;
+  line1: string;
+  line2: string;
+  image: string;
+}
+
+const items: ShowcaseItem[] = [
+  {
+    id: 1,
+    line1: "CHAINSAW",
+    line2: "MAN",
+    image: "/desktop/chainsaw-man-the-5120x2880-23013.jpg"
+  },
+  {
+    id: 2,
+    line1: "JUJUTSU",
+    line2: "KAISEN",
+    image: "/desktop/jujutsu-kaisen-3840x2160-19746.jpg"
+  },
+  {
+    id: 3,
+    line1: "DEMON",
+    line2: "SLAYER",
+    image: "/desktop/demon-slayer-3840x2160-23615.jpg"
+  },
+  {
+    id: 4,
+    line1: "SOLO",
+    line2: "LEVELING",
+    image: "/desktop/solo-leveling-3840x2160-20374.png"
+  },
+  {
+    id: 5,
+    line1: "ONE",
+    line2: "PIECE",
+    image: "/desktop/one-piece-season-15-3840x2160-22064.jpg"
+  },
+  {
+    id: 6,
+    line1: "DANDA",
+    line2: "DAN",
+    image: "/desktop/dandadan-evil-eye-5120x2880-22717.jpg"
+  },
+  {
+    id: 7,
+    line1: "GACHI",
+    line2: "AKUTA",
+    image: "/desktop/gachiakuta-3840x2160-22842.jpg"
+  },
+  {
+    id: 8,
+    line1: "KAIJU",
+    line2: "NO. 8",
+    image: "/desktop/kaiju-no-8-mission-7680x4320-21963.jpg"
+  },
+  {
+    id: 9,
+    line1: "SAKAMOTO",
+    line2: "DAYS",
+    image: "/desktop/sakamoto-days-5120x2880-23913.jpg"
+  },
+  {
+    id: 10,
+    line1: "SPY X",
+    line2: "FAMILY",
+    image: "/desktop/spy-x-family-season-5120x2880-24443.png"
+  },
+  {
+    id: 11,
+    line1: "TO BE",
+    line2: "HERO X",
+    image: "/desktop/to-be-hero-x-anime-3840x2160-22645.jpg"
+  }
+];
+
+export const Showcase = ({ className = "h-screen", config = {} }: { className?: string; config?: any }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [direction, setDirection] = useState(1);
+  const isAnimatingRef = useRef(false);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const duration = config.speed ?? 1400;
+
+  const nextSlide = useCallback(() => {
+    if (isAnimatingRef.current || isExpanded) return;
+    isAnimatingRef.current = true;
+    setIsAnimating(true);
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % items.length);
+    setTimeout(() => {
+      isAnimatingRef.current = false;
+      setIsAnimating(false);
+    }, duration); 
+  }, [isExpanded, duration]);
+
+  const prevSlide = useCallback(() => {
+    if (isAnimatingRef.current || isExpanded) return;
+    isAnimatingRef.current = true;
+    setIsAnimating(true);
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+    setTimeout(() => {
+      isAnimatingRef.current = false;
+      setIsAnimating(false);
+    }, duration);
+  }, [isExpanded, duration]);
+
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (isAnimatingRef.current || isExpanded) return;
+      if (scrollTimeout.current) return;
+
+      if (Math.abs(e.deltaY) < 10) return;
+
+      if (e.deltaY > 0) {
+        nextSlide();
+      } else if (e.deltaY < 0) {
+        prevSlide();
+      }
+
+      scrollTimeout.current = setTimeout(() => {
+        scrollTimeout.current = null;
+      }, 1000);
+    };
+
+    window.addEventListener('wheel', handleWheel);
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    };
+  }, [nextSlide, prevSlide, isExpanded]);
+
+  return (
+    <div className={\`relative w-full overflow-hidden flex flex-col items-center justify-center font-sans tracking-tight select-none \${className}\`} style={{ containerType: "size" }}>
+      
+      {/* Container for the content */}
+      <div className="relative flex flex-col items-center justify-center w-full z-10 h-full">
+        <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+          {/* We must keep the Slide mounted to animate its internal state seamlessly */}
+          <Slide 
+             key={items[currentIndex].id} 
+             item={items[currentIndex]}
+             isExpanded={isExpanded}
+             onToggleExpand={() => setIsExpanded(!isExpanded)}
+             direction={direction}
+             config={config}
+          />
+        </AnimatePresence>
+      </div>
+      
+      <div className="absolute top-8 right-8 text-neutral-900/30 font-mono text-xs z-60 tracking-widest transition-opacity duration-300 pointer-events-none">
+          {isExpanded ? "CLICK IMAGE TO CLOSE" : "SCROLL TO EXPLORE"}
+      </div>
+
+    </div>
+  );
+};
+
+const Slide = ({ 
+  item, 
+  isExpanded, 
+  onToggleExpand,
+  direction,
+  config
+}: { 
+  item: ShowcaseItem; 
+  isExpanded: boolean; 
+  onToggleExpand: () => void;
+  direction: number;
+  config: any;
+}) => {
+  const cardWidth = config.cardWidth ?? "22cqi";
+  const expandedWidth = config.expandedCardWidth ?? "55cqi";
+  const fontSize = config.fontSize ?? "22cqi";
+  const tilt = config.tilt ?? -10;
+
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center w-full h-full pointer-events-none">
+      
+      {/* LINE 1 - Z-Index 10: BOTTOM LAYER */}
+      <div className={\`z-10 relative overflow-hidden mb-[-2.5cqi] pt-4 mix-blend-exclusion transition-opacity duration-500 \${isExpanded ? 'opacity-20' : 'opacity-100'}\`}>
+        <motion.h1
+          initial={{ y: direction > 0 ? "100%" : "-100%" }}
+          animate={{ y: "0%" }}
+          exit={{ y: direction > 0 ? "-100%" : "100%" }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="leading-[0.85] font-black font-thunder text-white pt-6 pb-6 px-4"
+          style={{ fontSize }}
+        >
+          {item.line1}
+        </motion.h1>
+      </div>
+
+       {/* IMAGE - Z-Index 20: MIDDLE LAYER (SANDWICHED) */}
+       {/* When expanded, z-index increases to 50 to cover text */}
+      <div className={\`absolute flex items-center justify-center w-full h-full pointer-events-auto transition-all duration-500 perspective-[1000px] \${isExpanded ? 'z-50' : 'z-20'}\`}>
+        <motion.div
+           layout
+           className="relative aspect-video cursor-pointer shadow-2xl transform-3d"
+           onClick={onToggleExpand}
+           initial={{ 
+             x: direction > 0 ? "100cqi" : "-100cqi",       
+             y: direction > 0 ? "100cqh" : "-100cqh",      
+             rotate: tilt,
+             rotateY: 0,     
+             opacity: 1,      
+             width: cardWidth,   // Initial small width
+             scale: 1,
+           }}
+           animate={{ 
+             x: "0cqi",        // Always centered horizontally
+             
+             // Y-Axis Flow Logic:
+             // Normal: 0vh (Centered)
+             // Expanded: -5cqh (Move UP slightly to "flow from bottom")
+             y: isExpanded ? "-5cqh" : "0cqh", 
+             
+             rotate: isExpanded ? 0 : tilt,     // Clear tilt on expand
+             rotateY: isExpanded ? 180 : 0,    // Flip on expand (180deg to show "back")
+             opacity: 1,
+             scale: 1, // We control size purely via width for layout flow
+             
+             // Expand Width Logic:
+             // Normal: 22cqi
+             // Expanded: 55cqi (Larger but not full screen)
+             width: isExpanded ? expandedWidth : cardWidth 
+           }}
+           exit={{ 
+             x: direction > 0 ? "-100cqi" : "100cqi",     
+             y: direction > 0 ? "-100cqh" : "100cqh",     
+             rotate: tilt,     
+             rotateY: 0,
+             opacity: 1,     
+             width: cardWidth,  
+             scale: 1
+           }}
+           transition={{ 
+             // Main spring transition for the "flow" feel
+             type: "spring",
+             stiffness: 90,
+             damping: 20,
+             mass: 1.1,
+             // Separate ease for the exit flow if needed, but spring feels best for interactive expanding
+           }}
+        >
+          {/* Front of card */}
+           <div className="absolute inset-0 backface-hidden">
+              <img
+                src={item.image}
+                alt={\`\${item.line1} \${item.line2}\`}
+                className="w-full h-full object-cover"
+              />
+           </div>
+           {/* Back of card (duplicate image, rotated 180deg to face opposite direction) */}
+           <div 
+              className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]"
+           >
+              <img
+                src={item.image}
+                alt={\`\${item.line1} \${item.line2}\`}
+                className="w-full h-full object-cover"
+              />
+           </div>
+        </motion.div>
+      </div>
+
+      {/* LINE 2 - Z-Index 30: TOP LAYER */}
+      <div className={\`z-30 relative overflow-hidden mt-[-2.5cqi] pb-4 mix-blend-exclusion transition-opacity duration-500 \${isExpanded ? 'opacity-20' : 'opacity-100'}\`}>
+        <motion.h1
+          initial={{ y: direction > 0 ? "100%" : "-100%" }}
+          animate={{ y: "0%" }}
+          exit={{ y: direction > 0 ? "-100%" : "100%" }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          className="text-[22cqi] leading-[0.85] font-black font-thunder text-white pt-6 pb-6 px-4"
+        >
+          {item.line2}
+        </motion.h1>
+      </div>
+
+    </div>
+  );
+};
+`
+    },
+    {
+        id: 'slab-carousel',
+        name: 'Slab Carousel',
+        index: 55,
+        description: 'A responsive fisheye carousel where the active item expands significantly, with a smooth neighborhood expansion effect on adjacent items.',
+        tags: ['carousel', 'fisheye', 'magnification', 'scroll', 'gallery', 'framer-motion'],
+        category: 'interaction',
+        previewConfig: {},
+        dependencies: ['framer-motion', 'react'],
+        usage: `import { SlabCarousel } from '@/components/ui';
+
+// Basic usage
+<SlabCarousel />`,
+        props: [],
+        fullCode: `
+'use client'
+
+import React, { useRef, useState, useEffect } from 'react'
+import { 
+    motion, 
+    useMotionValue, 
+    useTransform, 
+    useAnimationFrame,
+    MotionValue,
+    animate
+} from 'framer-motion'
+
+import { cn } from '@/lib/utils'
+
+// ----------------------------------------------------------------------
+// Configuration Defaults (overridable via config prop)
+// ----------------------------------------------------------------------
+const DEFAULT_BASE_WIDTH = 60
+const DEFAULT_EXPANDED_WIDTH = 400
+const DEFAULT_GAP = 12
+const DEFAULT_NEIGHBOR_INFLUENCE = 1.6 
+// ----------------------------------------------------------------------
+
+interface ItemData {
+    id: number;
+    title: string;
+    image: string;
+    color: string;
+}
+
+interface SlabProps {
+    item: ItemData;
+    index: number;
+    scrollIndex: MotionValue<number>;
+    baseWidth: number;
+    expandedWidth: number;
+    gap: number;
+    neighborInfluence: number;
+    borderRadius: number;
+}
+
+const items: ItemData[] = [
+    { id: 1, title: 'Chainsaw Man', color: '#ff5f5f', image: '/24/chainsaw-man-the-5120x2880-23013.jpg' },
+    { id: 2, title: 'Jujutsu Kaisen', color: '#5fafff', image: '/24/jujutsu kaisen.jpg' },
+    { id: 3, title: 'Demon Slayer', color: '#5fffAF', image: '/24/demon-slayer-3840x2160-23615.jpg' },
+    { id: 4, title: 'Solo Leveling', color: '#af5fff', image: '/24/solo leveling.jpg' },
+    { id: 5, title: 'Spy x Family', color: '#ffaf5f', image: '/24/spyxfamily.jpg' },
+    { id: 6, title: 'One Piece', color: '#ff5f5f', image: '/24/onepiece.jpg' },
+    { id: 7, title: 'Dandadan', color: '#5fafff', image: '/24/dandadan.jpg' },
+    { id: 8, title: 'Kaiju No. 8', color: '#5fffAF', image: '/24/kaiju-no-8-video-1440x2560-20422.jpg' },
+    { id: 9, title: 'Sakamoto Days', color: '#af5fff', image: '/24/taro-sakamoto-1440x2560-23904.jpg' },
+    { id: 10, title: 'Gachiakuta', color: '#ffaf5f', image: '/24/gachiakuta-season-1-1440x2560-23000.jpg' },
+]
+
+const Slab = ({ 
+    item, 
+    index, 
+    scrollIndex,
+    baseWidth,
+    expandedWidth,
+    gap,
+    neighborInfluence,
+    borderRadius
+}: SlabProps) => {
+    
+    // Direct MotionValue transforms for performance
+    const width = useTransform(scrollIndex, (current) => {
+        const dist = Math.abs(index - current)
+        const activity = Math.exp(-Math.pow(dist / neighborInfluence, 2))
+        return baseWidth + (expandedWidth - baseWidth) * activity
+    })
+    
+    const opacity = useTransform(scrollIndex, (current) => {
+        const dist = Math.abs(index - current)
+        const activity = Math.exp(-Math.pow(dist / neighborInfluence, 2))
+        return 0.4 + 0.6 * activity
+    })
+    
+    const zIndex = useTransform(scrollIndex, (current) => {
+        const dist = Math.abs(index - current)
+        const activity = Math.exp(-Math.pow(dist / neighborInfluence, 2))
+        return Math.round(activity * 10)
+    })
+    
+    const saturation = useTransform(scrollIndex, (current) => {
+        const dist = Math.abs(index - current)
+        const activity = Math.exp(-Math.pow(dist / neighborInfluence, 2))
+        // Map 0-1 to grayscale filter value? 
+        // We can't interpolate string filters easily with useTransform without a custom mixer
+        // So we'll update a CSS variable or just rely on opacity for now for 60fps
+        return activity
+    })
+
+    return (
+        <motion.div
+            style={{
+                width: width, 
+                height: '100%',
+                marginRight: gap,
+                opacity: opacity,
+                zIndex: zIndex,
+                borderRadius: borderRadius,
+            }}
+            className="relative shrink-0 overflow-hidden cursor-pointer group border border-white/10"
+        >
+             <motion.div className="absolute inset-0">
+                 {/* To keep it performant, we just use opacity for the active state/grayscale simulation */}
+                 <motion.img 
+                    src={item.image} 
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-all duration-500"
+                    style={{
+                        // Simple performant approach: 
+                        // Instead of modifying filter string every frame (expensive),
+                        // We use a CSS variable or just let it be fully colored.
+                        // User asked to remove blur. 
+                        // Let's bring back the grayscale if possible, but cleanly.
+                        // We can't pass 'filter' as a MotionValue easily if it contains complex strings.
+                        // So we use an overlay for the "inactive" look.
+                    }}
+                 />
+                 
+                 {/* Dark overlay that fades out when active */}
+                 <motion.div 
+                    className="absolute inset-0 bg-black pointer-events-none"
+                    style={{ opacity: useTransform(saturation, s => (1 - s) * 0.8) }}
+                 />
+            </motion.div>
+        </motion.div>
+    )
+}
+
+
+export function SlabCarousel({ className, config = {} }: { className?: string, config?: any }) {
+    
+    // Core state in MotionValue
+    const scrollIndex = useMotionValue(0)
+    const targetScroll = useRef(0)
+    
+    // We use Framer Motion's built-in drag/pan handlers for robust cross-browser touch/mouse support
+    const dragging = useRef(false)
+    const velocity = useRef(0)
+
+    // Config with defaults
+    const activeItems = config.items || items;
+    const MIN_INDEX = 0
+    const MAX_INDEX = activeItems.length - 1
+    
+    // Config Physics
+    const FRICTION = config.friction ?? 0.90 
+    const ELASTICITY = config.elasticity ?? 0.1
+    // We calibrate pixel movement to scroll index movement
+    // Higher = heavier drag.
+    const DRAG_FACTOR = config.dragFactor ?? 0.003
+    
+    // Config Layout
+    const baseWidth = config.baseWidth ?? DEFAULT_BASE_WIDTH
+    const expandedWidth = config.expandedWidth ?? DEFAULT_EXPANDED_WIDTH
+    const gap = config.gap ?? DEFAULT_GAP
+    const neighborInfluence = config.neighborInfluence ?? DEFAULT_NEIGHBOR_INFLUENCE
+    const borderRadius = config.borderRadius ?? 16 // Default to 16px (rounded-2xl)
+
+    // ------------------------------------------------------------------
+    // Track Offset
+    // ------------------------------------------------------------------
+    const trackOffset = useTransform(scrollIndex, (current) => {
+        let currentX = 0
+        const centers: number[] = []
+        for (let i = 0; i < activeItems.length; i++) {
+            const dist = Math.abs(i - current)
+            const activity = Math.exp(-Math.pow(dist / neighborInfluence, 2))
+            const width = baseWidth + (expandedWidth - baseWidth) * activity
+            centers.push(currentX + width/2)
+            currentX += width + gap
+        }
+        
+        const i1 = Math.floor(current)
+        const i2 = Math.ceil(current)
+        const ratio = current - i1
+        
+        const c1 = centers[Math.max(0, Math.min(activeItems.length-1, i1))]
+        const c2 = centers[Math.max(0, Math.min(activeItems.length-1, i2))] 
+        
+        const activeCenter = c1 + (c2 - c1) * ratio
+        return -activeCenter 
+    })
+
+    // ------------------------------------------------------------------
+    // Physics Loop
+    // ------------------------------------------------------------------
+    useAnimationFrame(() => {
+        // If user is holding/dragging, we DON'T apply physics friction/momentum
+        // We let the drag input drive the value directly.
+        if (!dragging.current) {
+            
+            // Apply Friction to momentum
+            velocity.current *= FRICTION
+            
+            // Check Bounds & Elasticity
+            if (targetScroll.current < MIN_INDEX) {
+                 const force = (MIN_INDEX - targetScroll.current) * ELASTICITY
+                 velocity.current += force
+            } else if (targetScroll.current > MAX_INDEX) {
+                 const force = (MAX_INDEX - targetScroll.current) * ELASTICITY
+                 velocity.current += force
+            }
+            
+            // Move
+            if (Math.abs(velocity.current) > 0.0001) {
+                 targetScroll.current += velocity.current
+                 
+                 // Directly update the MotionValue
+                 scrollIndex.set(targetScroll.current)
+            }
+        }
+    })
+
+    // ------------------------------------------------------------------
+    // Event Handlers (Framer Motion Pan)
+    // ------------------------------------------------------------------
+    const onPanStart = () => {
+        dragging.current = true
+        velocity.current = 0
+        // Snap target to current visual value to avoid jumps if physics was moving it
+        targetScroll.current = scrollIndex.get()
+    }
+
+    const onPan = (_: MouseEvent | TouchEvent | PointerEvent, info: { delta: { x: number } }) => {
+        // -delta.x because dragging LEFT (negative) should increase index (move right)
+        // Adjust sensitivity with DRAG_FACTOR
+        const deltaIndex = -info.delta.x * DRAG_FACTOR
+        
+        targetScroll.current += deltaIndex
+        scrollIndex.set(targetScroll.current)
+    }
+
+    const onPanEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: { velocity: { x: number } }) => {
+        dragging.current = false
+        // Transfer pan velocity to physics velocity
+        // Framer gives velocity in px/sec. We need to scale it to our index units.
+        // Also invert direction because of scroll direction
+        velocity.current = -info.velocity.x * DRAG_FACTOR * 0.012 // Scale down time unit (approx 1/60)
+    }
+
+    // Wheel
+    const handleWheel = (e: React.WheelEvent) => {
+        // e.preventDefault() passive issue again, handled by CSS mostly
+        const delta = e.deltaY * DRAG_FACTOR
+        targetScroll.current += delta;
+        scrollIndex.set(targetScroll.current)
+        velocity.current = 0 // Kill momentum on wheel for precise control or add slight?
+        // Let's add slight
+        velocity.current = delta * 0.5
+    }
+
+    return (
+        <div 
+            className={cn("w-full h-full min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden select-none", className)}
+            onWheel={handleWheel} 
+            style={{ touchAction: 'none' }}
+        >
+            {/* 
+               We put the Pan handler on a high-level container overlay 
+               OR just the main div. Framer's motion.div supports onPan. 
+               Let's convert the main div to motion.div
+            */}
+            <motion.div 
+                className="absolute inset-0 z-50 cursor-grab active:cursor-grabbing"
+                onPanStart={onPanStart}
+                onPan={onPan}
+                onPanEnd={onPanEnd}
+                // We add a transparent bg to ensure it captures events everywhere
+                style={{ backgroundColor: 'transparent' }}
+            />
+
+            <div className="w-full h-125 relative flex items-center overflow-hidden pointer-events-none">
+                <motion.div 
+                    className="flex items-center h-full absolute left-1/2"
+                    style={{ x: trackOffset }}
+                >
+                    {activeItems.map((item: ItemData, i: number) => (
+                        <Slab 
+                            key={item.id} 
+                            item={item} 
+                            index={i} 
+                            scrollIndex={scrollIndex} 
+                            baseWidth={baseWidth}
+                            expandedWidth={expandedWidth}
+                            gap={gap}
+                            neighborInfluence={neighborInfluence}
+                            borderRadius={borderRadius}
+                        />
+                    ))}
+                </motion.div>
+            </div>
+            
+            <div className="absolute bottom-10 left-0 w-full text-center pointer-events-none opacity-30 z-40">
+                <p className="text-xs text-neutral-500 font-mono uppercase tracking-widest">
+                    Drag or Scroll
+                </p>
+            </div>
+        </div>
+    )
+}
 `
     },
 ];

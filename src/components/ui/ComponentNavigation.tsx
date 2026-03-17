@@ -54,8 +54,18 @@ const componentModuleMap: Record<string, string> = {
     'chromatic-text': 'ChromaticText',
     'index-scroll-reveal': 'IndexScrollReveal',
     'infinity-brand-scroll': 'InfinityBrandScroll',
+    'elastic-scroll': 'ElasticScroll',
+    'retro-404': 'Retro404',
+    'mouse-interaction-1': 'MouseInteraction1',
+    'perspective-carousel': 'PerspectiveCarousel',
+    'full-screen-menu': 'FullScreenMenu',
+    'kinetic-grid': 'KineticGrid',
+    'retro-3d-text': 'Retro3DText',
+    'showcase': 'Showcase',
+    'slab-carousel': 'SlabCarousel',
 
 };
+
 
 // Prefetch cache to avoid duplicate prefetches
 const prefetchedComponents = new Set<string>();

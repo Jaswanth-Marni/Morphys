@@ -115,6 +115,25 @@ import { KineticGrid } from "./KineticGrid";
 import { ChromaticTextPreview } from "./ChromaticText";
 import { IndexScrollReveal, IndexScrollRevealSandbox } from "./IndexScrollReveal";
 import { Retro3DText } from "./Retro3DText";
+import { Showcase } from "./Showcase";
+import { SlabCarousel } from "./SlabCarousel";
+
+
+const ShowcasePreview = () => (
+    <div className="w-full h-full overflow-hidden relative">
+        <Showcase className="h-full" />
+    </div>
+);
+
+const SlabCarouselPreview = () => (
+    <div className="w-full h-full overflow-hidden relative">
+        {/* Scale down to fit preview box if necessary, or just show it */}
+        <div className="absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left">
+            <SlabCarousel className="h-full" />
+        </div>
+    </div>
+);
+
 const MouseInteraction1Preview = () => (
     <div className="w-full h-full bg-black overflow-hidden relative rounded-[20px]">
         <MouseInteraction1 boxSize={35} trailSize={15} gridGap={0} onHoverColor="#ffffff" />
@@ -458,7 +477,10 @@ const componentPreviews: Record<string, React.ComponentType> = {
     'chromatic-text': ChromaticTextPreviewWrapper,
     'index-scroll-reveal': IndexScrollRevealPreview,
     'retro-3d-text': Retro3DTextPreview,
+    'showcase': ShowcasePreview,
+    'slab-carousel': SlabCarouselPreview,
 };
+
 
 // Text-based components that should remain interactive (hover effects)
 const TEXT_BASED_IDS = new Set([
